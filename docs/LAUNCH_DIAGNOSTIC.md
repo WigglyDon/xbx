@@ -241,3 +241,20 @@ xemu patch digest is
 `26027ec1436fb6c5f7a51200bf7fe96ceb90ba5695d568a72db29ef446ff461f`;
 the source pin and native ABI remain unchanged. Version 6 packages this narrow
 watch correction alongside the same version-2 trace firmware/profile selection.
+
+Prepared Android version 6 / `0.3.3-watch-lifetime`, application code 47fc9e8:
+APK SHA-256 `fa9b0b9c32997137cb386a1d731258719b97ff620d961ba4a70c96cc88a7f077`,
+native library `ff9b8d0ccfd81219f3b034c87e8aea34fedc9859e1c662dc78a8177ceff1be29`,
+Rust library `fa8b451dec7884a872d6efb1874f54edb80cf311a480999fbbd6012b60ee52a6`.
+Firmware remains the version-2 image above. Signature and 16 KiB ZIP alignment
+checks pass. Installation/execution is pending: another worker acquired the
+Pixel after its successful first return, and the physical-device guard refused
+the follow-up acquisition without phone actions. The prepared candidate is not
+a new device acceptance result. Fold stays released.
+
+Final workspace checks pass (17 tests, three explicit native fixtures ignored
+by default), including a bounded post-reap lease check: another concurrently
+forking fixture may briefly retain a pre-exec descriptor, so actual OS lease
+acquisition proves release rather than inferring it from one reaped PID. The
+previous immediate-acquisition assertion failed once and remains in private
+failure evidence. Host and Android Clippy pass with warnings denied.

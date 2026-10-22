@@ -311,7 +311,22 @@ fn native_child_keeps_lease_when_supervisor_closes_its_copy() {
         refused,
         "native writer must retain ownership after supervisor loss"
     );
-    drop(ProfileLease::acquire(&dir).unwrap());
+    // Parallel fixtures may briefly inherit this CLOEXEC descriptor between
+    // fork and exec. Reaping one PID does not prove the final inherited copy
+    // has closed: actual acquisition, rather than PID inference, is the proof.
+    let deadline = Instant::now() + Duration::from_secs(2);
+    let released = loop {
+        match ProfileLease::acquire(&dir) {
+            Ok(lease) => break lease,
+            Err(error)
+                if error.kind() == std::io::ErrorKind::WouldBlock && Instant::now() < deadline =>
+            {
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => panic!("inherited writer did not release its lease: {error}"),
+        }
+    };
+    drop(released);
     fs::remove_dir_all(dir).unwrap();
 }
 
