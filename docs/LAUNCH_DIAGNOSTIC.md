@@ -105,10 +105,52 @@ touch-to-game acceptance remain required.
 
 ## Device result
 
-No diagnostic-device result is claimed by the preparation above. Obtain a fresh
-operating window, fingerprint the stopped baseline, install the separately
-signed candidate, collect the first causal handoff and verify safe layout. Stop
-a terminal failure promptly and compare baseline fingerprints before locked
-return. Supplementary Pixel 4 performance comparison waits for a meaningful
-running workload. All owner data and raw logs remain private; full restore is
-still disabled.
+The October 22 Fold run used source b654b6d, APK SHA-256
+`575e126f6ca88f533ff68c2b6c771727f41219638967955d9686ad53d028f518`,
+version 3 / `0.3.0-launch-diagnostic`, unchanged ABI3 core, and trace firmware
+`3b6e9485a4224d7f39425e0664e0907be7e65b8e3700ff66d022a76822ce2ab7`.
+Patch SHA-256 is `ab4094c24e38875ced724264641adbbdb2bafce1f1739f46f4c9e7599d0a1657`.
+Rust library SHA-256 was
+`1cf7dd3effafae837cf412f85e22426df87fbcc25c3e67c4a02f747e57ea3a37`.
+
+The first handoff was captured completely within the private log cap: disc load
+success, entry dispatch, entry-thunk return, then a different title thread's
+HalReturnToFirmware routine 2 with valid launch page, type 1, empty path and
+dashboard reason/code 1/1. Page address and fields survived re-adoption. The
+empty-path branch selected dashboard; its load returned C0000034, routine 4
+followed, then cold fatal 21. No preceding recorded exception or missing import
+ordinal was observed. Entry-thunk return alone is not evidence of a failure;
+the title-side reboot caller proves execution beyond loader return. This still
+does not identify the startup check behind the generic error-dashboard request.
+The trace's last-load global stayed zero after dashboard open failed early;
+the explicit loader line is the evidence for C0000034.
+
+Provisioning recorded a new profile ID/ancestry and retained the GameId/media
+binding. Seven stopped baseline files (firmware, disk, EEPROM, generation,
+SavedSession, profile identity and media grant) matched byte-for-byte before and
+after. A private visual check showed complete control circles inside the safe
+area. This is layout acceptance only, not touch-to-game acceptance. The fatal
+marker closed the Rust resume gate; operator force-stop terminated the process,
+not a clean checkpoint. The phone was verified locked/screen off and released.
+No gameplay, audio, ordinary save/cold reload, snapshot/shortcut or performance
+acceptance was earned. Pixel 4 remains deferred. Raw logs/captures and profile
+identities remain private; full restore stays disabled.
+
+## Bounded callsite follow-up
+
+The generic title error needs a preceding-check diagnosis. Version 4 adds a
+read-only Rust observation before native initialization or storage-epoch writes,
+using the same validated retained game grant and unchanged diagnostic firmware.
+It activates only with an explicit private `callsite.request` in a completed
+diagnostic branch. Format: `xbx-callsite-v1 HEX_VIRTUAL_START HEX_BYTES`.
+The operator chooses the range from the observed caller, not a product default.
+At most 32 KiB from one executable, file-backed XBE section may be recorded;
+header/certificate ranges, ambiguous section mappings, zero-fill and invalid
+extents are refused. Numeric kernel import slots are bounded separately. Raw
+code stays in private `callsite-evidence/code`; the numeric map stays beside it.
+Neither is suitable for public source or issue upload. Existing/partial output
+is preserved and refused on repetition. The process exits without starting QEMU.
+Synthetic tests cover bounds, header exclusion, refused non-code mapping,
+read-only media and preservation of prior evidence. A new device window is
+required to collect the actual title callsite; this preparation is not a causal
+repair or Fable compatibility result.

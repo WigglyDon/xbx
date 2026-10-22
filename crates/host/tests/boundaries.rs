@@ -152,6 +152,67 @@ fn structural_disc_checks_preserve_media_and_reject_partial_download() {
 }
 
 #[test]
+fn callsite_probe_bounds_code_excludes_headers_and_preserves_existing_evidence() {
+    let dir = scratch("callsite");
+    let path = dir.join("fixture.xiso");
+    fixture(&path, 0);
+    let mut file = File::options().read(true).write(true).open(&path).unwrap();
+    let start = 34 * 2048;
+    let mut image = [0; 2048];
+    file.seek(SeekFrom::Start(start)).unwrap();
+    std::io::Read::read_exact(&mut file, &mut image).unwrap();
+    let set = |bytes: &mut [u8], at: usize, value: u32| {
+        bytes[at..at + 4].copy_from_slice(&value.to_le_bytes())
+    };
+    set(&mut image, 0x108, 0x400);
+    set(&mut image, 0x10c, 0x20000);
+    set(&mut image, 0x11c, 1);
+    set(&mut image, 0x120, 0x10360);
+    set(&mut image, 0x128, 0x20000 ^ 0xa8fc57ab);
+    set(&mut image, 0x158, 0x20300 ^ 0x5b6d40b6);
+    set(&mut image, 0x360, 4);
+    set(&mut image, 0x364, 0x20000);
+    set(&mut image, 0x368, 0x400);
+    set(&mut image, 0x36c, 0x400);
+    set(&mut image, 0x370, 0x400);
+    image[0x440..0x4c0].fill(0x90);
+    set(&mut image, 0x700, 0x8000012b);
+    file.seek(SeekFrom::Start(start)).unwrap();
+    file.write_all(&image).unwrap();
+    drop(file);
+    let mut file = File::open(&path).unwrap();
+    let disc = xbx::disc::inspect_open(&mut file).unwrap();
+    let request = "xbx-callsite-v1 00020040 80";
+    let (code, map) = xbx::callsite::observe(&mut file, &disc, request).unwrap();
+    assert_eq!(code, vec![0x90; 128]);
+    assert!(map.contains("import=00020300:299"));
+    for invalid in [
+        "xbx-callsite-v1 00010000 80",
+        "xbx-callsite-v1 000203f0 80",
+        "xbx-callsite-v1 00020000 8001",
+        "xbx-callsite-v1 00020000 0",
+        "xbx-callsite-v1 00020000 10 extra",
+    ] {
+        assert!(xbx::callsite::observe(&mut file, &disc, invalid).is_err());
+    }
+    fs::write(dir.join("callsite.request"), request).unwrap();
+    assert!(xbx::callsite::requested(&dir, &mut file, &disc).is_err());
+    fs::write(dir.join("branch.identity"), "synthetic branch").unwrap();
+    assert!(xbx::callsite::requested(&dir, &mut file, &disc).unwrap());
+    assert!(xbx::callsite::requested(&dir, &mut file, &disc).is_err());
+    assert_eq!(fs::read(dir.join("callsite-evidence/code")).unwrap(), code);
+    assert_eq!(fs::read(&path).unwrap()[start as usize..], image);
+    // A forged section cannot export the certificate/header, nor non-code data.
+    let mut writer = File::options().write(true).open(&path).unwrap();
+    for (at, value) in [(0x36c, 0x180u32), (0x360, 0)] {
+        writer.seek(SeekFrom::Start(start + at)).unwrap();
+        writer.write_all(&value.to_le_bytes()).unwrap();
+        assert!(xbx::callsite::observe(&mut file, &disc, request).is_err());
+    }
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn retained_read_only_document_is_not_reopened_after_path_replacement() {
     let dir = scratch("retained-media");
     let path = dir.join("source.iso");

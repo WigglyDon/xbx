@@ -205,7 +205,11 @@ fn run() -> Result<i32, Box<dyn std::error::Error>> {
     }
     unsafe { xbx_platform_callbacks(&CALLBACKS) };
     let (root, lease, firmware) = media::owned_profile(Path::new(base))?;
-    let runtime = media::select(&root, &firmware)?;
+    let mut runtime = media::select(&root, &firmware)?;
+    if crate::callsite::requested(&root, &mut runtime.media, &runtime.disc)? {
+        // Read-only observation: never enter QEMU or advance the storage epoch.
+        return Ok(0);
+    }
     let media_fd = crate::disc::qemu_media_fd(&runtime.media)?.into_raw_fd();
     let config = super::profile_config(&root)?;
     let config_path = root.join("xemu.toml");

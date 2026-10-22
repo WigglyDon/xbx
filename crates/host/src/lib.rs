@@ -1,5 +1,6 @@
 //! The first xbx diagnostic host. No owner media or writable profiles are fixtures.
 pub mod branch;
+pub mod callsite;
 pub mod disc;
 pub mod disk;
 pub mod input;
