@@ -106,6 +106,12 @@ to future checkpoint media identity, alongside the source image fingerprint.
 
 ## Boundary checks
 
+The scoped required-image-read correction and original valid/truncated/shared-
+page fixture results are in [LOADER_COMPLETENESS.md](LOADER_COMPLETENESS.md).
+`cargo xtask kernel-build loader` builds only its independently identified
+candidate, binding `kernel-loader.lock.json` and the full composed patch. Existing
+trace/play/self-test outputs and Android selectors remain separate.
+
 The ordinary unchanged-game desktop A/B comparison, isolated profile/FD media
 boundary, actual failures and input/custody limits are recorded in
 [FABLE_DESKTOP.md](FABLE_DESKTOP.md). A synthetic probe pass is not a substitute

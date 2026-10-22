@@ -96,6 +96,109 @@ enum TitleCheck {
     Relaunch,
     NullCall,
     VmImports,
+    Loader(&'static str),
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn loader_fixture(
+    engine: &Path,
+    root: &Path,
+    flash: &Path,
+    disk: &Path,
+    disc: &Path,
+    map: &Path,
+    expected: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let expected = match expected {
+        "valid" => "valid",
+        "truncated-old" => "truncated-old",
+        "reject-raw" => "reject-raw",
+        "reject-header" => "reject-header",
+        "permissive" => "permissive",
+        _ => return Err("unknown loader fixture expectation".into()),
+    };
+    run_inner(
+        engine,
+        root,
+        Some((flash, disk, map)),
+        Some((disc, TitleCheck::Loader(expected))),
+    )
+}
+
+fn field(line: &str, key: &str) -> Option<u64> {
+    line.split_ascii_whitespace()
+        .find_map(|word| word.strip_prefix(&format!("{key}=")))
+        .and_then(|value| u64::from_str_radix(value, if key == "status" { 16 } else { 10 }).ok())
+}
+
+fn loader_summary_ok(text: &str, expected: &str) -> bool {
+    if expected == "truncated-old" {
+        return true;
+    }
+    let Some(image) = text.lines().find(|l| l.starts_with("XBX-IMAGE attempt=1 ")) else {
+        return false;
+    };
+    let Some(integrity) = text
+        .lines()
+        .find(|l| l.starts_with("XBX-INTEGRITY attempt=1 "))
+    else {
+        return false;
+    };
+    let complete =
+        |line: &str, a: &str, b: &str| field(line, a).is_some() && field(line, a) == field(line, b);
+    if field(image, "io_fail") != Some(0) {
+        return false;
+    }
+    match expected {
+        "valid" | "permissive" => {
+            let digests = if expected == "valid" {
+                [3, 0, 0]
+            } else {
+                [1, 1, 1]
+            };
+            field(image, "status") == Some(0)
+                && field(image, "short") == Some(0)
+                && complete(image, "hdr_req", "hdr_done")
+                && complete(image, "raw_req", "raw_done")
+                && field(image, "ext_req") == Some(4)
+                && field(image, "ext_done") == Some(4)
+                && field(integrity, "preloads") == Some(3)
+                && field(integrity, "loaded") == Some(3)
+                && field(integrity, "ready") == Some(1)
+                && ["match", "mismatch", "unusable"]
+                    .iter()
+                    .zip(digests)
+                    .all(|(k, v)| field(integrity, k) == Some(v))
+        }
+        "reject-raw" => {
+            field(image, "status") == Some(0xc0000011)
+                && field(image, "short") == Some(1)
+                && complete(image, "hdr_req", "hdr_done")
+                && field(image, "raw_done").and_then(|n| n.checked_add(64))
+                    == field(image, "raw_req")
+                && field(image, "ext_req") == Some(4)
+                && field(image, "ext_done") == Some(3)
+                && field(integrity, "preloads") == Some(3)
+                && field(integrity, "loaded") == Some(2)
+                && field(integrity, "ready") == Some(0)
+                && !text.contains("XBX-ENTRY ")
+        }
+        "reject-header" => {
+            field(image, "status") == Some(0xc0000011)
+                && field(image, "short") == Some(1)
+                && field(image, "hdr_req") == Some(0x1800)
+                && field(image, "hdr_done") == Some(0x1400)
+                && field(image, "raw_req") == Some(0)
+                && field(image, "raw_done") == Some(0)
+                && field(image, "ext_req") == Some(1)
+                && field(image, "ext_done") == Some(0)
+                && field(integrity, "preloads") == Some(0)
+                && field(integrity, "loaded") == Some(0)
+                && field(integrity, "ready") == Some(0)
+                && !text.contains("XBX-ENTRY ")
+        }
+        _ => false,
+    }
 }
 
 /// Bounded original loaded-title VM import/ABI check, independent of private titles.
@@ -334,17 +437,48 @@ fn run_inner(
         response(&mut reader)?;
         while Instant::now() < deadline {
             if let Some((_, check)) = relaunch {
+                if let TitleCheck::Loader(expected @ ("reject-raw" | "reject-header")) = check {
+                    let path = root.join("kernel.log");
+                    if path.exists() {
+                        if fs::metadata(&path)?.len() > 1024 * 1024 {
+                            return Err("fixture serial bound exceeded".into());
+                        }
+                        if loader_summary_ok(&fs::read_to_string(path)?, expected) {
+                            booted = true;
+                            break;
+                        }
+                    }
+                    std::thread::sleep(Duration::from_millis(20));
+                    continue;
+                }
                 let address = symbols[0].1;
                 let count = match check {
                     TitleCheck::NullCall => 2,
                     TitleCheck::VmImports => 36,
                     TitleCheck::Relaunch => 44,
+                    TitleCheck::Loader(_) => 8,
                 };
                 let request = format!(
                     "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/{count}wx {address:#x}\"}}}}\n"
                 );
                 socket.write_all(request.as_bytes())?;
                 let words = hmp_words(&response(&mut reader)?);
+                if let TitleCheck::Loader(expected) = check
+                    && words.len() == 8
+                    && words[0] == 0x4c584258
+                {
+                    let wanted = if expected == "truncated-old" {
+                        [0x4c584258, 1, 3, 512, 504, 48, 0, 0]
+                    } else {
+                        [0x4c584258, 1, 0, 512, 504, 64, 448, 1]
+                    };
+                    booted = words == wanted;
+                    fs::write(
+                        root.join("loader-guest-results.txt"),
+                        format!("words={words:?}\nexpected={expected}\nmatched={booted}\n"),
+                    )?;
+                    break;
+                }
                 if matches!(check, TitleCheck::VmImports)
                     && words.len() == 36
                     && words[0] == 0x4d564258
@@ -454,6 +588,27 @@ fn run_inner(
     )?;
     let _ = drain.join();
     lease.sync_storage()?;
+    if let Some((_, TitleCheck::Loader(expected))) = relaunch {
+        let path = root.join("kernel.log");
+        if fs::metadata(&path)?.len() > 1024 * 1024 {
+            return Err("fixture serial bound exceeded".into());
+        }
+        let text = fs::read_to_string(path)?;
+        booted &= loader_summary_ok(&text, expected)
+            && !text.contains("XBX-EXCEPTION ")
+            && !text.contains("*** bug check");
+        let summary: Vec<_> = text
+            .lines()
+            .filter(|l| l.starts_with("XBX-IMAGE ") || l.starts_with("XBX-INTEGRITY "))
+            .collect();
+        fs::write(
+            root.join("loader-acceptance.txt"),
+            format!(
+                "expected={expected}\naccepted={booted}\nsummary={}\n",
+                summary.join("\n")
+            ),
+        )?;
+    }
     if matches!(relaunch, Some((_, TitleCheck::VmImports))) {
         let path = root.join("kernel.log");
         if fs::metadata(&path)?.len() > 1024 * 1024 {
@@ -564,6 +719,8 @@ fn run_inner(
             "synthetic null CALL handled/resumed and diagnostic return PC correlated"
         } else if matches!(relaunch, Some((_, TitleCheck::VmImports))) {
             "synthetic title-import VM/ABI contract observed"
+        } else if matches!(relaunch, Some((_, TitleCheck::Loader(_)))) {
+            "original exact-loader fixture contract observed"
         } else if relaunch.is_some() {
             "two-stage title entry, carried data and D: mapping observed"
         } else if kernel.is_some() {

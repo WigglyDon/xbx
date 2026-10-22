@@ -96,6 +96,23 @@ remain modifications of retained QEMU source, preserving their existing file
 notices and combined-work obligations. No emulator source was translated into
 an original Rust module for this repair.
 
+`patches/oxos-loader-complete.patch` is a complete d87-based composition of the
+unchanged v4 trace patch plus a scoped `kernel/src/xe/loader.cpp` correction:
+required read completion, guarded header access, shared-section failure cleanup
+and bounded pre-import integrity counts. It retains OXOS's GPL/per-file terms;
+`kernel-loader.lock.json` binds both the composed and original trace identities.
+It is applied to clean d87, not on top of an already-patched v4 tree.
+
+`native/fixtures/loader-complete.S` and `xtask/src/loader_fixture.rs` are original
+MIT fixture code/build policy. XBE field layouts, encoded entry/thunk constants
+and section-reference interfaces are public format facts checked against the
+pinned OXOS declarations/wrapping tool, not a copied loader implementation.
+The original fixed layout deliberately shares boundary pages. SHA-1 calculation
+invokes the existing host `sha1sum`; XDVDFS wrapping invokes the unchanged pinned
+GPL/per-file `tests/mkxiso.py` without copying its implementation. Fixture bytes
+are source-authored synthetic data, not game-derived content. See
+[LOADER_COMPLETENESS.md](docs/LOADER_COMPLETENESS.md).
+
 ## Boot qualification and distribution boundary
 
 - xemu derives from QEMU. Its LICENSE describes GPL version 2 overall, with

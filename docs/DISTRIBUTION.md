@@ -4,6 +4,11 @@ Goal: a public, free-source player with a complete ordinary installation, and
 an eventual Google Play and Apple App Store route. None of those stores has
 approved xbx. This seed neither publishes a binary nor provides legal clearance.
 
+The ordinary product must be distributable and setup-free beyond the user
+providing a game. Supply the qualified engine, open boot/kernel route and
+generated storage environment in that installation. Current compatibility and
+release qualification remain unearned; this requirement is not a shipping claim.
+
 ## What can be included
 
 Package original Rust software, correctly licensed engine/runtime components,
@@ -18,11 +23,14 @@ and test gameplay, saving and checkpoints. No original Microsoft BIOS, MCPX ROM,
 retail dashboard, game, owner EEPROM/key dump or game-derived save belongs in
 public source or release artifacts without the relevant rights.
 
-For conventional low-level boot, privately supplied firmware may be necessary.
-Make setup conditional on the actual chosen route. A source-derived replacement
-or a coherent original Rust implementation can be preferable to that requirement.
-Do not remove safety checks or counterfeit a known firmware identity merely to
-make an unqualified replacement load. See [feasibility](XBOX_FEASIBILITY.md).
+Conventional low-level boot has proprietary input requirements; it is not the
+ordinary product's setup contract. The unavailable private BIOS/MCPX comparison
+is closed. Complete and qualify the distributable public boot/kernel environment;
+do not ask the user to acquire proprietary firmware as the next action. Existing
+public-source corrections and bounded original Rust replacements remain available
+under the architecture/scope rules. Do not remove safety checks or counterfeit a
+known firmware identity to make an unqualified replacement load. See
+[feasibility](XBOX_FEASIBILITY.md).
 
 Do not promise "all you need is the game" until the selected default demonstrates
 that claim for its supported scope. Report limitations without turning the

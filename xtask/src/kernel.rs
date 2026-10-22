@@ -3,7 +3,7 @@ use crate::run;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const OXOS: &str = "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2";
+pub(crate) const OXOS: &str = "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2";
 const CROMWELL: &str = "86f547387184d1001d377cce97d3756c8acf91cc";
 
 fn source(root: &Path) -> PathBuf {
@@ -20,13 +20,17 @@ fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Re
         format!(
             "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports=0\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
             u8::from(mode == "selftest"),
-            u8::from(mode == "trace")
+            u8::from(matches!(mode, "trace" | "loader"))
         ),
     )?;
     Ok(build)
 }
 
-fn verify(path: &Path, pin: &str, patch: Option<&[u8]>) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn verify(
+    path: &Path,
+    pin: &str,
+    patch: Option<&[u8]>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let head = Command::new("git")
         .arg("-C")
         .arg(path)
@@ -57,24 +61,36 @@ fn verify(path: &Path, pin: &str, patch: Option<&[u8]>) -> Result<(), Box<dyn st
 }
 
 pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if !matches!(mode, "trace" | "play" | "selftest") {
-        return Err("kernel mode must be trace, play or selftest".into());
+    if !matches!(mode, "trace" | "loader" | "play" | "selftest") {
+        return Err("kernel mode must be trace, loader, play or selftest".into());
     }
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = source(root);
-    let trace = mode == "trace";
+    let source = if mode == "loader" {
+        root.join(format!(".local/src/oxos-{OXOS}-loader-complete-v1"))
+    } else {
+        source(root)
+    };
+    let trace = matches!(mode, "trace" | "loader");
     let play = mode == "play" || trace;
+    let patch_path = root.join(if mode == "loader" {
+        "patches/oxos-loader-complete.patch"
+    } else {
+        "patches/oxos-launch-trace.patch"
+    });
+    let lock_path = root.join(if mode == "loader" {
+        "kernel-loader.lock.json"
+    } else {
+        "kernel-trace.lock.json"
+    });
     let patch = if trace {
-        Some(std::fs::read(root.join("patches/oxos-launch-trace.patch"))?)
+        Some(std::fs::read(&patch_path)?)
     } else {
         None
     };
     verify(&source, OXOS, patch.as_deref())?;
     verify(&source.join("third_party/cromwell"), CROMWELL, None)?;
     let trace_hash = if trace {
-        let out = Command::new("sha256sum")
-            .arg(root.join("patches/oxos-launch-trace.patch"))
-            .output()?;
+        let out = Command::new("sha256sum").arg(&patch_path).output()?;
         if !out.status.success() {
             return Err("trace patch hash failed".into());
         }
@@ -83,12 +99,27 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
             .next()
             .ok_or("missing patch digest")?
             .to_owned();
-        let lock = std::fs::read_to_string(root.join("kernel-trace.lock.json"))?;
+        let lock = std::fs::read_to_string(&lock_path)?;
         if !lock.contains(&format!("\"patch_sha256\": \"{sha}\""))
             || !lock.contains(&format!("\"commit\": \"{OXOS}\""))
             || !lock.contains(&format!("\"cromwell_commit\": \"{CROMWELL}\""))
         {
             return Err("trace patch differs from recorded identity".into());
+        }
+        if mode == "loader" {
+            let base = Command::new("sha256sum")
+                .arg(root.join("patches/oxos-launch-trace.patch"))
+                .output()?;
+            let hash = String::from_utf8(base.stdout)?
+                .split_whitespace()
+                .next()
+                .ok_or("missing base digest")?
+                .to_owned();
+            if !base.status.success()
+                || !lock.contains(&format!("\"base_trace_patch_sha256\": \"{hash}\""))
+            {
+                return Err("loader candidate base trace identity changed".into());
+            }
         }
         Some(sha)
     } else {

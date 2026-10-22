@@ -85,11 +85,14 @@ user expected to resume.
 
 ## Fullness without concealed dependencies
 
-The finished app should include every qualified component we can redistribute:
-player, engine, runtime, generated storage template and open boot/kernel route
-where verified. Imported proprietary firmware remains an optional compatibility
-route where required, not a permanent product axiom. No copied console startup
-art, dashboards or proprietary images bundled under an open-source label.
+The ordinary installation must provide a distributable, setup-free environment
+beyond supplying a game: player, qualified engine/runtime, open boot/kernel
+route and generated storage environment. Users must not obtain a proprietary
+BIOS/MCPX bundle or assemble firmware/storage as ordinary setup. Completing the
+public Xbox platform is part of xbx's engineering responsibility. This is a
+binding requirement, not a claim that the current candidate achieves it.
+No copied console startup art, dashboards or proprietary images bundled under
+an open-source label.
 
 Open-kernel compatibility is unverified until tested. A default that removes a
 setup prompt but breaks saving or the selected game is not an improvement. Read

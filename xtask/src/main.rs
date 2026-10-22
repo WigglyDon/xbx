@@ -5,6 +5,7 @@ mod apk;
 mod capacity;
 mod desktop;
 mod kernel;
+mod loader_fixture;
 mod profile;
 mod source;
 
@@ -22,6 +23,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("loader-fixture-build") {
+        return loader_fixture::build(root);
+    }
     if args.first().map(String::as_str) == Some("vm-import-build") {
         return kernel::vm_import_title(root);
     }
