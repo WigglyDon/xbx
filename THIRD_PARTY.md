@@ -41,6 +41,10 @@ at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.
   XBE header/certificate field offsets were checked against Cxbx-Reloaded's
   [Xbe.h at f1e54be](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/f1e54be515bb7989bf5109ebea2494b6b13eb1bd/src/common/xbe/Xbe.h).
   Only format facts are used; no Cxbx implementation or declarations were copied.
+  The original Rust FATX formatter uses layout facts cross-checked with pinned
+  OXOS `tests/fatx.py` and independently read back by that reader; no formatter
+  or filesystem implementation was translated/copied. SHA-256 uses retained
+  GLib through a mechanical adapter, not a new cryptographic implementation.
 
 The actual native graph includes QEMU/xemu (root GPLv2 terms and per-file
 exceptions), SDL3 (zlib and component notices), toml++ (MIT), libslirp (BSD-style
@@ -57,7 +61,7 @@ alongside the donor's GPLv2 combined-work terms; the selected file-level license
 compatibility and resulting distribution obligations require explicit review.
 An upstream build is not clearance. No public binary is released by this work.
 
-## Candidates not incorporated as firmware
+## Boot qualification and distribution boundary
 
 - xemu derives from QEMU. Its LICENSE describes GPL version 2 overall, with
   other terms in individual components. Do not assume GPL-2.0-or-later for every
@@ -68,7 +72,12 @@ An upstream build is not clearance. No public binary is released by this work.
 - Roswell (`XboxDev/roswell`) is a ReactOS-derived open Xbox kernel. Its README
   describes a GPL-2.0 combined work with per-file terms.
 - OXOS (`kooscode/oxos`) advertises GPL-2.0 and an original boot/kernel path. Its
-  source/provenance and comparison-image paths require review before use.
+  source/provenance and comparison-image paths require review for distribution.
+  Private qualification now builds its open route at
+  `c0c887a1263ebf89ba765f34a88ca8f132901e25` with Cromwell
+  `86f547387184d1001d377cce97d3756c8acf91cc`; it uses neither a comparison BIOS
+  nor MCPX dump. The private player candidate includes that normal-play image,
+  not a proprietary console image or an approved distributable default.
 - PSX is a related product, not an xbx dependency. Any selected public MIT host
   source may be reused with its original copyright notice. Do not copy its
   GPL cores, fonts or firmware and label the resulting tree MIT-only.

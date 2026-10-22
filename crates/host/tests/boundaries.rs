@@ -17,6 +17,75 @@ fn scratch(label: &str) -> PathBuf {
     path.canonicalize().unwrap()
 }
 
+#[test]
+#[ignore = "requires the source-built native engine and local socket/graphics permission"]
+fn native_rejection_preserves_existing_eeprom_and_disk_after_resume() {
+    let dir = scratch("native-rejected-profile");
+    let engine = std::env::var_os("XBX_TEST_ENGINE").expect("select source-built engine");
+    let eeprom = vec![0; 256];
+    let disk = b"synthetic writable-disk predecessor; must remain unchanged";
+    fs::write(dir.join("eeprom.bin"), &eeprom).unwrap();
+    fs::write(dir.join("hdd.qcow2"), disk).unwrap();
+    fs::write(dir.join("flash.bin"), vec![0xff; 1024 * 1024]).unwrap();
+    let cfg = xbx::profile_config(&dir)
+        .unwrap()
+        .replace("\"vulkan\"", "\"OPENGL\"");
+    fs::write(dir.join("xemu.toml"), cfg).unwrap();
+    let lease = ProfileLease::acquire(&dir).unwrap();
+    let log = File::create(dir.join("native.log")).unwrap();
+    let mut command = Command::new(engine);
+    command
+        .arg("-config_path")
+        .arg(dir.join("xemu.toml"))
+        .env("SDL_VIDEO_DRIVER", "offscreen")
+        .env("SDL_AUDIO_DRIVER", "dummy")
+        .env("LIBGL_ALWAYS_SOFTWARE", "1")
+        .env("XDG_DATA_HOME", dir.join("data"))
+        .env("XDG_CONFIG_HOME", dir.join("config"))
+        .env("XDG_CACHE_HOME", dir.join("cache"))
+        .env("MESA_SHADER_CACHE_DIR", dir.join("mesa-cache"))
+        .stdin(Stdio::null())
+        .stdout(log.try_clone().unwrap())
+        .stderr(log);
+    lease.inherit_for(&mut command);
+    let mut child = command.spawn().unwrap();
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let result = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break Some(status);
+        }
+        if Instant::now() >= deadline {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            break None;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    let lifecycle = xbx::startup::Startup::new();
+    lifecycle.report(-1);
+    lifecycle.display_ready();
+    lifecycle.foreground(false);
+    lifecycle.foreground(true);
+    assert!(!lifecycle.may_resume());
+    assert!(
+        result.is_some_and(|s| !s.success()),
+        "native rejection must exit before guest start"
+    );
+    assert_eq!(
+        result.unwrap().code(),
+        Some(1),
+        "terminal refusal must not be an abort/signal"
+    );
+    assert_eq!(fs::read(dir.join("eeprom.bin")).unwrap(), eeprom);
+    assert_eq!(fs::read(dir.join("hdd.qcow2")).unwrap(), disk);
+    let log = fs::read_to_string(dir.join("native.log")).unwrap();
+    assert!(!log.contains("[CPU-PRE]"));
+    assert!(log.contains("EEPROM missing/invalid"));
+    println!(
+        "PASS: native rejection exits before guest execution; foreground/resume stays gated and both predecessor files are unchanged. Scratch evidence retained."
+    );
+}
+
 fn fixture(path: &Path, partition: u64) {
     let mut file = File::create(path).unwrap();
     file.set_len(partition + 35 * 2048).unwrap();
@@ -79,6 +148,22 @@ fn structural_disc_checks_preserve_media_and_reject_partial_download() {
         .set_len(33 * 2048)
         .unwrap();
     assert!(xbx::disc::inspect(&path).is_err());
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn retained_read_only_document_is_not_reopened_after_path_replacement() {
+    let dir = scratch("retained-media");
+    let path = dir.join("source.iso");
+    fixture(&path, 0);
+    let mut retained = File::open(&path).unwrap();
+    fs::remove_file(&path).unwrap();
+    fs::write(&path, b"a different file at the original pathname").unwrap();
+    assert!(xbx::disc::inspect(&path).is_err());
+    let disc = xbx::disc::inspect_open(&mut retained).unwrap();
+    assert_eq!(disc.title.name, "Synthetic title");
+    assert_eq!(disc.partition_offset, 0);
+    assert!(retained.write_all(b"must fail").is_err());
     fs::remove_dir_all(dir).unwrap();
 }
 

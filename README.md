@@ -9,7 +9,7 @@ icon should open that game directly rather than an emulator configuration screen
 
 ## Status
 
-**Native candidate qualification; gameplay is not yet demonstrated.** The pinned
+**Fable player qualification; gameplay is not yet demonstrated.** The pinned
 xemu Android core and Rust entry build for ARM64, and a separately signed local
 qualification APK has been packaged. No installation, game/audio/input, in-game
 save, full resume, Fold performance or store result has been earned.
@@ -60,8 +60,8 @@ cd xbx
 bash scripts/start-codex.sh
 ```
 
-The Rust qualification host uses a narrow native entry and private scratch
-profile. The game-first collection, touch player and coherent automatic resume
+The Rust qualification player has a scoped document-FD route, touch model and
+private open-kernel/FATX profile. A general collection and coherent automatic resume
 remain implementation work. Source/build success is separate from acceptance.
 
 ## Independence

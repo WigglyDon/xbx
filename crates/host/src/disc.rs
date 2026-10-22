@@ -29,10 +29,20 @@ pub struct Title {
 
 pub fn inspect(path: &Path) -> io::Result<Disc> {
     let mut file = File::open(path)?;
+    inspect_open(&mut file)
+}
+
+/// Inspect the retained grant object, never reopen a provider display path.
+pub fn inspect_open(file: &mut File) -> io::Result<Disc> {
     if !file.metadata()?.is_file() {
         return Err(io::Error::other("disc must be a regular seekable file"));
     }
-    let bytes = file.metadata()?.len();
+    let bytes = file.seek(SeekFrom::End(0))?;
+    if bytes == 0 || bytes != file.metadata()?.len() {
+        return Err(io::Error::other(
+            "provider does not expose a stable seekable image size",
+        ));
+    }
     // XISO, original-Xbox full-disc partitions, and XGD3/XGD2 game partitions.
     // A header match alone never establishes that a title is original-Xbox software.
     for partition_offset in [0, 0x18300000, 0xfd90000, 0x2080000] {
@@ -53,9 +63,9 @@ pub fn inspect(path: &Path) -> io::Result<Disc> {
             return Err(io::Error::other("XDVDFS root lies outside the image"));
         }
         let (executable_sector, executable_bytes) =
-            find_executable(&mut file, partition_offset, root_sector, root_bytes, bytes)?;
+            find_executable(file, partition_offset, root_sector, root_bytes, bytes)?;
         let title = read_title(
-            &mut file,
+            file,
             partition_offset + u64::from(executable_sector) * SECTOR,
             executable_bytes,
         )?;

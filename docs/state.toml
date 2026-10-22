@@ -1,6 +1,6 @@
 schema_version = 1
 product = "xbx"
-phase = "native_candidate_qualification"
+phase = "fable_player_qualification"
 initial_system = "original_xbox"
 initial_target = "stock_android_arm64_fold"
 repository_intent = "public"

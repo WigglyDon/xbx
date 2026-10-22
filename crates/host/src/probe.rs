@@ -44,6 +44,24 @@ fn quote(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    run_inner(engine, new_root, None)
+}
+
+pub fn kernel(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    map: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_inner(engine, new_root, Some((flash, disk, map)))
+}
+
+fn run_inner(
+    engine: &Path,
+    new_root: &Path,
+    kernel: Option<(&Path, &Path, &Path)>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let engine = engine.canonicalize()?;
     fs::DirBuilder::new().mode(0o700).create(new_root)?;
     let root = new_root.canonicalize()?;
@@ -59,12 +77,42 @@ pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Err
     // preserves reset CS's hidden FFFF0000 base; FFF3 - 0x1f3 = FE00.
     rom[0xffe00..0xffe00 + code.len()].copy_from_slice(&code);
     rom[0xffff0..0xffff3].copy_from_slice(&[0xe9, 0x0d, 0xfe]);
-    fs::write(root.join("flash.bin"), rom)?;
+    let mut symbols = Vec::new();
+    if let Some((flash, disk, map)) = kernel {
+        fs::copy(flash, root.join("flash.bin"))?;
+        fs::copy(disk, root.join("hdd.qcow2"))?;
+        let map = fs::read_to_string(map)?;
+        for name in [
+            "KiBootStage",
+            "KiBugCheckCode",
+            "KiTestMmDone",
+            "KiTestFatxDone",
+            "KiTestFatxWriteOk",
+        ] {
+            let line = map
+                .lines()
+                .find(|line| line.contains(&format!("?{name}@@")))
+                .ok_or("self-test symbol missing from the selected map")?;
+            let address =
+                u64::from_str_radix(line.split_whitespace().nth(2).ok_or("invalid map")?, 16)?;
+            symbols.push((name, address));
+        }
+    } else {
+        fs::write(root.join("flash.bin"), rom)?;
+    }
     let config = format!(
         "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[sys.files]\nflashrom_path={}\nbootrom_path=\"\"\nhdd_path=\"\"\ndvd_path=\"\"\neeprom_path={}\n",
         quote(&root.join("flash.bin"))?,
         quote(&root.join("eeprom.bin"))?
     );
+    let config = if kernel.is_some() {
+        config.replace(
+            "hdd_path=\"\"",
+            &format!("hdd_path={}", quote(&root.join("hdd.qcow2"))?),
+        )
+    } else {
+        config
+    };
     fs::write(root.join("xemu.toml"), config)?;
     let qmp = root.join("qmp.sock");
     // Unix socket paths are kernel-bounded. Refuse before launching a writer.
@@ -90,12 +138,18 @@ pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Err
         .stdin(Stdio::null())
         .stdout(log.try_clone()?)
         .stderr(log);
+    if kernel.is_some() {
+        command
+            .args(["-device", "lpc47m157", "-serial"])
+            .arg(format!("file:{}", root.join("kernel.log").display()));
+    }
     lease.begin_writes()?;
     lease.inherit_for(&mut command);
     let mut owned = OwnedChild(command.spawn()?);
     let child = &mut owned.0;
-    let deadline = Instant::now() + Duration::from_secs(20);
+    let deadline = Instant::now() + Duration::from_secs(if kernel.is_some() { 60 } else { 20 });
     let mut booted = false;
+    let mut markers = Vec::new();
     while !qmp.exists() && Instant::now() < deadline {
         if child.try_wait()?.is_some() {
             break;
@@ -115,6 +169,36 @@ pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Err
         socket.write_all(b"{\"execute\":\"qmp_capabilities\"}\n")?;
         response(&mut reader)?;
         while Instant::now() < deadline {
+            if kernel.is_some() {
+                markers.clear();
+                for (name, address) in &symbols {
+                    let request = format!(
+                        "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/1wx {address:#x}\"}}}}\n"
+                    );
+                    socket.write_all(request.as_bytes())?;
+                    let reply = response(&mut reader)?;
+                    let tail = reply.split("\\r\\n").next().unwrap_or(&reply);
+                    let value = tail
+                        .rsplit("0x")
+                        .next()
+                        .and_then(|s| {
+                            let hex: String =
+                                s.chars().take_while(char::is_ascii_hexdigit).collect();
+                            u32::from_str_radix(&hex, 16).ok()
+                        })
+                        .unwrap_or(u32::MAX);
+                    markers.push((*name, value));
+                }
+                booted = markers[0].1 == 0x30
+                    && markers[1].1 == 0
+                    && markers[2].1 == 1
+                    && markers[3].1 == 1;
+                if booted || (markers[1].1 != 0 && markers[1].1 != u32::MAX) {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(500));
+                continue;
+            }
             socket.write_all(b"{\"execute\":\"human-monitor-command\",\"arguments\":{\"command-line\":\"info registers\"}}\n")?;
             let registers = response(&mut reader)?;
             if registers.contains("EAX=58425821") && registers.contains("EBX=52535421") {
@@ -141,8 +225,16 @@ pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Err
         std::thread::sleep(Duration::from_millis(20));
     };
     lease.sync_storage()?;
+    if kernel.is_some() {
+        println!("Bounded open-kernel markers: {markers:?}");
+    }
     println!(
-        "synthetic reset-vector executed: {booted}; normal QMP shutdown: {}",
+        "{}: {booted}; normal QMP shutdown: {}",
+        if kernel.is_some() {
+            "selected open-kernel markers observed"
+        } else {
+            "synthetic reset-vector executed"
+        },
         shutdown.is_ok() && status.success()
     );
     if !booted || shutdown.is_err() || !status.success() {

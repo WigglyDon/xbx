@@ -35,7 +35,7 @@ fn verify(path: &Path, pin: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn build(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn build(root: &Path, play: bool) -> Result<(), Box<dyn std::error::Error>> {
     let _lease = crate::capacity::writer(root, 1)?;
     let source = root.join(".local/src/oxos");
     verify(&source, OXOS)?;
@@ -48,7 +48,11 @@ pub fn build(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(path) = std::env::var_os("PATH") {
         paths.extend(std::env::split_paths(&path));
     }
-    let build = root.join(".local/build-oxos");
+    let build = root.join(if play {
+        ".local/build-oxos-play"
+    } else {
+        ".local/build-oxos"
+    });
     run(Command::new("make")
         .arg("-C")
         .arg(source.join("kernel"))
@@ -57,7 +61,6 @@ pub fn build(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
             "-j1",
             "bios",
             "IMAGE=open",
-            "SELFTEST=1",
             "SERIAL=1",
             "SPLASH=",
             "MCPX16=0",
@@ -65,6 +68,7 @@ pub fn build(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
             "MCPX_ROM=",
             "STOCK_MCPX=",
         ])
+        .arg(if play { "SELFTEST=0" } else { "SELFTEST=1" })
         .arg(format!("BUILD={}", build.display()))
         .arg(format!("CC={}", llvm.join("clang").display()))
         // The NT timer APC adapter intentionally casts equal-width i386 argument

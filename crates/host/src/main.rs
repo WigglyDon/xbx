@@ -3,6 +3,23 @@ use std::path::Path;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args_os().collect();
     #[cfg(not(target_os = "android"))]
+    if args.len() == 7 && args[1] == "boot-kernel" {
+        return xbx::probe::kernel(
+            Path::new(&args[2]),
+            Path::new(&args[3]),
+            Path::new(&args[4]),
+            Path::new(&args[5]),
+            Path::new(&args[6]),
+        );
+    }
+    if args.len() == 3 && args[1] == "empty-disk" {
+        xbx::disk::create_empty_raw(Path::new(&args[2]))?;
+        println!(
+            "Created new sparse retail-layout FATX fixture; existing files are never formatted."
+        );
+        return Ok(());
+    }
+    #[cfg(not(target_os = "android"))]
     if args.len() == 4 && args[1] == "boot-probe" {
         return xbx::probe::run(Path::new(&args[2]), Path::new(&args[3]));
     }

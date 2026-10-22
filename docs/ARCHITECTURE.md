@@ -1,8 +1,9 @@
 # Architecture contracts
 
-Status: proposed initial design constraints for Master evaluation. They are not
-implemented capabilities. Change the design when evidence warrants, preserving
-product intent and data safety.
+Status: durable contracts; the one-game qualification slice implements only the
+subset identified below and in BUILD.md. General collection, shortcuts and full
+checkpoint recovery remain future implementation. Preserve product intent and
+data safety when evidence changes the design.
 
 ## Owners
 
@@ -110,6 +111,15 @@ QEMU thread and uses `_exit` because late SDL/JVM surface callbacks can race
 in-process teardown. The Rust qualification entry follows this lifetime and
 keeps the profile lease until process exit. This is source-backed policy, not
 earned Android shutdown/restart acceptance.
+
+The ABI-v3 qualification host distinguishes terminal machine rejection from
+display readiness. Resume requires successful initialization, a ready display,
+foreground and audio focus; a rejected EEPROM cannot be overridden by lifecycle
+events. A bounded initializer/teardown watchdog terminates the owning process
+without releasing its profile lease early. A scoped, retained read-only media FD
+is inspected and fingerprinted before its duplicate enters QEMU. The durable
+SavedSession holds opaque game/profile IDs and media/firmware bindings; LiveRuntime
+owns the transient file capability. This slice always cold-boots current storage.
 
 Pause requested, machine quiesced, checkpoint durably committed and native
 teardown complete are distinct events. The pinned Android menu snapshot

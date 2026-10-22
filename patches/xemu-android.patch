@@ -121,6 +121,19 @@ index 699b8ef..60de59a 100644
      if (g_mkdir_with_parents(dir, 0700) != 0) {
          SNAP_LOGW("failed to create snapshot preview dir: %s", dir);
          g_free(dir);
+diff --git a/hw/xbox/nv2a/pgraph/profile.c b/hw/xbox/nv2a/pgraph/profile.c
+index de118a2..4186fc7 100644
+--- a/hw/xbox/nv2a/pgraph/profile.c
++++ b/hw/xbox/nv2a/pgraph/profile.c
+@@ -245,7 +245,7 @@ void nv2a_profile_flip_stall(void)
+         g_nv2a_stats.frame_working;
+     g_nv2a_stats.frame_ptr =
+         (g_nv2a_stats.frame_ptr + 1) % NV2A_PROF_NUM_FRAMES;
+-    g_nv2a_stats.frame_count++;
++    qatomic_inc(&g_nv2a_stats.frame_count);
+     memset(&g_nv2a_stats.frame_working, 0, sizeof(g_nv2a_stats.frame_working));
+ 
+     snapshot_phase_timing();
 diff --git a/hw/xbox/nv2a/pgraph/thirdparty/meson.build b/hw/xbox/nv2a/pgraph/thirdparty/meson.build
 index fbc3751..1b25347 100644
 --- a/hw/xbox/nv2a/pgraph/thirdparty/meson.build
@@ -240,10 +253,25 @@ index 4eb588b..4d132cd 100644
 -
  meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
 diff --git a/system/vl.c b/system/vl.c
-index 68420b9..afc16d9 100644
+index 68420b9..1ea7bca 100644
 --- a/system/vl.c
 +++ b/system/vl.c
-@@ -2983,9 +2983,8 @@ static const char *get_eeprom_path(void)
+@@ -2943,6 +2943,14 @@ static char *chihiro_eeprom_path(const char *path)
+     return g_strdup_printf("%s_chihiro", path);
+ }
+ 
++/* An accepted machine is separate from display readiness. Failure is terminal
++ * for this process; Android must not turn a rejected profile into vm_start(). */
++static int xemu_init_status;
++int xemu_machine_init_status(void)
++{
++    return qatomic_read(&xemu_init_status);
++}
++
+ static const char *get_eeprom_path(void)
+ {
+     const char *path = g_config.sys.files.eeprom_path;
+@@ -2983,9 +2991,8 @@ static const char *get_eeprom_path(void)
              bool valid = fread(data, 1, 256, f) == 256;
              fclose(f);
              if (valid && xbox_eeprom_detect_version(data) != needed) {
@@ -255,7 +283,7 @@ index 68420b9..afc16d9 100644
              }
          }
      }
-@@ -2997,12 +2996,8 @@ static const char *get_eeprom_path(void)
+@@ -2997,14 +3004,17 @@ static const char *get_eeprom_path(void)
       * display mode -- a black screen that could only be cleared by deleting
       * the file. Repair it in place instead, keeping the rest of the file.
       */
@@ -269,8 +297,44 @@ index 68420b9..afc16d9 100644
 +     * own retained predecessor and explicit migration/compatibility decision. */
  
      if (qemu_access(path, F_OK) == -1) {
++#ifdef __ANDROID__
++        extern bool xbx_engine_allow_eeprom_create(void) __attribute__((weak));
++        if (xbx_engine_allow_eeprom_create && !xbx_engine_allow_eeprom_create()) {
++            xemu_queue_error_message("This existing profile has no EEPROM; it was preserved without generating a new identity.");
++            return NULL;
++        }
++#endif
          if (!xbox_eeprom_generate(path, needed)) {
-@@ -3194,8 +3189,21 @@ void qemu_init(int argc, char **argv)
+             char *msg = g_strdup_printf("Failed to generate EEPROM file '%s'."
+                                         "\n\nPlease check machine settings.",
+@@ -3129,6 +3139,13 @@ void qemu_init(int argc, char **argv)
+     } else {
+         autostart = 0;
+         ANDROID_LOGE("Autostart disabled: EEPROM missing/invalid");
++        fprintf(stderr, "XBX profile rejected: EEPROM missing/invalid; no machine created\n");
++        qatomic_set(&xemu_init_status, -1);
++#ifdef __ANDROID__
++        return;
++#else
++        exit(EXIT_FAILURE);
++#endif
+     }
+ 
+     const char *flashrom_path = g_config.sys.files.flashrom_path;
+@@ -3143,6 +3160,12 @@ void qemu_init(int argc, char **argv)
+         g_free(msg);
+         autostart = 0;
+         ANDROID_LOGE("Autostart disabled: flashrom missing '%s'", flashrom_path);
++        qatomic_set(&xemu_init_status, -2);
++#ifdef __ANDROID__
++        return;
++#else
++        exit(EXIT_FAILURE);
++#endif
+     } else {
+         fake_argv[fake_argc++] = strdup("-bios");
+         fake_argv[fake_argc++] = strdup(flashrom_path);
+@@ -3194,8 +3217,21 @@ void qemu_init(int argc, char **argv)
      if (!xbox_is_chihiro()) {
          char *escaped_dvd_path = strdup_double_commas(dvd_path);
          fake_argv[fake_argc++] = strdup("-drive");
@@ -292,8 +356,14 @@ index 68420b9..afc16d9 100644
          free(escaped_dvd_path);
      }
  
+@@ -4232,4 +4268,5 @@ void qemu_init(int argc, char **argv)
+         os_setup_post();
+     }
+     resume_mux_open();
++    qatomic_set(&xemu_init_status, 1);
+ }
 diff --git a/ui/xemu.c b/ui/xemu.c
-index 983f50a..595005d 100644
+index 983f50a..42cbf4e 100644
 --- a/ui/xemu.c
 +++ b/ui/xemu.c
 @@ -150,9 +150,9 @@ static bool g_android_paused = false;
@@ -309,7 +379,7 @@ index 983f50a..595005d 100644
  static uint64_t g_android_frame_counter = 0;
  static uint64_t g_android_last_hw_frame = 0;
  static int g_android_target_fps = 60;
-@@ -276,23 +276,23 @@ int xemu_android_get_display_mode_setting(void)
+@@ -276,23 +276,29 @@ int xemu_android_get_display_mode_setting(void)
  
  void xemu_android_pause_emulation(void)
  {
@@ -320,7 +390,13 @@ index 983f50a..595005d 100644
  void xemu_android_resume_emulation(void)
  {
 -    g_android_vm_resume_requested = true;
-+    qatomic_set(&g_android_vm_resume_requested, true);
++    extern int xemu_machine_init_status(void);
++    extern bool xbx_engine_resume_allowed(void) __attribute__((weak));
++    if (xemu_machine_init_status() == 1 &&
++        (!xbx_engine_resume_allowed || xbx_engine_resume_allowed()) &&
++        !qatomic_read(&g_android_qemu_thread_finished)) {
++        qatomic_set(&g_android_vm_resume_requested, true);
++    }
  }
  
  void xemu_android_request_exit(void)
@@ -337,7 +413,7 @@ index 983f50a..595005d 100644
  }
  
  static void xemu_android_refresh_frame_limit_from_env(void)
-@@ -840,7 +840,7 @@ static void handle_windowevent(SDL_Event *ev)
+@@ -840,7 +846,7 @@ static void handle_windowevent(SDL_Event *ev)
                  shutdown_action = SHUTDOWN_ACTION_POWEROFF;
                  qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_UI);
  #ifdef __ANDROID__
@@ -346,7 +422,7 @@ index 983f50a..595005d 100644
                  __android_log_print(ANDROID_LOG_INFO, "xemu-android",
                                      "android: window close requested");
  #endif
-@@ -920,7 +920,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
+@@ -920,7 +926,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
                  shutdown_action = SHUTDOWN_ACTION_POWEROFF;
                  qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_UI);
  #ifdef __ANDROID__
@@ -355,7 +431,7 @@ index 983f50a..595005d 100644
                  __android_log_print(ANDROID_LOG_INFO, "xemu-android",
                                      "android: SDL_EVENT_QUIT");
  #endif
-@@ -928,7 +928,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
+@@ -928,7 +934,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
              break;
  #ifdef __ANDROID__
          case SDL_EVENT_TERMINATING:
@@ -364,7 +440,7 @@ index 983f50a..595005d 100644
              bdrv_flush_all();
              __android_log_print(ANDROID_LOG_INFO, "xemu-android",
                                  "android: app terminating, flushed");
-@@ -941,6 +941,8 @@ void sdl2_poll_events(struct sdl2_console *scon)
+@@ -941,6 +947,8 @@ void sdl2_poll_events(struct sdl2_console *scon)
                                  "android: app background, flushed");
              break;
          case SDL_EVENT_DID_ENTER_BACKGROUND:
@@ -373,7 +449,29 @@ index 983f50a..595005d 100644
          case SDL_EVENT_WILL_ENTER_FOREGROUND:
          case SDL_EVENT_DID_ENTER_FOREGROUND:
              g_android_paused = false;
-@@ -1551,10 +1553,10 @@ void xemu_android_display_loop(void)
+@@ -1514,6 +1522,21 @@ void xemu_android_display_wait_ready(void)
+ #endif
+ }
+ 
++bool xemu_android_display_poll_ready(void)
++{
++    return qemu_sem_timedwait(&display_init_sem, 0) == 0;
++}
++
++bool xemu_android_exit_requested(void)
++{
++    return qatomic_read(&g_android_should_quit);
++}
++
++uint32_t xemu_android_guest_flips(void)
++{
++    return qatomic_read(&g_nv2a_stats.frame_count);
++}
++
+ void xemu_android_display_loop(void)
+ {
+     // Mirror the desktop main-loop rendering path.
+@@ -1551,10 +1574,10 @@ void xemu_android_display_loop(void)
      qemu_mutex_unlock_main_loop();
  
      while (1) {
@@ -386,7 +484,7 @@ index 983f50a..595005d 100644
              qemu_shutdown_requested_get() != SHUTDOWN_CAUSE_NONE) {
              if ((g_android_frame_counter++ % 120) == 0) {
                  __android_log_print(ANDROID_LOG_INFO, "xemu-android",
-@@ -1570,7 +1572,7 @@ void xemu_android_display_loop(void)
+@@ -1570,7 +1593,7 @@ void xemu_android_display_loop(void)
              SDL_Delay(16);
              continue;
          }
@@ -395,7 +493,7 @@ index 983f50a..595005d 100644
              qemu_mutex_lock_main_loop();
              bql_lock();
              if (runstate_is_running()) {
-@@ -1586,7 +1588,6 @@ void xemu_android_display_loop(void)
+@@ -1586,7 +1609,6 @@ void xemu_android_display_loop(void)
                  xemu_android_persist_tb_cache();
  #endif
              }
@@ -403,7 +501,7 @@ index 983f50a..595005d 100644
              bql_unlock();
              qemu_mutex_unlock_main_loop();
          }
-@@ -1594,18 +1595,20 @@ void xemu_android_display_loop(void)
+@@ -1594,18 +1616,25 @@ void xemu_android_display_loop(void)
              qemu_mutex_lock_main_loop();
              bql_lock();
              sdl2_poll_events(&sdl2_console[0]);
@@ -419,7 +517,13 @@ index 983f50a..595005d 100644
 +        if (qatomic_xchg(&g_android_vm_resume_requested, false)) {
              qemu_mutex_lock_main_loop();
              bql_lock();
-             if (!runstate_is_running()) {
+-            if (!runstate_is_running()) {
++            extern int xemu_machine_init_status(void);
++            extern bool xbx_engine_resume_allowed(void) __attribute__((weak));
++            if (xemu_machine_init_status() == 1 &&
++                (!xbx_engine_resume_allowed || xbx_engine_resume_allowed()) &&
++                !qatomic_read(&g_android_qemu_thread_finished) &&
++                !runstate_is_running()) {
                  vm_start();
              }
 -            g_android_vm_resume_requested = false;

@@ -21,7 +21,10 @@ fn java_sources(directory: &Path, output: &mut Vec<std::path::PathBuf>) -> std::
 pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let tools = sdk.join("build-tools/37.0.0");
     let jar = sdk.join("platforms/android-37.0/android.jar");
-    let stage = root.join(".local/apk");
+    let build_id = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)?
+        .as_nanos();
+    let stage = root.join(format!(".local/apk-player-{build_id}"));
     let classes = stage.join("classes");
     let dex = stage.join("dex");
     let libs = stage.join("lib/arm64-v8a");
@@ -76,6 +79,15 @@ pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> 
         fs::copy(root.join(from), libs.join(name))?;
     }
     let unsigned = stage.join("unsigned.apk");
+    let assets = fs::read_to_string(root.join(".local/selected-profile-assets"))?;
+    let assets = Path::new(assets.trim());
+    let mut entries: Vec<_> = fs::read_dir(assets)?
+        .map(|v| v.map(|e| e.file_name()))
+        .collect::<Result<_, _>>()?;
+    entries.sort();
+    if entries != ["flash.bin", "hdd.qcow2", "profile.identity"].map(std::ffi::OsString::from) {
+        return Err("profile asset inventory differs from the three reviewed files".into());
+    }
     run(Command::new(tools.join("aapt2"))
         .args(["link", "-o"])
         .arg(&unsigned)
@@ -83,7 +95,14 @@ pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> 
         .arg(root.join("android/AndroidManifest.xml"))
         .arg("-I")
         .arg(&jar)
-        .args(["--version-code", "1", "--version-name", "0.1.0"]))?;
+        .arg("-A")
+        .arg(assets)
+        .args([
+            "--version-code",
+            "2",
+            "--version-name",
+            "0.2.0-qualification",
+        ]))?;
     fs::copy(dex.join("classes.dex"), stage.join("classes.dex"))?;
     run(Command::new("zip")
         .current_dir(&stage)

@@ -18,12 +18,18 @@ impl ProfileLease {
         let descriptor = self._lock.as_raw_fd();
         unsafe extern "C" {
             fn fcntl(fd: i32, command: i32, ...) -> i32;
+            fn setrlimit(resource: i32, limits: *const [u64; 2]) -> i32;
         }
         // pre_exec changes only the child's descriptor flags; the parent stays CLOEXEC.
         unsafe {
             command.pre_exec(move || {
                 const F_SETFD: i32 = 2;
                 if fcntl(descriptor, F_SETFD, 0) < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                // Only this owned diagnostic child: retain bounded logs instead
+                // of dumping a large emulated address space onto the shared host.
+                if setrlimit(4, &[0, 0]) < 0 {
                     return Err(io::Error::last_os_error());
                 }
                 Ok(())
