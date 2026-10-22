@@ -1,6 +1,31 @@
 schema_version = 1
 repository = "WigglyDon/xbx"
-publication_status = "not_created_from_chat"
-verified_from_chat = false
-reason = "The available GitHub connection has no repository-creation action; local bootstrap is prepared."
-# Replaced by scripts/publish-github.sh only after actual remote verification.
+repository_url = "https://github.com/WigglyDon/xbx"
+publication_status = "published_and_verified_by_local_bootstrap"
+seed_id = "xbx-foundation-2026-10-21-v1"
+seed_root_commit = "bc403179c33a37d62494ad8f999378d8e77cced7"
+# Records source publication and issue identities, not worker execution or gameplay.
+
+[[issues]]
+key = "XBX-1"
+number = 1
+title = "XBX-1: Source qualification and original Xbox vertical slice"
+url = "https://github.com/WigglyDon/xbx/issues/1"
+
+[[issues]]
+key = "XBX-2"
+number = 2
+title = "XBX-2: Game-first Rust player and durable Xbox sessions"
+url = "https://github.com/WigglyDon/xbx/issues/2"
+
+[[issues]]
+key = "XBX-3"
+number = 3
+title = "XBX-3: Complete-install firmware and mobile-store release gates"
+url = "https://github.com/WigglyDon/xbx/issues/3"
+
+[[issues]]
+key = "XBX-4"
+number = 4
+title = "XBX-4: Optional paused-resident Android game sessions"
+url = "https://github.com/WigglyDon/xbx/issues/4"
