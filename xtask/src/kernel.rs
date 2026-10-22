@@ -10,7 +10,7 @@ fn source(root: &Path) -> PathBuf {
     root.join(format!(".local/src/oxos-{OXOS}"))
 }
 
-// Full pins/digest and mode separate all three firmware variants. Exclusive
+// Full pins/digest and mode separate firmware variants. Exclusive
 // creation also preserves interrupted attempts and date/time-dependent images.
 fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Result<PathBuf> {
     let build = root.join(format!(".local/build-oxos-{pin}-{CROMWELL}-{mode}-{patch}"));
@@ -18,9 +18,10 @@ fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Re
     std::fs::write(
         build.join("build.inputs"),
         format!(
-            "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports=0\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
+            "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports={}\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
             u8::from(mode == "selftest"),
-            u8::from(matches!(mode, "trace" | "loader"))
+            u8::from(mode == "journal"),
+            u8::from(matches!(mode, "trace" | "loader" | "journal"))
         ),
     )?;
     Ok(build)
@@ -61,23 +62,29 @@ pub(crate) fn verify(
 }
 
 pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if !matches!(mode, "trace" | "loader" | "play" | "selftest") {
-        return Err("kernel mode must be trace, loader, play or selftest".into());
+    if !matches!(mode, "trace" | "loader" | "journal" | "play" | "selftest") {
+        return Err("kernel mode must be trace, loader, journal, play or selftest".into());
     }
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = if mode == "loader" {
+    let source = if mode == "journal" {
+        root.join(format!(".local/src/oxos-{OXOS}-api-journal-v2"))
+    } else if mode == "loader" {
         root.join(format!(".local/src/oxos-{OXOS}-loader-complete-v1"))
     } else {
         source(root)
     };
-    let trace = matches!(mode, "trace" | "loader");
+    let trace = matches!(mode, "trace" | "loader" | "journal");
     let play = mode == "play" || trace;
-    let patch_path = root.join(if mode == "loader" {
+    let patch_path = root.join(if mode == "journal" {
+        "patches/oxos-api-journal.patch"
+    } else if mode == "loader" {
         "patches/oxos-loader-complete.patch"
     } else {
         "patches/oxos-launch-trace.patch"
     });
-    let lock_path = root.join(if mode == "loader" {
+    let lock_path = root.join(if mode == "journal" {
+        "kernel-journal.lock.json"
+    } else if mode == "loader" {
         "kernel-loader.lock.json"
     } else {
         "kernel-trace.lock.json"
@@ -106,7 +113,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         {
             return Err("trace patch differs from recorded identity".into());
         }
-        if mode == "loader" {
+        if matches!(mode, "loader" | "journal") {
             let base = Command::new("sha256sum")
                 .arg(root.join("patches/oxos-launch-trace.patch"))
                 .output()?;
@@ -119,6 +126,21 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                 || !lock.contains(&format!("\"base_trace_patch_sha256\": \"{hash}\""))
             {
                 return Err("loader candidate base trace identity changed".into());
+            }
+            if mode == "journal" {
+                let base = Command::new("sha256sum")
+                    .arg(root.join("patches/oxos-loader-complete.patch"))
+                    .output()?;
+                let hash = String::from_utf8(base.stdout)?;
+                let hash = hash
+                    .split_whitespace()
+                    .next()
+                    .ok_or("missing loader digest")?;
+                if !base.status.success()
+                    || !lock.contains(&format!("\"base_loader_patch_sha256\": \"{hash}\""))
+                {
+                    return Err("API journal base loader identity changed".into());
+                }
             }
         }
         Some(sha)
@@ -143,13 +165,17 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
             "bios",
             "IMAGE=open",
             "SERIAL=1",
-            "TRACE_IMPORTS=0",
             "SPLASH=",
             "MCPX16=0",
             "BIOS_BASE=",
             "MCPX_ROM=",
             "STOCK_MCPX=",
         ])
+        .arg(if mode == "journal" {
+            "TRACE_IMPORTS=1"
+        } else {
+            "TRACE_IMPORTS=0"
+        })
         .arg(if play { "SELFTEST=0" } else { "SELFTEST=1" })
         .arg(format!("BUILD={}", build.display()))
         .arg(format!("CC={}", llvm.join("clang").display()))
@@ -178,8 +204,21 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         std::fs::write(
             build.join("build.identity"),
             format!(
-                "{}firmware_sha256={fw}\n",
-                std::fs::read_to_string(build.join("build.inputs"))?
+                "{}firmware_sha256={fw}\nmap_sha256={}\n",
+                std::fs::read_to_string(build.join("build.inputs"))?,
+                {
+                    let out = Command::new("sha256sum")
+                        .arg(build.join("xboxkrnl.map"))
+                        .output()?;
+                    if !out.status.success() {
+                        return Err("kernel map hash failed".into());
+                    }
+                    String::from_utf8(out.stdout)?
+                        .split_whitespace()
+                        .next()
+                        .ok_or("missing map digest")?
+                        .to_owned()
+                }
             ),
         )?;
     }
@@ -237,7 +276,7 @@ pub fn vm_import_title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     )
 }
 
-fn abi_title(
+pub(crate) fn abi_title(
     root: &Path,
     assembly: &str,
     directory: &str,

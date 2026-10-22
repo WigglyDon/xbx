@@ -154,3 +154,19 @@ Changes inside a GPL core remain governed by the applicable license. A Rust
 translation is not a licensing reset, nor does a C ABI automatically remove
 combined-work obligations. Keep first-party and borrowed attribution honest.
 No additional marketplace permission or worldwide legal clearance is claimed.
+
+## Bounded public API journal
+
+`patches/oxos-api-journal.patch` composes the accepted d87/v4/complete-read
+changes with targeted edits to retained `kernel/src/xe/trace.cpp`; its import
+trampoline remains retained OXOS source. GPL/per-file terms apply. It removes
+argument/name/payload capture, reduces the ring, guards late-return slot reuse,
+and preserves ordinal232 callback identity. The separately retained
+`oxos-api-journal-v1.patch` documents the first diagnostic's identity limitation.
+The corresponding `kernel-journal*.lock.json` files bind their actual sources.
+
+`native/fixtures/api-journal.S`, `runtime_summary.rs`, `api_journal.rs` and new
+Rust build/runner policy are original MIT work. Existing pinned OXOS mkxbe/mkxiso
+keep their own terms. Public nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd and
+Cxbx f1e54be515bb7989bf5109ebea2494b6b13eb1bd interfaces were read for comparison;
+no implementation was copied. See [API_JOURNAL.md](docs/API_JOURNAL.md).

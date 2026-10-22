@@ -105,9 +105,9 @@ parser read metadata only, not game instructions.
 
 | Run | Observation | Actual native boundary |
 | --- | --- | --- |
-| A1, v4/offscreen, 180-second maximum | Entry dispatch, existing runtime records zero-PC access violation c0000005 and bugcheck0x1e; stopped at88.894s. Generic QMP screenshots unavailable. | QMP acknowledged; exit0, forced=false, storage synced |
+| A1, v4/offscreen, 180-second maximum | Entry dispatch, existing runtime records nonzero-PC access violation c0000005 and bugcheck0x1e; stopped at88.894s. Generic QMP screenshots unavailable. | QMP acknowledged; exit0, forced=false, storage synced |
 | A2, v4/ordinary X11 window, 300-second maximum | Same entry/startup-failure boundary; stopped at105.964s. Own-window image reviewed: open-kernel splash, no Fable menu/gameplay. | QMP acknowledged; exit0, forced=false, storage synced |
-| B1, retained d87/same X11 settings/template, 300-second maximum | Same entry, zero-PC access violation and bugcheck0x1e; stopped at92.710s. Own-window image reviewed: open-kernel splash, no Fable menu/gameplay. | QMP acknowledged; exit0, forced=false, storage synced |
+| B1, retained d87/same X11 settings/template, 300-second maximum | Same entry, nonzero-PC access violation and bugcheck0x1e; stopped at92.710s. Own-window image reviewed: open-kernel splash, no Fable menu/gameplay. | QMP acknowledged; exit0, forced=false, storage synced |
 | C | Unavailable: no inventoried already-owned reference BIOS/MCPX bundle; owner subsequently confirmed none available. | Not run |
 
 A2 is the single focused repeat to correct the demonstrated screenshot integration
@@ -119,8 +119,11 @@ the full loading budget. Serial logs were2,773 bytes each; native logs6,210 /
 6,104 /6,104 bytes, below their bounds. This is startup failure, not merely a
 black-screen inference, renderer acceptance or gameplay.
 
-The phone's early failure therefore also occurs off Android on this retained
-fork with these two OXOS images. This neither identifies the responsible kernel/
+Startup failure therefore also occurs off Android on this retained fork with
+these two OXOS images. The retained desktop records have nonzero saved PC and
+a nonzero null-adjacent fault address, unlike the earlier phone zero-PC symptom.
+The desktop records also include successful title VM allocations after the loader
+reservation; they do not establish the phone's preceding heap-null failure. This neither identifies the responsible kernel/
 emulator subsystem nor contradicts an upstream report using a different build
 and unspecified firmware. The d87 mapping correction did not produce a playable
 Fable route here. No game-specific repair or new exception instrumentation was
@@ -202,3 +205,8 @@ unattributed public-platform compatibility defect; the next concrete scoped
 kernel/core investigation needs Master's decision rather than an unsupported
 patch or broad campaign. Private game-code/disassembly remains paused. Gameplay, audio, ordinary
 saving, full resume, shortcuts, performance and owner acceptance remain unqualified.
+
+The zero-PC wording in the original public comparison handback was incorrect.
+Rechecking exact fields in the preserved A1/A2/B1 logs establishes the nonzero-PC
+desktop result above. Auxiliary stack-PC fields must not be interpreted as the
+saved fault PC. No game instructions were inspected for this correction.

@@ -20,13 +20,28 @@ pub fn run(
     media: &Path,
     seconds: u64,
     bootrom: Option<&Path>,
+    journal_map: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if !(15..=300).contains(&seconds) {
         return Err("ordinary title observation budget must be 15..300 seconds".into());
     }
+    if let Some(map) = journal_map {
+        crate::api_journal::verify_binding(map, flash)?;
+    }
     let video = std::env::var("XBX_DESKTOP_VIDEO_DRIVER").unwrap_or_else(|_| "offscreen".into());
     if !matches!(video.as_str(), "offscreen" | "x11") {
         return Err("desktop video driver must be offscreen or x11".into());
+    }
+    // An ordinary playable machine needs its first controller connected. The
+    // retained frontend always creates the keyboard source, but binds it only
+    // when this exact configuration entry is present.
+    let controller = std::env::var("XBX_DESKTOP_CONTROLLER").unwrap_or_else(|_| "keyboard".into());
+    if !matches!(controller.as_str(), "keyboard" | "none") {
+        return Err("desktop controller must be keyboard or none".into());
+    }
+    let floating_point = std::env::var("XBX_DESKTOP_FP").unwrap_or_else(|_| "native".into());
+    if !matches!(floating_point.as_str(), "native" | "software") {
+        return Err("desktop floating-point path must be native or software".into());
     }
     let engine = engine.canonicalize()?;
     let mut media = File::open(media)?;
@@ -54,7 +69,7 @@ pub fn run(
         r#"json:{{"driver":"raw","offset":{},"read-only":true,"file":{{"driver":"file","filename":"/dev/fdset/1"}}}}"#,
         disc.partition_offset
     );
-    let config = format!(
+    let mut config = format!(
         "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[sys.files]\nflashrom_path={}\nbootrom_path={}\nhdd_path={}\ndvd_path={}\neeprom_path={}\n",
         quote(&root.join("flash.bin"))?,
         quote(&boot)?,
@@ -62,6 +77,13 @@ pub fn run(
         quote(Path::new(&view))?,
         quote(&root.join("eeprom.bin"))?
     );
+    config.push_str("[input]\nauto_bind=false\n[input.bindings]\n");
+    if controller == "keyboard" {
+        config.push_str("port1=\"keyboard\"\nport1_driver=\"usb-xbox-gamepad-s\"\n");
+    }
+    if floating_point == "software" {
+        config.push_str("[perf]\nfp_jit=false\n");
+    }
     fs::write(root.join("xemu.toml"), config)?;
     fs::write(
         root.join("media-metadata.txt"),
@@ -88,6 +110,9 @@ pub fn run(
         .env("SDL_AUDIO_DRIVER", "dummy")
         .env("XBX_ISOLATED_PROCESS_EXIT", "1")
         .env("LIBGL_ALWAYS_SOFTWARE", "1");
+    if floating_point == "software" {
+        command.env("XEMU_TCG_DEFER_FIP", "0");
+    }
     for (env, directory) in [
         ("XDG_DATA_HOME", "data"),
         ("XDG_CONFIG_HOME", "config"),
@@ -152,6 +177,19 @@ pub fn run(
         let mut reader = BufReader::new(socket.try_clone()?);
         socket.write_all(b"{\"execute\":\"qmp_capabilities\"}\n")?;
         response(&mut reader)?;
+        // Core-owned device inventory establishes attachment separately from
+        // config/source intent. This is not guest input/gameplay acceptance.
+        socket.write_all(b"{\"execute\":\"human-monitor-command\",\"arguments\":{\"command-line\":\"info usb\"}}\n")?;
+        let usb = response(&mut reader)?;
+        fs::write(root.join("usb-devices.txt"), &usb)?;
+        let controller_attached = usb.contains("Xbox") && usb.contains("Controller");
+        fs::write(
+            root.join("controller-attachment.txt"),
+            format!("requested={controller}\ncontroller_attached={controller_attached}\n"),
+        )?;
+        if controller == "keyboard" && !controller_attached {
+            return Err("requested desktop Controller S not attached".into());
+        }
         loop {
             let serial = root.join("kernel.log");
             let text = if serial.exists() {
@@ -183,6 +221,14 @@ pub fn run(
         }
         socket.write_all(b"{\"execute\":\"stop\"}\n")?;
         response(&mut reader)?;
+        if let Some(map) = journal_map {
+            crate::api_journal::capture(
+                &mut socket,
+                &mut reader,
+                map,
+                &root.join("api-journal.txt"),
+            )?;
+        }
         socket.write_all(b"{\"execute\":\"quit\"}\n")?;
         response(&mut reader)?;
         monitor_keepalive = Some((socket, reader));
@@ -211,9 +257,14 @@ pub fn run(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
             start.elapsed().as_secs_f64()
         ),
+    )?;
+    let serial = fs::read_to_string(root.join("kernel.log"))?;
+    fs::write(
+        root.join("runtime-summary.txt"),
+        crate::runtime_summary::Summary::parse(&serial).receipt(),
     )?;
     println!(
         "Ordinary title observation: {reason}; native={status}; forced={forced}; storage synced. Visual/gameplay acceptance is separate."

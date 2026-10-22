@@ -299,3 +299,8 @@ All private artifacts, interrupted logs and synthetic experiment data remain
 local. No owner media, EEPROM/key material or signing credential belongs in a
 source bundle. License review and a complete corresponding-source/notices bundle
 precede any public binary; see [THIRD_PARTY.md](../THIRD_PARTY.md).
+
+The separate desktop public-API journal, original regression, corrected status
+summaries and verified port1 Controller S setup are documented in
+[API_JOURNAL.md](API_JOURNAL.md). These remain diagnostic source/build results;
+Fable gameplay and a shipping boot environment remain unqualified.

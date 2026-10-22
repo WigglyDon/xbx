@@ -3,6 +3,18 @@ use std::path::Path;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args_os().collect();
     #[cfg(not(target_os = "android"))]
+    if args.len() == 3 && args[1] == "check-journal-fixture" {
+        return xbx::api_journal::validate_fixture(Path::new(&args[2]));
+    }
+    if args.len() == 3 && args[1] == "summarize-runtime" {
+        if std::fs::metadata(&args[2])?.len() > 1024 * 1024 {
+            return Err("runtime log exceeds bound".into());
+        }
+        let text = std::fs::read_to_string(&args[2])?;
+        print!("{}", xbx::runtime_summary::Summary::parse(&text).receipt());
+        return Ok(());
+    }
+    #[cfg(not(target_os = "android"))]
     if args.len() == 9 && args[1] == "boot-loader-fixture" {
         return xbx::probe::loader_fixture(
             Path::new(&args[2]),
@@ -15,7 +27,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
     #[cfg(not(target_os = "android"))]
-    if (args.len() == 9 || args.len() == 10) && args[1] == "run-title" {
+    if ((args.len() == 9 || args.len() == 10) && args[1] == "run-title")
+        || (args.len() == 10 && args[1] == "run-title-journal")
+    {
         return xbx::desktop_title::run(
             Path::new(&args[2]),
             Path::new(&args[3]),
@@ -24,7 +38,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Path::new(&args[6]),
             Path::new(&args[7]),
             args[8].to_str().ok_or("invalid time budget")?.parse()?,
-            args.get(9).map(Path::new),
+            if args[1] == "run-title" {
+                args.get(9).map(Path::new)
+            } else {
+                None
+            },
+            if args[1] == "run-title-journal" {
+                args.get(9).map(Path::new)
+            } else {
+                None
+            },
         );
     }
     #[cfg(not(target_os = "android"))]

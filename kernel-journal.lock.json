@@ -1,0 +1,18 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2",
+  "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+  "patch": "patches/oxos-api-journal.patch",
+  "patch_sha256": "05392437f9dbf14ee01b08e6ed31ffd97e894e55c723df3f6001ee07c2901da5",
+  "image": "open",
+  "selftest": 0,
+  "serial": 1,
+  "trace_imports": 1,
+  "ram_mib": 64,
+  "baseline_firmware_sha256": "668d08af6de204ce07a1479c8854d8f688af312ed6104e8ab56391dffc301fa6",
+  "base_trace_patch": "patches/oxos-launch-trace.patch",
+  "base_trace_patch_sha256": "7eb48fb10ca5784a887d93db23f02c07ec83dc7b105930e1a71204724e0a0dc5",
+  "mode": "journal",
+  "summary": "bounded-api-results-preserving-io-dispatcher-identity-v2",
+  "base_loader_patch_sha256": "420490cdde28fb40a882c179aa735ae6bd6c20aa4a056bed5131dcabfb4d5fcb"
+}

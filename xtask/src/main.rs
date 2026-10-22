@@ -23,6 +23,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("journal-fixture-build") {
+        return kernel::abi_title(
+            root,
+            "api-journal.S",
+            "build-api-journal-fixture-v2",
+            "xbx public API journal",
+            "0x58425804",
+            "journal.iso",
+        );
+    }
     if args.first().map(String::as_str) == Some("loader-fixture-build") {
         return loader_fixture::build(root);
     }

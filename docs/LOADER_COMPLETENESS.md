@@ -188,8 +188,8 @@ preloads=15 loaded=15 ready=1 match=15 mismatch=0 unusable=0
 ```
 
 These are actual kernel-owned results before import mutation. Final load status
-was0 and entry dispatched. At93.677 seconds the existing trace recorded the early
-zero-PC c0000005 access violation and bugcheck0x1e. The exact owned window was
+was0 and entry dispatched. At93.677 seconds the existing trace recorded a
+nonzero-PC c0000005 access violation with a nonzero null-adjacent fault address and bugcheck0x1e. The exact owned window was
 captured/opened: open-kernel splash, no Fable menu/gameplay. The runner stopped
 promptly, acknowledged QMP stop/quit, reaped exit0/forced=false and synced storage.
 Earlier Android evidence continued to heap failure/error-dashboard handoff; this
@@ -245,3 +245,7 @@ the bounded Fable loader summary
 `c49c322a96a7fc2fd5f6f2c9e7504e9b819279f0afcebbe881aeda4cb58d6a96`;
 identical retained before/after manifests
 `d50f67293e9ec874f5ec6da58116586c46636047333f8b9320e0626f876b168b`.
+
+The original handback incorrectly called the desktop fault zero-PC. Exact-field
+rechecking of the preserved record corrects that statement; earlier phone
+zero-PC evidence is separate. The raw records have not been rewritten.

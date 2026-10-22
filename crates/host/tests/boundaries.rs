@@ -136,6 +136,7 @@ fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
         &media,
         15,
         None,
+        None,
     );
     assert!(result.is_err());
     assert!(!dir.join("native.log").exists());

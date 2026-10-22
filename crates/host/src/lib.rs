@@ -1,4 +1,6 @@
 //! The first xbx diagnostic host. No owner media or writable profiles are fixtures.
+#[cfg(not(target_os = "android"))]
+pub mod api_journal;
 pub mod branch;
 pub mod callsite;
 #[cfg(not(target_os = "android"))]
@@ -8,6 +10,7 @@ pub mod disk;
 pub mod input;
 #[cfg(not(target_os = "android"))]
 pub mod probe;
+pub mod runtime_summary;
 pub mod session;
 pub mod startup;
 pub mod storage;

@@ -218,7 +218,7 @@ pub fn vm_imports(
     )
 }
 
-fn map_symbol(map: &str, symbol: &str) -> Result<u64, Box<dyn std::error::Error>> {
+pub(crate) fn map_symbol(map: &str, symbol: &str) -> Result<u64, Box<dyn std::error::Error>> {
     let line = map
         .lines()
         .find(|line| line.split_whitespace().nth(1) == Some(symbol))
@@ -229,7 +229,7 @@ fn map_symbol(map: &str, symbol: &str) -> Result<u64, Box<dyn std::error::Error>
     )?)
 }
 
-fn hmp_words(reply: &str) -> Vec<u32> {
+pub(crate) fn hmp_words(reply: &str) -> Vec<u32> {
     let mut words = Vec::new();
     for line in reply.split("\\n") {
         if let Some((_, tail)) = line.rsplit_once(':') {
