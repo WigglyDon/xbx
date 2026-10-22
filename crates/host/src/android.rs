@@ -7,7 +7,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 #[link(name = "xemu")]
 unsafe extern "C" {
-    fn xbx_engine_prepare(config: *const c_char) -> c_int;
+    fn xbx_engine_abi() -> c_int;
+    fn xbx_engine_prepare(config: *const c_char, media_offset: u64) -> c_int;
     fn xbx_engine_run(argc: c_int, argv: *mut *mut c_char) -> c_int;
     fn xbx_engine_display_loop();
     fn xbx_engine_display_wait_ready();
@@ -71,13 +72,16 @@ fn run() -> Result<i32, Box<dyn std::error::Error>> {
             return Err("The private qualification profile needs a prepared kernel, disk and disc. No game has been started.".into());
         }
     }
-    crate::disc::inspect(&root.join("disc.xiso"))?;
+    let disc = crate::disc::inspect(&root.join("disc.xiso"))?;
+    if unsafe { xbx_engine_abi() } != 2 {
+        return Err("The native engine and Rust entry have different ABI versions".into());
+    }
     let config = super::profile_config(&root)?;
     let config_path = root.join("xemu.toml");
     // This is generated policy, never an owner-supplied arbitrary QEMU config.
     fs::write(&config_path, config)?;
     let config_path = CString::new(config_path.to_str().ok_or("non-UTF8 profile path")?)?;
-    if unsafe { xbx_engine_prepare(config_path.as_ptr()) } != 0 {
+    if unsafe { xbx_engine_prepare(config_path.as_ptr(), disc.partition_offset) } != 0 {
         return Err("Native display/configuration initialization failed".into());
     }
     lease.begin_writes()?;

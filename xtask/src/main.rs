@@ -4,6 +4,7 @@ use std::process::Command;
 mod apk;
 mod capacity;
 mod desktop;
+mod kernel;
 mod source;
 
 fn run(command: &mut Command) -> Result<(), Box<dyn std::error::Error>> {
@@ -20,6 +21,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("kernel-build") {
+        return kernel::build(root);
+    }
     if let Some(action @ ("desktop-dsp" | "desktop-configure" | "desktop-build")) =
         args.first().map(String::as_str)
     {

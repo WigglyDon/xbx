@@ -61,7 +61,8 @@ Do not allocate a full nominal multi-gigabyte disk for every game by default.
 A coherent checkpoint identifies, at minimum:
 
 1. Schema, exact modified engine build and state ABI; firmware/boot-route digest.
-2. Game/media identity and the selected disc/executable; controller topology.
+2. Game/media identity and the selected disc/executable, including a full-disc
+   partition byte offset when a read-only raw view is used; controller topology.
 3. The corresponding writable-disk snapshot/generation and applicable EEPROM,
    virtual-console identity and persistent peripheral state.
 4. Complete CPU/device state, pause intent and validated bounded payload metadata.

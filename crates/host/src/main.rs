@@ -12,6 +12,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "XDVDFS: {} bytes, partition {}, root sector {}, root bytes {}. Title/platform compatibility is not established.",
             disc.bytes, disc.partition_offset, disc.root_sector, disc.root_bytes
         );
+        println!(
+            "XBE title {:?}, ID {:08x}, region mask {:08x}, version {}. Certificate metadata is unverified display information.",
+            disc.title.name, disc.title.id, disc.title.region, disc.title.version
+        );
         return Ok(());
     }
     Err("usage: xbx-host inspect-disc <complete-local-image> | boot-probe <source-built-xemu> <new-scratch-directory>".into())

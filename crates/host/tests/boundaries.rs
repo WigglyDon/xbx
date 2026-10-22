@@ -35,7 +35,17 @@ fn fixture(path: &Path, partition: u64) {
     file.seek(SeekFrom::Start(partition + 33 * 2048)).unwrap();
     file.write_all(&entry).unwrap();
     file.seek(SeekFrom::Start(partition + 34 * 2048)).unwrap();
-    file.write_all(b"XBEH").unwrap();
+    let mut xbe = [0u8; 2048];
+    xbe[..4].copy_from_slice(b"XBEH");
+    xbe[0x104..0x108].copy_from_slice(&0x10000u32.to_le_bytes());
+    xbe[0x108..0x10c].copy_from_slice(&2048u32.to_le_bytes());
+    xbe[0x118..0x11c].copy_from_slice(&0x10180u32.to_le_bytes());
+    xbe[0x180..0x184].copy_from_slice(&0x1d0u32.to_le_bytes());
+    for (index, value) in "Synthetic title".encode_utf16().enumerate() {
+        let offset = 0x18c + index * 2;
+        xbe[offset..offset + 2].copy_from_slice(&value.to_le_bytes());
+    }
+    file.write_all(&xbe).unwrap();
 }
 
 #[test]
@@ -51,6 +61,11 @@ fn structural_disc_checks_preserve_media_and_reject_partial_download() {
         );
         assert_eq!(fs::metadata(&path).unwrap().len(), before);
     }
+    fixture(&path, 0);
+    let mut bad = File::options().write(true).open(&path).unwrap();
+    bad.seek(SeekFrom::Start(34 * 2048 + 0x118)).unwrap();
+    bad.write_all(&0xfffffff0u32.to_le_bytes()).unwrap();
+    assert!(xbx::disc::inspect(&path).is_err());
     fixture(&path, 0);
     let mut bad = File::options().write(true).open(&path).unwrap();
     bad.seek(SeekFrom::Start(34 * 2048)).unwrap();
@@ -150,6 +165,44 @@ fn native(command: &mut Command) {
         "native tool failed: {}",
         String::from_utf8_lossy(&result.stderr)
     );
+}
+
+/// Explicit integration probe; only disposable synthetic block data, never game saves.
+#[test]
+#[ignore = "requires qemu-io; run explicitly after host preflight"]
+fn raw_disc_partition_view_is_read_only_and_bounded() {
+    let dir = scratch("raw-disc-view");
+    let source = dir.join("full-disc.fixture");
+    let mut original = vec![0xee; 4096];
+    original.extend_from_slice(&[0x31; 4096]);
+    original.extend_from_slice(&[0xaa; 4096]);
+    fs::write(&source, &original).unwrap();
+    let options = format!(
+        "driver=raw,offset=4096,size=4096,file.driver=file,file.filename={}",
+        source.display()
+    );
+    native(
+        Command::new("qemu-io")
+            .args(["--image-opts", "-r", "-c", "read -P 0x31 0 4096"])
+            .arg(&options),
+    );
+    let rejected_write = Command::new("qemu-io")
+        .args(["--image-opts", "-r", "-c", "write -P 0x00 0 512"])
+        .arg(&options)
+        .output()
+        .unwrap();
+    assert!(!rejected_write.status.success());
+    let rejected_past_end = Command::new("qemu-io")
+        .args(["--image-opts", "-r", "-c", "read 4096 512"])
+        .arg(&options)
+        .output()
+        .unwrap();
+    assert!(!rejected_past_end.status.success());
+    assert_eq!(fs::read(&source).unwrap(), original);
+    println!(
+        "PASS: raw partition view reads only the selected region, rejects writes/out-of-range reads, and preserves the entire source fixture. Android execution remains untested."
+    );
+    fs::remove_dir_all(dir).unwrap();
 }
 
 /// Explicit integration probe; only disposable synthetic block data, never game saves.

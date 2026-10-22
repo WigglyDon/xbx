@@ -80,11 +80,21 @@ pub fn command(root: &Path, action: &str) -> Result<(), Box<dyn std::error::Erro
             ]));
     }
     if action == "desktop-build" {
-        return run(Command::new("ninja").arg("-C").arg(&build).args([
-            "-j",
-            "1",
-            "qemu-system-i386",
-        ]));
+        let python_paths = Command::new(root.join(".local/tools/bin/python3"))
+            .args([
+                "-c",
+                "import sysconfig; print(sysconfig.get_paths()['purelib'])",
+            ])
+            .output()?;
+        if !python_paths.status.success() {
+            return Err("cannot resolve task-local Python tool path".into());
+        }
+        let python_paths = String::from_utf8(python_paths.stdout)?;
+        return run(Command::new("ninja")
+            .env("PYTHONPATH", python_paths.trim())
+            .arg("-C")
+            .arg(&build)
+            .args(["-j", "1", "qemu-system-i386"]));
     }
     Err("unknown desktop action".into())
 }

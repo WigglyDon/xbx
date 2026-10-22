@@ -16,9 +16,14 @@ extern void xemu_android_pause_emulation(void);
 extern void xemu_android_resume_emulation(void);
 
 #define XBX_EXPORT __attribute__((visibility("default")))
+static uint64_t dvd_offset;
 
-XBX_EXPORT int xbx_engine_prepare(const char *config)
+XBX_EXPORT int xbx_engine_abi(void) { return 2; }
+XBX_EXPORT uint64_t xbx_engine_dvd_offset(void) { return dvd_offset; }
+
+XBX_EXPORT int xbx_engine_prepare(const char *config, uint64_t media_offset)
 {
+    dvd_offset = media_offset;
     SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "aaudio,openslES", SDL_HINT_OVERRIDE);
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         return -1;

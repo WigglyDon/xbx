@@ -16,7 +16,7 @@ not Fold observations. No SDK directory is modified by xtask.
 
 ```sh
 python3 -m venv .local/tools
-.local/tools/bin/pip install meson==1.9.2
+.local/tools/bin/pip install meson==1.9.2 PyYAML==6.0.3
 export XBX_NDK=/path/to/read-only/ndk/30.0.16248370
 export XBX_SDK=/path/to/read-only/android-sdk
 cargo xtask capacity 6
@@ -38,7 +38,10 @@ source/dependencies/objects/evidence and must be re-evaluated for media conversi
 One interrupted compilation is resumed in the same build directory.
 
 The output is `.local/xbx-qualification.apk`, package `com.machinerhythm.xbx`,
-activity process `:engine`, ARM64 only. Signing is generated separately under
+activity process `:engine`, ARM64 only.
+This local diagnostic manifest is debuggable so an authorized device transaction
+can prepare only xbx's own scratch profile through `run-as`; it is not a release
+manifest or authority to access any other app's data. Signing is generated under
 protected `.local/signing`; preserve that directory and password file. The build
 does not access PSX signing/data. It does not install an app, access a phone or
 publish an APK. Verify a fresh device operating window before any phone action.
@@ -48,15 +51,26 @@ The qualification APK requires a deliberately prepared private
 It is not a file-picker/player UX. Firmware is not supplied or qualified by this
 recipe. Do not copy owner saves into this scratch profile. Rust reads the disc
 structurally, takes the writer lease before final validation, generates fixed
-profile paths, fsyncs a dirty epoch before QEMU writes, and holds ownership until
+profile paths, supplies validated disc partition offsets through native ABI v2,
+fsyncs a dirty epoch before QEMU writes, and holds ownership until
 process exit. Automatic snapshot restore is disabled. The 128 MiB diagnostic
 configuration is not a qualified Fable profile.
+
+For a full-disc XDVDFS layout, the engine uses QEMU's existing read-only raw
+block view at the validated partition offset. The source image is not repacked
+or patched. Native media-view fixtures establish offset/bounds/read-only behavior;
+the supplied Fable image passes the bounded filesystem/executable/certificate
+inspection and identifies itself as Fable. Android disc execution remains untested.
+Certificate metadata does not certify edition, authenticity or every payload byte.
+Byte offset belongs
+to future checkpoint media identity, alongside the source image fingerprint.
 
 ## Boundary checks
 
 ```sh
 cargo test --workspace --offline -j 1
 cargo test -p xbx-host --offline -j 1 --test boundaries qcow2_current -- --ignored --nocapture
+cargo test -p xbx-host --offline -j 1 --test boundaries raw_disc_partition -- --ignored --nocapture
 cargo run -p xbx-host --offline -- inspect-disc /authorized/complete/game.iso
 ```
 
@@ -67,7 +81,8 @@ deliberate rollback copy are **block-storage** evidence, not in-game saving or
 full-machine resume. Other checks cover cross-process writer exclusion,
 inherited ownership after supervisor loss, crash-release, interrupted manifest
 publication and bounded XDVDFS/XBE parsing. The parser ignores filename suffixes;
-it does not certify all disc files, game compatibility, edition or completeness
+it checks certificate bounds and reads title/ID/region/version without reading
+certificate keys. It does not certify all disc files, game compatibility, edition or completeness
 of an ongoing download. Do not inspect an owner's partial download as a ready game.
 
 ## Native contract and remaining qualification
@@ -95,9 +110,34 @@ For an optional desktop CPU diagnostic, build the same source and DSP using
 The desktop configure uses task-local pkg-config headers under
 `.local/host-sysroot` when system development headers are unavailable; no package
 installation is performed. The probe generates an original 1 MiB reset ROM,
-checks a guest debug-port banner and requests QMP shutdown. Its inherited profile
+checks two guest CPU register markers through QMP and waits for quit acknowledgment
+and native process exit. The original synthetic ROM contains only reset-vector
+and register-marker instructions. Its inherited profile
 lease survives supervisor loss. It contains no game, MCPX dump or Xbox kernel and
 does not establish gameplay, GPU presentation, sound, saves or Fold acceptance.
+The measured source-built desktop pass observed both markers and normal QMP
+shutdown with a software OpenGL context. Earlier failed probes are preserved:
+SDL3 requires `SDL_VIDEO_DRIVER`/`SDL_AUDIO_DRIVER`, the default sandbox refused
+the local Unix socket, the Xbox target omits generic `isa-debugcon`, and closing
+the monitor transport before quit acknowledgment did not complete shutdown.
+These observations do not establish a core shutdown defect or an Android result.
+
+For bounded open-image qualification, sparse-checkout only `kernel`, `tools` and
+`tests/kernel-test-title` of OXOS `c0c887a1263ebf89ba765f34a88ca8f132901e25` under
+`.local/src/oxos`; keep the specification corpus out of the working tree. Its
+build requires Cromwell `86f547387184d1001d377cce97d3756c8acf91cc` at
+`.local/src/oxos/third_party/cromwell`. `cargo xtask kernel-build` uses the existing
+NDK's LLVM tools and the retained Make/Python pipeline with `IMAGE=open`, no
+comparison BIOS/MCPX input, no splash asset and one compile job. It builds only
+the self-test image; no dashboard/game download, hardware flashing or firmware
+default selection is performed. Output stays under `.local/build-oxos`.
+The newer LLVM diagnostic for the donor's intentional equal-width i386 timer
+APC function cast is retained as a warning with
+`-Wno-error=cast-function-type-mismatch`; other donor `-Werror` checks remain.
+This build adjustment does not qualify that ABI at runtime.
+The pinned open image now source-builds successfully, without proprietary
+comparison inputs; kernel self-test execution and Fable compatibility remain
+unqualified.
 
 All private artifacts, interrupted logs and synthetic experiment data remain
 local. No owner media, EEPROM/key material or signing credential belongs in a

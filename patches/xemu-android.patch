@@ -121,6 +121,62 @@ index 699b8ef..60de59a 100644
      if (g_mkdir_with_parents(dir, 0700) != 0) {
          SNAP_LOGW("failed to create snapshot preview dir: %s", dir);
          g_free(dir);
+diff --git a/hw/xbox/nv2a/pgraph/thirdparty/meson.build b/hw/xbox/nv2a/pgraph/thirdparty/meson.build
+index fbc3751..1b25347 100644
+--- a/hw/xbox/nv2a/pgraph/thirdparty/meson.build
++++ b/hw/xbox/nv2a/pgraph/thirdparty/meson.build
+@@ -13,6 +13,6 @@ nv2a_vsh_cpu = declare_dependency(include_directories: nv2a_vsh_cpu_subproj.incl
+ 
+ libgloffscreen = static_library('libgloffscreen',
+                           sources: files('gloffscreen/common.c', 'gloffscreen/sdl.c'),
+-                          dependencies: sdl)
++                          dependencies: [sdl, epoxy])
+ gloffscreen = declare_dependency(link_with: libgloffscreen,
+                            include_directories: ['gloffscreen'])
+diff --git a/hw/xbox/xbox.c b/hw/xbox/xbox.c
+index d5a138d..3fb43dd 100644
+--- a/hw/xbox/xbox.c
++++ b/hw/xbox/xbox.c
+@@ -64,7 +64,6 @@
+ #include "smbus.h"
+ #include "chihiro/chihiro.h"
+ #include "chihiro/chihiro-fatx-builder.h"
+-#include "chihiro/chihiro-firmware.h"
+ 
+ #define MAX_IDE_BUS 2
+ 
+@@ -427,26 +426,11 @@ void xbox_init_common(MachineState *machine,
+             fprintf(stderr, "Chihiro: ERROR — media board flash not found "
+                     "(fpr21042_m29w160et.bin)\n");
+         }
+-        /* The QC/SC firmware EEPROMs and the baseboard config are not
+-         * required to be on disk: without them the House of the Dead 3 dumps
+-         * built in here are used, as this port always did. */
+-        if (!chihiro_ic10_data) {
+-            chihiro_ic10_data = g_memdup2(hotd3_ic10_g24lc64,
+-                                          sizeof(hotd3_ic10_g24lc64));
+-            chihiro_ic10_size = sizeof(hotd3_ic10_g24lc64);
+-            printf("Chihiro: ic10 EEPROM not on disk, using the built-in dump\n");
+-        }
+-        if (!chihiro_pc20_data) {
+-            chihiro_pc20_data = g_memdup2(hotd3_pc20_g24lc64,
+-                                          sizeof(hotd3_pc20_g24lc64));
+-            chihiro_pc20_size = sizeof(hotd3_pc20_g24lc64);
+-            printf("Chihiro: pc20 EEPROM not on disk, using the built-in dump\n");
+-        }
+-        if (!chihiro_ic11_data) {
+-            chihiro_ic11_data = g_memdup2(hotd3_ic11_24lc024,
+-                                          sizeof(hotd3_ic11_24lc024));
+-            chihiro_ic11_size = sizeof(hotd3_ic11_24lc024);
+-            printf("Chihiro: ic11 EEPROM not on disk, using the built-in dump\n");
++        /* xbx does not embed arcade EEPROM dumps. This optional donor path
++         * requires explicit external inputs; original Xbox never enters it. */
++        if (!chihiro_ic10_data || !chihiro_pc20_data || !chihiro_ic11_data) {
++            error_report("Chihiro requires explicit external EEPROM inputs");
++            exit(1);
+         }
+ 
+         isa_create_simple(isa_bus, "chihiro-lpc");
 diff --git a/subprojects/dsp56300/meson.build b/subprojects/dsp56300/meson.build
 index 4eb588b..4d132cd 100644
 --- a/subprojects/dsp56300/meson.build
@@ -184,7 +240,7 @@ index 4eb588b..4d132cd 100644
 -
  meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
 diff --git a/system/vl.c b/system/vl.c
-index 68420b9..8ca0cf7 100644
+index 68420b9..afc16d9 100644
 --- a/system/vl.c
 +++ b/system/vl.c
 @@ -2983,9 +2983,8 @@ static const char *get_eeprom_path(void)
@@ -214,6 +270,28 @@ index 68420b9..8ca0cf7 100644
  
      if (qemu_access(path, F_OK) == -1) {
          if (!xbox_eeprom_generate(path, needed)) {
+@@ -3194,8 +3189,21 @@ void qemu_init(int argc, char **argv)
+     if (!xbox_is_chihiro()) {
+         char *escaped_dvd_path = strdup_double_commas(dvd_path);
+         fake_argv[fake_argc++] = strdup("-drive");
++#ifdef __ANDROID__
++        /* Rust validates the XDVDFS partition before QEMU entry. A read-only
++         * raw view preserves full-disc source bytes without repacking a game. */
++        extern uint64_t xbx_engine_dvd_offset(void) __attribute__((weak));
++        uint64_t dvd_offset = xbx_engine_dvd_offset ? xbx_engine_dvd_offset() : 0;
++        if (dvd_offset && dvd_path[0]) {
++            fake_argv[fake_argc++] = g_strdup_printf(
++                "index=1,media=cdrom,file=%s,format=raw,offset=%" PRIu64 ",readonly=on",
++                escaped_dvd_path, dvd_offset);
++        } else
++#endif
++        {
+         fake_argv[fake_argc++] = g_strdup_printf("index=1,media=cdrom,file=%s",
+                                                  escaped_dvd_path);
++        }
+         free(escaped_dvd_path);
+     }
+ 
 diff --git a/ui/xemu.c b/ui/xemu.c
 index 983f50a..595005d 100644
 --- a/ui/xemu.c

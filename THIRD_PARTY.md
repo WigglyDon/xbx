@@ -24,6 +24,10 @@ at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.
   files: deterministic dependencies, profile paths, EEPROM preservation,
   cross-thread control flags, hidden snapshot servicing and source-built desktop
   DSP input. Individual upstream terms remain applicable.
+  The candidate also removes the arcade path's built-in Chihiro EEPROM fallback
+  include/data use. That optional donor path now requires explicit external
+  inputs. No EEPROM dump bytes are included in this patch. The initial xbx
+  profile never enables Chihiro.
 - `native/xbx_xemu_bridge.c` adapts the mechanical init/display/thread entry from
   the pinned `android/app/src/main/cpp/xemu_android.cpp`; GPL-2.0-or-later, with
   [GPL text](LICENSES/GPL-2.0.txt). This is not covered by the root MIT grant.
@@ -34,6 +38,9 @@ at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.
   were cross-checked against the pinned fork's MIT `android/third_party/xdvdfs-core`
   by antangelo, specifically `blockdev/offset.rs` and `layout/`; no parser code
   was copied. The synthetic reset ROM contains original diagnostic instructions.
+  XBE header/certificate field offsets were checked against Cxbx-Reloaded's
+  [Xbe.h at f1e54be](https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/f1e54be515bb7989bf5109ebea2494b6b13eb1bd/src/common/xbe/Xbe.h).
+  Only format facts are used; no Cxbx implementation or declarations were copied.
 
 The actual native graph includes QEMU/xemu (root GPLv2 terms and per-file
 exceptions), SDL3 (zlib and component notices), toml++ (MIT), libslirp (BSD-style
