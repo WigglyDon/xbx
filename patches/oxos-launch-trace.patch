@@ -40,6 +40,35 @@ index e3b9a62..424d57f 100644
  }
  
  XBAPI NTSTATUS NTAPI IoDeleteSymbolicLink(POBJECT_STRING SymbolicLinkName) {
+diff --git a/kernel/src/ke/except.cpp b/kernel/src/ke/except.cpp
+index a7bb35f..e066e0b 100644
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -1,6 +1,7 @@
+ // Structured exception handling: trap translation, handler dispatch, raise, unwind, stack walks (spec/stock/14).
+ #include <xk/arch.h>
+ #include <xk/ke.h>
++#include <xk/serial.h>
+ 
+ constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
+                 EXCEPTION_NESTED_CALL = 0x10;
+@@ -58,6 +59,16 @@ volatile ULONG KiExceptionsDispatched; // diagnostics
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+ static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++#if defined(XK_XBX_LAUNCH_TRACE)
++    // Include handled setup exceptions, which KiLastException* deliberately omit.
++    // Numeric diagnostics only; never read exception payloads or guest strings.
++    static ULONG XbxExceptionEvents;
++    if (XbxExceptionEvents++ < 8)
++        XK_SERIAL("XBX-EXCEPTION code=%08x pc=%08x fault=%08x\n",
++                  Record->ExceptionCode, (ULONG)Record->ExceptionAddress,
++                  Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ && Record->NumberParameters >= 2
++                      ? Record->ExceptionInformation[1] : 0);
++#endif
+     for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
+         if (((ULONG)r & 3) || (ULONG)r < 0x10000)
+             break; // corrupt chain
 diff --git a/kernel/src/ke/startup.cpp b/kernel/src/ke/startup.cpp
 index 70443ea..e68c1ad 100644
 --- a/kernel/src/ke/startup.cpp
@@ -62,6 +91,32 @@ index 70443ea..e68c1ad 100644
      ObInitSystem();
      KiBootStep("I/O manager");
      IoInitSystem();
+diff --git a/kernel/src/mm/virtual.cpp b/kernel/src/mm/virtual.cpp
+index 579c5a6..c09eef1 100644
+--- a/kernel/src/mm/virtual.cpp
++++ b/kernel/src/mm/virtual.cpp
+@@ -4,6 +4,7 @@
+ #include <xk/ke.h>
+ #include <xk/mm.h>
+ #include <xk/rtl.h>
++#include <xk/serial.h>
+ 
+ constexpr NTSTATUS STATUS_INVALID_PARAMETER = (NTSTATUS)0xC000000D, STATUS_NO_MEMORY = (NTSTATUS)0xC0000017,
+                    STATUS_CONFLICTING_ADDRESSES = (NTSTATUS)0xC0000018, STATUS_UNABLE_TO_FREE_VM = (NTSTATUS)0xC000001A,
+@@ -179,6 +180,13 @@ XBAPI NTSTATUS NTAPI NtAllocateVirtualMemory(PVOID *BaseAddress, ULONG ZeroBits,
+     ULONG base = (ULONG)*BaseAddress, size = *RegionSize;
+     NTSTATUS status =
+         MiAllocateVirtualMemory(BaseAddress, ZeroBits, RegionSize, AllocationType, Protect, MmVirtualMemoryUsage);
++#if defined(XK_XBX_LAUNCH_TRACE)
++    static ULONG XbxVmEvents;
++    if (XbxVmEvents++ < 8)
++        XK_SERIAL("XBX-VM caller=%08x status=%08x base=%08x size=%08x result_base=%08x result_size=%08x type=%08x protect=%08x\n",
++                  (ULONG)__builtin_return_address(0), (ULONG)status, base, size,
++                  (ULONG)*BaseAddress, *RegionSize, AllocationType, Protect);
++#endif
+     if (!NT_SUCCESS(status)) {
+         MiVmFailures = MiVmFailures + 1;
+         MiVmLastFailure[0] = (ULONG)status;
 diff --git a/kernel/src/xe/loader.cpp b/kernel/src/xe/loader.cpp
 index 175f662..3c5d9bb 100644
 --- a/kernel/src/xe/loader.cpp

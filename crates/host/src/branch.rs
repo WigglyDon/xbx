@@ -28,6 +28,7 @@ pub fn diagnostic_root(identity: &str) -> io::Result<Option<&'static str>> {
     match field(identity, "mode")? {
         "launch-diagnostic-v1" => Ok(Some("xbx-launch-diagnostic-v1")),
         "launch-diagnostic-v2" => Ok(Some("xbx-launch-diagnostic-v2")),
+        "launch-diagnostic-v3" => Ok(Some("xbx-launch-diagnostic-v3")),
         _ => Err(io::Error::other("unknown diagnostic profile mode")),
     }
 }

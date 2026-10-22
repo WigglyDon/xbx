@@ -303,5 +303,52 @@ Workspace checks pass: 18 tests, three explicit native fixtures ignored. The new
 boundary test checks every landscape hit/channel, cancellation, whole-circle safe
 bounds, nonoverlapping controls and a clear aspect-correct picture across inset
 arrangements and a transient resize. Host and Android Clippy pass with warnings
-denied. APK build/signature/alignment pass; version 7 device layout inspection is
-pending. Prior APKs, firmware and unique failure evidence are retained.
+denied. APK build/signature/alignment pass. Version 7 was compatibly installed on
+the qualified Pixel with the predecessor retained and signer verified equal.
+Visual inspection of the xbx screen confirms automatic landscape, all 18 complete
+controls, readable original-Xbox labels/colors and a clear center. The app was
+stopped during media checking after this layout check; this is not an additional
+native boot/gameplay result. Baseline and v1 each retained seven fingerprints.
+xbx stopped, physical screen OFF, no owned clients/tunnels or changed settings;
+custody released. Prior APKs, firmware and unique failure evidence are retained.
+
+## Bounded heap diagnostic, version 3
+
+The observed heap-null result warrants two small retained-kernel diagnostics:
+up to eight VM allocation call/results and eight exception-dispatch events per
+kernel boot. The latter includes caught exceptions omitted by the earlier
+unhandled-exception globals. Only numeric call/status/range and fault metadata
+are emitted; no memory payload, registers, strings or full import trace. This
+does not fix the heap failure or establish its cause before a Fable retest.
+
+Patch SHA-256 `98ffc66a54006e4e11455d8cbcc3ea76c9f84b2d4fd379ae8fccb0f603081fa4`;
+actual firmware `6ae311f148b50dbccef61657aadbb7f425f3c5447783dfbdb20ffacbebadf271`.
+Pins, IMAGE=open/SELFTEST=0/SERIAL=1/TRACE_IMPORTS=0/64 MiB flags and build commands
+remain as above. The exact patch/build.identity and actual image are retained;
+date/time remain a clean-rebuild variation. A first compilation caught missing
+serial declarations in the two new translation units; explicit includes fixed
+the build. No broad warning suppression was added.
+
+Rust selects a new fixed `xbx-launch-diagnostic-v3` root, cloning the stopped
+baseline coherently under the existing lease, with distinct profile identity and
+ancestry. v1/v2/baseline remain recognized and cannot alias this root; their used
+firmware/session bindings are not changed. The existing mode-boundary regression
+now checks v3 separation too. Full-machine restore remains disabled.
+
+The focused two-stage homebrew regression passed on this exact firmware with the
+retained desktop core under `G_DEBUG=fatal-criticals`: first/second entry, carried
+launch data and D: remap, acknowledged QMP stop/quit, native status 0, forced=false.
+The new VM record was exercised; no exception occurred in that fixture. It is
+not a Fable or mobile acceptance test. Private synthetic scratch and output are
+retained separately from owner profiles.
+
+Built version 8 / `0.4.1-heap-diagnostic`, same package/signer/ABI3/native core:
+APK `3d0cb7f6232f91337af9f892f3a602d3d5ac3e21af9012b583ed8dfdbb6c98ff`,
+Rust library `1ae1074d12fed6ea9fb10f0664b2cf5a1b62d48eb76f5a5c332c969467503266`.
+Workspace 18 tests and both Clippy checks pass; signature/alignment pass and
+signer matches v7. This candidate has not been installed or executed on a phone.
+Latest shared-device coordination reports another operator after XBX's verified
+return, so no further acquisition or queued device action was attempted. Version
+7 remains the installed Pixel layout candidate. Its actual return was posted on
+XBX-1 and, with the owner's explicit approval, cross-linked at the existing Pixel
+owner. No device is held while awaiting an admitted finite test opportunity.

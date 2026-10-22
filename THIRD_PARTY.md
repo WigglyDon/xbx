@@ -71,7 +71,8 @@ compatibility and resulting distribution obligations require explicit review.
 An upstream build is not clearance. No public binary is released by this work.
 
 `patches/oxos-launch-trace.patch` narrowly instruments retained OXOS startup,
-loader and firmware-return code at the pin in `kernel-trace.lock.json`; it keeps
+loader, VM calls, exception dispatch and firmware-return code at the pin in
+`kernel-trace.lock.json`; it keeps
 OXOS's actual GPL/per-file terms. The existing kernel-test-title and XDVDFS
 fixture generator are built/invoked from that source without copying them into
 original MIT modules. First-party Rust diagnostic branching, runner and geometry
