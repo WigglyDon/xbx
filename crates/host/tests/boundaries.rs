@@ -219,6 +219,11 @@ fn diagnostic_modes_cannot_alias_a_used_profile_or_choose_arbitrary_paths() {
     let old = diagnostic_root("mode=launch-diagnostic-v1\n").unwrap();
     let next = diagnostic_root("mode=launch-diagnostic-v2\n").unwrap();
     let heap = diagnostic_root("mode=launch-diagnostic-v3\n").unwrap();
+    let null_call = diagnostic_root("mode=launch-diagnostic-v4\n").unwrap();
+    assert_ne!(null_call, heap);
+    assert_ne!(null_call, old);
+    assert_ne!(null_call, next);
+    assert_ne!(null_call, Some("xbx-qualification"));
     assert_ne!(heap, old);
     assert_ne!(heap, next);
     assert_ne!(heap, Some("xbx-qualification"));

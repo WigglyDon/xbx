@@ -50,7 +50,7 @@ pub fn prepare(root: &Path, trace: bool) -> Result<(), Box<dyn std::error::Error
             return Err("trace image/build identity mismatch".into());
         }
         format!(
-            "mode=launch-diagnostic-v3\npatch_sha256={patch}\ntrace_imports=0\nparent_firmware_sha256=668d08af6de204ce07a1479c8854d8f688af312ed6104e8ab56391dffc301fa6\n"
+            "mode=launch-diagnostic-v4\npatch_sha256={patch}\ntrace_imports=0\nparent_firmware_sha256=668d08af6de204ce07a1479c8854d8f688af312ed6104e8ab56391dffc301fa6\n"
         )
     } else {
         String::new()

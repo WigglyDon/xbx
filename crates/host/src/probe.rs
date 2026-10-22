@@ -1,4 +1,4 @@
-//! Original synthetic reset-vector probe: proves guest CPU execution, not a game/kernel.
+//! Bounded CPU/kernel probes. Their success does not establish selected-game compatibility.
 use crate::storage::ProfileLease;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Read, Write};
@@ -66,7 +66,35 @@ pub fn relaunch(
     disc: &Path,
     title_map: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    run_inner(engine, new_root, Some((flash, disk, title_map)), Some(disc))
+    run_inner(
+        engine,
+        new_root,
+        Some((flash, disk, title_map)),
+        Some((disc, TitleCheck::Relaunch)),
+    )
+}
+
+/// Original handled-null-call ABI fixture; no selected-game compatibility claim.
+pub fn null_call(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    disc: &Path,
+    title_map: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_inner(
+        engine,
+        new_root,
+        Some((flash, disk, title_map)),
+        Some((disc, TitleCheck::NullCall)),
+    )
+}
+
+#[derive(Clone, Copy)]
+enum TitleCheck {
+    Relaunch,
+    NullCall,
 }
 
 fn hmp_words(reply: &str) -> Vec<u32> {
@@ -90,7 +118,7 @@ fn run_inner(
     engine: &Path,
     new_root: &Path,
     kernel: Option<(&Path, &Path, &Path)>,
-    relaunch: Option<&Path>,
+    relaunch: Option<(&Path, TitleCheck)>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let engine = engine.canonicalize()?;
     fs::DirBuilder::new().mode(0o700).create(new_root)?;
@@ -124,6 +152,21 @@ fn run_inner(
                     16,
                 )?,
             ));
+            if matches!(relaunch, Some((_, TitleCheck::NullCall))) {
+                let line = map
+                    .lines()
+                    .find(|l| l.split_whitespace().nth(1) == Some("_XbxNullReturn"))
+                    .ok_or("null-call return symbol missing")?;
+                symbols.push((
+                    "XbxNullReturn",
+                    u64::from_str_radix(
+                        line.split_whitespace()
+                            .nth(2)
+                            .ok_or("invalid fixture map")?,
+                        16,
+                    )?,
+                ));
+            }
         } else {
             for name in [
                 "KiBootStage",
@@ -157,7 +200,7 @@ fn run_inner(
     } else {
         config
     };
-    let config = if let Some(disc) = relaunch {
+    let config = if let Some((disc, _)) = relaunch {
         config.replace(
             "dvd_path=\"\"",
             &format!("dvd_path={}", quote(&disc.canonicalize()?)?),
@@ -245,13 +288,29 @@ fn run_inner(
         socket.write_all(b"{\"execute\":\"qmp_capabilities\"}\n")?;
         response(&mut reader)?;
         while Instant::now() < deadline {
-            if relaunch.is_some() {
+            if let Some((_, check)) = relaunch {
                 let address = symbols[0].1;
+                let count = if matches!(check, TitleCheck::NullCall) {
+                    2
+                } else {
+                    44
+                };
                 let request = format!(
-                    "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/44wx {address:#x}\"}}}}\n"
+                    "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/{count}wx {address:#x}\"}}}}\n"
                 );
                 socket.write_all(request.as_bytes())?;
                 let words = hmp_words(&response(&mut reader)?);
+                if matches!(check, TitleCheck::NullCall)
+                    && words.len() == 2
+                    && words[0] == 0x46584258
+                {
+                    booted = words[1] == 7;
+                    fs::write(
+                        root.join("nullcall-results.txt"),
+                        format!("guest_words={words:?}\nhandled_and_resumed={booted}\n"),
+                    )?;
+                    break;
+                }
                 if words.len() == 44 && words[0] == 0x54544b58 && words[25] == 1 {
                     let bytes: Vec<u8> = words.iter().flat_map(|w| w.to_le_bytes()).collect();
                     let first = String::from_utf8_lossy(&bytes[36..100]);
@@ -339,12 +398,46 @@ fn run_inner(
     )?;
     let _ = drain.join();
     lease.sync_storage()?;
+    if matches!(relaunch, Some((_, TitleCheck::NullCall))) {
+        let log = root.join("kernel.log");
+        if fs::metadata(&log)?.len() > 1024 * 1024 {
+            return Err("unexpected synthetic serial log size".into());
+        }
+        let text = fs::read_to_string(log)?;
+        let events: Vec<_> = text
+            .lines()
+            .filter(|l| l.starts_with("XBX-EXCEPTION "))
+            .collect();
+        let expected = format!("stack_pc={:08x}", symbols[1].1);
+        let fields = [
+            "code=c0000005",
+            "pc=00000000",
+            "fault=00000000",
+            "origin=14",
+            "stack_valid=1",
+            &expected,
+        ];
+        let correlated = events.len() == 1
+            && fields
+                .iter()
+                .all(|f| events[0].split_ascii_whitespace().any(|word| word == *f));
+        booted &= correlated;
+        fs::write(
+            root.join("nullcall-correlation.txt"),
+            format!(
+                "dispatch_events={}\norigin_and_return_pc_match={correlated}\n",
+                events.len()
+            ),
+        )?;
+    }
     if kernel.is_some() {
         println!("Bounded open-kernel markers: {markers:?}");
     }
     println!(
         "{}: {booted}; normal QMP shutdown: {}",
-        if relaunch.is_some() {
+        if matches!(relaunch, Some((_, TitleCheck::NullCall))) {
+            "synthetic null CALL handled/resumed and diagnostic return PC correlated"
+        } else if relaunch.is_some() {
             "two-stage title entry, carried data and D: mapping observed"
         } else if kernel.is_some() {
             "selected open-kernel markers observed"

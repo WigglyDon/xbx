@@ -41,34 +41,72 @@ index e3b9a62..424d57f 100644
  
  XBAPI NTSTATUS NTAPI IoDeleteSymbolicLink(POBJECT_STRING SymbolicLinkName) {
 diff --git a/kernel/src/ke/except.cpp b/kernel/src/ke/except.cpp
-index a7bb35f..e066e0b 100644
+index a7bb35f..d0b80b0 100644
 --- a/kernel/src/ke/except.cpp
 +++ b/kernel/src/ke/except.cpp
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,9 @@
  // Structured exception handling: trap translation, handler dispatch, raise, unwind, stack walks (spec/stock/14).
  #include <xk/arch.h>
  #include <xk/ke.h>
++#include <xk/mm.h>
++#include <xk/ps.h>
 +#include <xk/serial.h>
  
  constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
                  EXCEPTION_NESTED_CALL = 0x10;
-@@ -58,6 +59,16 @@ volatile ULONG KiExceptionsDispatched; // diagnostics
+@@ -56,8 +59,33 @@ static volatile ULONG KiDispatchDepth;
+ volatile ULONG KiExceptionsDispatched; // diagnostics
+ 
  // Walk the registration chain; TRUE when a handler asked to continue execution.
- static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+-static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
++static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context, ULONG Origin) {
      KiExceptionsDispatched = KiExceptionsDispatched + 1;
 +#if defined(XK_XBX_LAUNCH_TRACE)
 +    // Include handled setup exceptions, which KiLastException* deliberately omit.
 +    // Numeric diagnostics only; never read exception payloads or guest strings.
 +    static ULONG XbxExceptionEvents;
-+    if (XbxExceptionEvents++ < 8)
-+        XK_SERIAL("XBX-EXCEPTION code=%08x pc=%08x fault=%08x\n",
++    if (XbxExceptionEvents++ < 8) {
++        ULONG stackPc = 0, sp = 0;
++        bool stackValid = false;
++        auto thread = PsGetCurrentThread();
++        if (!Context->Eip) {
++            // A null CALL leaves its return PC at the saved stack top. Read only
++            // that candidate PC, inside the current thread's mapped stack.
++            ULONG low = (ULONG)thread->Tcb.StackLimit, high = (ULONG)thread->Tcb.StackBase;
++            sp = Context->Esp;
++            stackValid = !(sp & 3) && sp >= low && sp <= 0xFFFFFFFB && sp + 4 <= high &&
++                         MmIsAddressValid((PVOID)sp) && MmIsAddressValid((PVOID)(sp + 3));
++            if (stackValid)
++                stackPc = *(volatile ULONG *)sp;
++        }
++        XK_SERIAL("XBX-EXCEPTION code=%08x pc=%08x fault=%08x origin=%u thread=%08x sp=%08x stack_valid=%u stack_pc=%08x\n",
 +                  Record->ExceptionCode, (ULONG)Record->ExceptionAddress,
 +                  Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ && Record->NumberParameters >= 2
-+                      ? Record->ExceptionInformation[1] : 0);
++                      ? Record->ExceptionInformation[1] : 0,
++                  Origin, (ULONG)thread, sp, stackValid, stackPc);
++    }
 +#endif
      for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
          if (((ULONG)r & 3) || (ULONG)r < 0x10000)
              break; // corrupt chain
+@@ -162,7 +190,7 @@ extern "C" void KiDispatchTrap(KTRAP_FRAME_XK *Frame) {
+     context.Ecx = Frame->Ecx, context.Eax = Frame->Eax, context.Ebp = Frame->Ebp, context.Eip = Frame->Eip;
+     context.SegCs = Frame->SegCs, context.EFlags = Frame->EFlags, context.Esp = (ULONG)(&Frame->EFlags + 1);
+     context.SegSs = 0x10;
+-    BOOLEAN handled = RtlpDispatchException(&record, &context);
++    BOOLEAN handled = RtlpDispatchException(&record, &context, vector);
+     KiDispatchDepth = KiDispatchDepth - 1;
+     if (!handled)
+         KiUnhandled(&record, vector, Frame->ErrorCode);
+@@ -177,7 +205,7 @@ extern "C" void KiDispatchTrap(KTRAP_FRAME_XK *Frame) {
+ // Called by RtlRaiseException with the caller's context.
+ extern "C" [[noreturn]] void KiRaiseException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     Record->ExceptionAddress = (PVOID)Context->Eip;
+-    if (!RtlpDispatchException(Record, Context))
++    if (!RtlpDispatchException(Record, Context, 0xFF))
+         KiUnhandled(Record, 0xFF, 0);
+     KiContinueContext(Context);
+ }
 diff --git a/kernel/src/ke/startup.cpp b/kernel/src/ke/startup.cpp
 index 70443ea..e68c1ad 100644
 --- a/kernel/src/ke/startup.cpp

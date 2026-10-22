@@ -164,3 +164,54 @@ pub fn title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
         .arg(source.join("tests")).arg(build.join("relaunch.iso")).arg(build.join("kernel-test-title.xbe")))?;
     Ok(())
 }
+
+/// Original mechanical guest ABI shim; Rust owns the build and acceptance policy.
+pub fn nullcall_title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let _lease = crate::capacity::writer(root, 1)?;
+    let source = root.join(".local/src/oxos");
+    let patch = std::fs::read(root.join("patches/oxos-launch-trace.patch"))?;
+    verify(&source, OXOS, Some(&patch))?;
+    let build = root.join(".local/build-nullcall-fixture-v2");
+    // Never replace a previously built fixture or failure evidence.
+    std::fs::create_dir(&build)?;
+    let ndk = PathBuf::from(std::env::var_os("XBX_NDK").ok_or("set XBX_NDK")?);
+    let llvm = ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin");
+    run(Command::new(llvm.join("clang"))
+        .args(["--target=i386-pc-win32", "-march=pentium3", "-c"])
+        .arg(root.join("native/fixtures/nullcall.S"))
+        .arg("-o")
+        .arg(build.join("title.obj")))?;
+    run(Command::new(llvm.join("lld-link"))
+        .args([
+            "/NODEFAULTLIB",
+            "/ENTRY:XkTitleEntry",
+            "/SUBSYSTEM:NATIVE",
+            "/BASE:0x10000",
+            "/FIXED",
+            "/Brepro",
+            "/DEBUG:NONE",
+        ])
+        .arg(format!("/MAP:{}", build.join("title.map").display()))
+        .arg(format!("/OUT:{}", build.join("title.exe").display()))
+        .arg(build.join("title.obj")))?;
+    run(Command::new("python3")
+        .arg("-I")
+        .arg(source.join("tools/mkxbe.py"))
+        .arg("--pe")
+        .arg(build.join("title.exe"))
+        .arg("--map")
+        .arg(build.join("title.map"))
+        .args([
+            "--thunks",
+            "_XkThunks",
+            "--name",
+            "xbx handled null call",
+            "--title-id",
+            "0x58425801",
+            "--out",
+        ])
+        .arg(build.join("title.xbe")))?;
+    run(Command::new("python3").args(["-I", "-c", "import sys;sys.path.insert(0,sys.argv[1]);import mkxiso;mkxiso.build(sys.argv[2],open(sys.argv[3],'rb').read(),False)"])
+        .arg(source.join("tests")).arg(build.join("nullcall.iso")).arg(build.join("title.xbe")))?;
+    Ok(())
+}

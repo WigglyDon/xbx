@@ -12,6 +12,12 @@ Original contributions use the root MIT license. That grant does not cover
 software added from elsewhere. A future combined distribution must satisfy the
 exact licenses of its core, dependencies, assets, firmware and copied source.
 
+`native/fixtures/nullcall.S` is an original MIT mechanical i386 exception-ABI test
+shim, with Rust build/runner/acceptance policy. It contains no game or donor code.
+Xbox CONTEXT/registration offsets use interface facts from the pinned kernel.
+The pinned OXOS `mkxbe.py` and `mkxiso.py` tools are invoked to wrap the generated
+fixture, retaining their own terms; their implementations are not copied here.
+
 ## Qualification build lineage
 
 The selected **qualification candidate**, not a shipping compatibility claim,

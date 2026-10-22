@@ -352,3 +352,81 @@ return, so no further acquisition or queued device action was attempted. Version
 7 remains the installed Pixel layout candidate. Its actual return was posted on
 XBX-1 and, with the owner's explicit approval, cross-linked at the existing Pixel
 owner. No device is held while awaiting an admitted finite test opportunity.
+
+## Master-directed v8 execution
+
+Master continuation 6347812581 approved using the already-built v8 candidate
+unchanged. After reconciling the previous operator's actual terminal return,
+one finite Pixel transaction installed that exact APK, cloned a separate v3
+profile and retained the read-only game grant. The first failure sequence contains
+one VM result (the loader's successful image reservation), then one access
+violation with PC and fault address both zero, followed by the same heap-null
+error return. Both eight-record budgets retain headroom. There is no heap VM
+return record; because logging is after allocator return, this cannot exclude a
+caught fault inside that call. The exception record precedes handler completion.
+A zero-PC dispatch suggests a null-call path, but does not yet identify its
+caller, thread or the handler outcome. No compatibility repair is claimed.
+
+The app was stopped promptly after capturing the first return. All seven baseline,
+seven v1 and seven v2 fingerprints match before/after. v3 ancestry matches all
+parent hashes; its distinct profile ID matches its SavedSession, with retained
+GameId/media/partition identity and the exact v8 firmware/64 MiB binding.
+Pixel returned xbx stopped, physical screen OFF, no owned clients/tunnels or
+changed settings/pending recovery; custody released, no security-lock claim.
+No Fold operation or new media copy. Raw code, addresses and logs remain private.
+
+The source-built export directory also maps ordinal 184 to the actual
+NtAllocateVirtualMemory body, matching its linker map; this does not establish
+what the title's runtime thunk contains at the fault.
+
+To resolve this specific ambiguity, v4 adds CPU-vector versus software-raise
+origin and current-thread identity to the same bounded dispatch record. Only for
+zero saved EIP, it reads one candidate return PC at saved ESP, after checking
+alignment, overflow, current-thread stack bounds and both mapped ends. This is
+a candidate until correlated with an actual call instruction; no frame arguments
+or arbitrary memory payload are dumped. Exception dispatch/unwind behavior is
+unchanged. A new fixed v4 root preserves baseline/v1/v2/v3 firmware/data bindings.
+
+Built v9 / `0.4.2-nullcall-caller`, same package/signer/ABI3/native core:
+APK `76739a8e348338ee50c024c04ace4fad58b541ab07db5ff9b03ec8fa2dc19e76`,
+Rust library `fd275abad352478b6c963d4276f69ed87f77e2d8fafccf10773144d46f163e1f`.
+Patch `7eb48fb10ca5784a887d93db23f02c07ec83dc7b105930e1a71204724e0a0dc5`;
+firmware `0cdedf6d81dabdbeafc1cff78039cf78f19cb7923078f201724e346ca94ee8e8`.
+Pins/64 MiB/build flags remain unchanged; actual build.identity/images retained.
+Signature/alignment and predecessor signer checks pass. The same focused native
+relaunch boundary passed on this final firmware with normal status 0/QMP shutdown,
+forced=false. A shared-device custody check found another operator, so no v9
+phone acquisition was attempted at that point.
+
+## Original handled-null-call fixture
+
+While the phone was occupied, a small original mechanical i386 shim was added at
+`native/fixtures/nullcall.S`. Rust owns its build and bounded runner; there is no
+new application layer or kernel implementation. It makes a real indirect call to
+zero, registers a handler that checks the access-violation/null-PC context and
+actual pushed return address, then resumes and publishes guest success flags.
+It has no SDK, game code, imports, writable disk operation or injected QMP result.
+The assembly declares its COFF feature and SafeSEH handler metadata explicitly.
+
+```sh
+cargo xtask nullcall-build
+cargo run -p xbx-host --offline -- boot-nullcall \
+  .local/build-desktop/qemu-system-i386 /new/short/nullcall-scratch \
+  /selected/build/bios.bin /isolated/seed/hdd.qcow2 \
+  .local/build-nullcall-fixture-v2/nullcall.iso \
+  .local/build-nullcall-fixture-v2/title.map
+```
+
+Use the existing read-only NDK for the build, as for other xtask commands. Building
+refuses an existing fixture directory; use retained successful outputs for a new
+run instead of replacing build/failure evidence. The pinned OXOS format tools
+wrap the generated PE/XBE/disc; no upstream test campaign/default HDD is invoked.
+
+On the exact v4 firmware and retained desktop core under `G_DEBUG=fatal-criticals`,
+the guest handled and resumed from the null call, reported all three expected
+flags, and generated exactly one exception event: CPU vector 14, null PC/fault,
+valid saved stack, candidate return PC matching the fixture's known return symbol.
+QMP stop/quit acknowledged, native status 0, forced=false, storage lease held
+through reaping/sync. This validates correlation for that synthetic contract;
+it does not identify Fable's caller or prove its handler outcome. Build failures
+and earlier diagnostic variants remain retained privately.
