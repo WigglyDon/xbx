@@ -1,0 +1,75 @@
+# Local work, resources and safety
+
+## One product worker
+
+Use one xbx Codex in its own checkout. Inspect local changes, processes and issue
+acknowledgments before starting another. No interference with PSX, FN64, Kitten,
+Genie or studio checkouts. A published issue is not evidence of a running worker.
+Master owns product/architecture decisions; Codex owns routine implementation,
+tests and reviewed commits/pushes. Keep durable decisions in these small documents
+and work progress in the actual issue, not an expanding parallel status registry.
+
+## Workstation storage
+
+The owner's development host is shared and has recently required storage repair.
+That history is a warning, not a current capacity measurement. Before cloning
+large donor histories, downloading SDKs, expanding disks or building, inspect
+current capacity and jobs. On Btrfs, free bytes alone are insufficient: inspect
+metadata allocation, global-reserve use and device-unallocated space through
+existing approved read-only tooling. Inability to read required accounting is
+not permission to assume capacity.
+
+Estimate peak extra allocation, including source/dependencies, compilation,
+virtual disks, temporary conversions, source bundles and evidence. Reserve the
+current custodian's margin and serialize competing heavy work. Reuse existing
+authorized SDK/NDK tools without purging or mutating another project's caches.
+No privileged filesystem balance, repair, package removal, blanket `git clean`,
+`cargo clean`, snapshot expiry or unrequested deletion.
+
+Use sparse/COW game-disk storage only with actual format and filesystem evidence.
+Record apparent size and allocated blocks separately. Do not copy multi-gigabyte
+game media into every backup. Preserve complete current progress before updates;
+a previous APK alone is not recovery of migrated app data.
+
+The seed/bootstrap itself is small and performs no emulator build or SDK install.
+It refuses unrelated existing destination contents and does not delete work.
+`.local/` remains private/protected. It contains receipts and later owner data,
+not an automatically disposable cache.
+
+## Device operation
+
+The owner's personal Fold is available only in a fresh authorized operating
+window under the existing stock-device procedure. Verify exact identity, one
+custodian and current grant; never guess serials or assume an unlocked device is
+free. Build and package before holding it. Avoid PSX data and all unrelated apps.
+No root/unlock/wipe, package disabling, global graphics/debug changes or hardware
+firmware flashing. Ask the owner for required interaction instead of bypassing
+lock screens or permission prompts.
+
+Install xbx only with its own package identity. Before replacing a tested xbx
+build, preserve actual xbx data, signing identity and recovery instructions.
+Respect the authorized window and stop new work on expiry or connection loss.
+Checkpoint, restore agreed settings, stop only owned processes and verify the
+agreed return state. Report inability to verify rather than claiming a handback.
+
+## Private inputs
+
+Ask for one original-Xbox game the owner actually wants to test, then have them
+identify it locally. A filename in a conversation is not rights evidence or file
+availability. Do not acquire games/firmware from unofficial download sites.
+Only inspect owner-authorized directories; do not scan the whole workstation to
+look for firmware or consolidate unrelated libraries.
+
+Generated fixtures and lawful homebrew are useful for mechanisms but do not
+replace selected-game acceptance. Games, proprietary BIOS/MCPX, EEPROM/keys,
+saves, signing material, raw device logs/captures and private paths stay local.
+Use sanitized identities in public issues. Inspect source bundles before publish.
+
+## Keeping evidence useful
+
+Keep one named output per experiment with source pin, host/device class,
+commands, expected milestone, actual result and remaining boundary. Do not
+publish repetitive raw dumps or call a synthetic test a performance measurement.
+Retain last-working artifacts and unique failure evidence. Normal reviewed source
+integration is authorized; public binary release, paid resources and store
+submission require their own gate. Reconcile rather than force-pushing history.

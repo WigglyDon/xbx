@@ -1,0 +1,67 @@
+Initialize as xbx's implementation Codex in THIS checkout. This is a separate
+Xbox sister product, not a rename/merge of PSX and not permission to alter PSX,
+FN64, Kitten, studio services, other workers, or private app data.
+
+Read AGENTS.md, docs/state.toml, docs/github-state.toml,
+handoff/MASTER_SEED.md, docs/PRODUCT.md, docs/ARCHITECTURE.md,
+docs/XBOX_FEASIBILITY.md, docs/DISTRIBUTION.md, docs/OPERATIONS.md,
+and the live XBX-1 issue and comments. The bootstrap receipt contains actual
+issue numbers/URLs; do not assume they equal a prepared document's filename.
+Use docs/issues/XBX-1.md only as the prepared scope if GitHub is unavailable,
+and state that limitation. Inspect current source/work and actual worker
+acknowledgments before starting duplicate work.
+
+Owner objective: same game-first product as PSX under the separate public name
+xbx. Original Xbox first; Android ARM64 on the owner's stock Fold is the first
+desired playable target. Xbox 360 and later systems are future scope. Public
+source, original MIT work, all substantive new first-party logic in Rust;
+retained donor C/C++ and justified small modifications/glue are permitted.
+A vendor boundary is not a prohibition on fixing the actual problem.
+
+Begin XBX-1 now. First verify owner/visibility, actual source binding, local
+changes, available tools and real shared-host capacity. Acknowledge in the live
+issue with that binding and your first concrete step. Do not start another
+worker or a speculative framework. Source-audit/pin the xemu lineage and its
+existing Android port, establish the native lifecycle/render/storage boundary,
+then source-build a bounded candidate and implement one real Rust-hosted slice.
+Do not require libretro, assume safe core reinitialization, or transplant PS1
+card handling onto Xbox disk snapshots.
+
+Preserve the critical coherence rule: machine state, writable virtual disk,
+EEPROM/profile identity and media must represent the same resumable generation.
+An old snapshot must not silently erase newer in-game saves. Use isolated scratch
+storage for candidate tests and prove ordinary saves separately from full resume.
+Separate durable GameId/SavedSession from LiveRuntime and later process placement.
+
+Inspect open boot/kernel candidates for out-of-box completeness without treating
+their provenance/compatibility claims as proof. Existing donor code may be fixed;
+justified bounded first-party Rust replacements may be implemented. No compulsory
+donor-hopping or whole emulator/kernel rewrite. Escalate a material architecture
+campaign, unresolved rights/security model or data-loss risk, not ordinary repairs.
+
+The current seed contains no engine code, APK or earned device result. Continue
+independent off-device implementation while missing inputs are resolved. Ask the
+owner for the first original-Xbox game and any actually required legitimate local
+inputs, only when needed; never invent their presence or scan unrelated folders.
+Request a fresh stock-device operating window before ANY phone use. No root,
+security changes, package disabling, console flashing or paid infrastructure.
+
+Use a separate xbx application ID/signing/data namespace. Reuse selectively from
+the pinned public PSX Rust source only with notices and provenance; do not copy its
+private files or coupled console assumptions. Honor current host storage policy;
+no large clones/builds before capacity preflight and no cleanup of other projects.
+
+Keep reviewed source and suitable progress on GitHub. Normal commits/pushes are
+authorized for xbx. Do not publish games, proprietary firmware, EEPROM keys,
+saves, signing credentials or raw private logs. Respect actual tools/permissions.
+Do not bypass approval controls or claim that an issue post started a worker.
+
+Produce a concrete source/build/native-runtime result, not only another plan.
+When the engine slice is viable, continue XBX-2's prepared player work within the
+same assignment rather than wait for ceremonial issue closure; reread any fresh
+Master decisions. Do not activate optional multi-resident games or a full iOS port.
+
+Final handback belongs on the active issue: exact source/build identity,
+reproducible commands, lineage/licenses, actual tested paths, gameplay/audio/save/
+snapshot/shortcut outcomes, performance limits, preserved data and device return.
+Keep acceptance evidence distinct from source review and build success.

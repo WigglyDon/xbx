@@ -1,0 +1,4 @@
+XBX-1: Source qualification and original Xbox vertical slice	docs/issues/XBX-1.md	phase:active,area:engine
+XBX-2: Game-first Rust player and durable Xbox sessions	docs/issues/XBX-2.md	phase:prepared,area:player
+XBX-3: Complete-install firmware and mobile-store release gates	docs/issues/XBX-3.md	phase:prepared,area:distribution
+XBX-4: Optional paused-resident Android game sessions	docs/issues/XBX-4.md	phase:future,area:runtime

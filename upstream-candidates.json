@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "kind": "research_observations_not_build_lock",
+  "observed_on": "2026-10-21",
+  "selected_engine": null,
+  "candidates": [
+    {
+      "name": "xemu",
+      "repository": "xemu-project/xemu",
+      "commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+      "role": "reference_engine_lineage",
+      "qualification": "source_reference_only"
+    },
+    {
+      "name": "X1 BOX",
+      "repository": "izzy2lost/xemu",
+      "commit": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+      "role": "first_android_port_candidate",
+      "qualification": "README_and_ref_inspected_no_runtime"
+    },
+    {
+      "name": "Roswell",
+      "repository": "XboxDev/roswell",
+      "commit": "1569e2e89fb47cc72b9c704a8884f98200432bd4",
+      "role": "open_kernel_candidate",
+      "qualification": "author_claims_no_xbx_test"
+    },
+    {
+      "name": "OXOS",
+      "repository": "kooscode/oxos",
+      "commit": "c0c887a1263ebf89ba765f34a88ca8f132901e25",
+      "role": "open_boot_kernel_candidate",
+      "qualification": "author_claims_provenance_and_output_audit_required"
+    }
+  ],
+  "psx_reference": {
+    "repository": "WigglyDon/psx",
+    "commit": "1e4ba86fa0a5fc1470837b6bcc06bd20b6642c11",
+    "implementation_copied": false
+  },
+  "requirements_before_incorporation": [
+    "recursive_dependency_pin",
+    "file_level_license_review",
+    "source_reproduction",
+    "private_input_exclusion",
+    "actual_platform_execution"
+  ]
+}

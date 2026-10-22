@@ -1,0 +1,8 @@
+phase:active	0E8A16	Authorized initial implementation scope
+phase:prepared	1D76DB	Prepared follow-on scope; read dependencies
+phase:future	BFDADC	Not dispatched
+area:engine	5319E7	Emulation and native engine integration
+area:player	0052CC	Rust player, input and durable sessions
+area:distribution	FBCA04	Firmware, source rights and release gates
+area:runtime	D4C5F9	Runtime lifecycle and residency
+bug	D73A4A	A reproducible defect

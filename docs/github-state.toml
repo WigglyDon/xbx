@@ -1,0 +1,6 @@
+schema_version = 1
+repository = "WigglyDon/xbx"
+publication_status = "not_created_from_chat"
+verified_from_chat = false
+reason = "The available GitHub connection has no repository-creation action; local bootstrap is prepared."
+# Replaced by scripts/publish-github.sh only after actual remote verification.
