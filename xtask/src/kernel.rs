@@ -167,18 +167,48 @@ pub fn title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
 
 /// Original mechanical guest ABI shim; Rust owns the build and acceptance policy.
 pub fn nullcall_title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    abi_title(
+        root,
+        "nullcall.S",
+        "build-nullcall-fixture-v2",
+        "xbx handled null call",
+        "0x58425801",
+        "nullcall.iso",
+    )
+}
+
+/// One bounded loader-resolved reserve/commit/free contract, with synthetic RAM.
+pub fn vm_import_title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    abi_title(
+        root,
+        "vm-imports.S",
+        "build-vm-import-fixture-v1",
+        "xbx VM import contract",
+        "0x58425802",
+        "vm-imports.iso",
+    )
+}
+
+fn abi_title(
+    root: &Path,
+    assembly: &str,
+    directory: &str,
+    name: &str,
+    title_id: &str,
+    disc: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let _lease = crate::capacity::writer(root, 1)?;
     let source = root.join(".local/src/oxos");
     let patch = std::fs::read(root.join("patches/oxos-launch-trace.patch"))?;
     verify(&source, OXOS, Some(&patch))?;
-    let build = root.join(".local/build-nullcall-fixture-v2");
+    let build = root.join(".local").join(directory);
     // Never replace a previously built fixture or failure evidence.
     std::fs::create_dir(&build)?;
     let ndk = PathBuf::from(std::env::var_os("XBX_NDK").ok_or("set XBX_NDK")?);
     let llvm = ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     run(Command::new(llvm.join("clang"))
         .args(["--target=i386-pc-win32", "-march=pentium3", "-c"])
-        .arg(root.join("native/fixtures/nullcall.S"))
+        .arg(root.join("native/fixtures").join(assembly))
         .arg("-o")
         .arg(build.join("title.obj")))?;
     run(Command::new(llvm.join("lld-link"))
@@ -205,13 +235,13 @@ pub fn nullcall_title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
             "--thunks",
             "_XkThunks",
             "--name",
-            "xbx handled null call",
+            name,
             "--title-id",
-            "0x58425801",
+            title_id,
             "--out",
         ])
         .arg(build.join("title.xbe")))?;
     run(Command::new("python3").args(["-I", "-c", "import sys;sys.path.insert(0,sys.argv[1]);import mkxiso;mkxiso.build(sys.argv[2],open(sys.argv[3],'rb').read(),False)"])
-        .arg(source.join("tests")).arg(build.join("nullcall.iso")).arg(build.join("title.xbe")))?;
+        .arg(source.join("tests")).arg(build.join(disc)).arg(build.join("title.xbe")))?;
     Ok(())
 }

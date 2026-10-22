@@ -22,6 +22,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("vm-import-build") {
+        return kernel::vm_import_title(root);
+    }
     if args.first().map(String::as_str) == Some("nullcall-build") {
         return kernel::nullcall_title(root);
     }

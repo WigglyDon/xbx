@@ -95,6 +95,35 @@ pub fn null_call(
 enum TitleCheck {
     Relaunch,
     NullCall,
+    VmImports,
+}
+
+/// Bounded original loaded-title VM import/ABI check, independent of private titles.
+pub fn vm_imports(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    disc: &Path,
+    title_map: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_inner(
+        engine,
+        new_root,
+        Some((flash, disk, title_map)),
+        Some((disc, TitleCheck::VmImports)),
+    )
+}
+
+fn map_symbol(map: &str, symbol: &str) -> Result<u64, Box<dyn std::error::Error>> {
+    let line = map
+        .lines()
+        .find(|line| line.split_whitespace().nth(1) == Some(symbol))
+        .ok_or("required fixture/kernel map symbol missing")?;
+    Ok(u64::from_str_radix(
+        line.split_whitespace().nth(2).ok_or("invalid map symbol")?,
+        16,
+    )?)
 }
 
 fn hmp_words(reply: &str) -> Vec<u32> {
@@ -166,6 +195,21 @@ fn run_inner(
                         16,
                     )?,
                 ));
+            }
+            if matches!(relaunch, Some((_, TitleCheck::VmImports))) {
+                let kernel_map = fs::read_to_string(flash.with_file_name("xboxkrnl.map"))?;
+                for (name, decorated) in [
+                    ("NtAllocateVirtualMemory", "_NtAllocateVirtualMemory@20"),
+                    ("NtFreeVirtualMemory", "_NtFreeVirtualMemory@12"),
+                ] {
+                    symbols.push((name, map_symbol(&kernel_map, decorated)?));
+                }
+                for (name, decorated) in [
+                    ("reserve_return", "_XbxVmReserveReturn"),
+                    ("commit_return", "_XbxVmCommitReturn"),
+                ] {
+                    symbols.push((name, map_symbol(&map, decorated)?));
+                }
             }
         } else {
             for name in [
@@ -268,6 +312,7 @@ fn run_inner(
     let deadline = Instant::now() + Duration::from_secs(if kernel.is_some() { 60 } else { 20 });
     let mut booted = false;
     let mut markers = Vec::new();
+    let mut vm_words = None;
     while !qmp.exists() && Instant::now() < deadline {
         if child.try_wait()?.is_some() {
             break;
@@ -290,16 +335,27 @@ fn run_inner(
         while Instant::now() < deadline {
             if let Some((_, check)) = relaunch {
                 let address = symbols[0].1;
-                let count = if matches!(check, TitleCheck::NullCall) {
-                    2
-                } else {
-                    44
+                let count = match check {
+                    TitleCheck::NullCall => 2,
+                    TitleCheck::VmImports => 36,
+                    TitleCheck::Relaunch => 44,
                 };
                 let request = format!(
                     "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/{count}wx {address:#x}\"}}}}\n"
                 );
                 socket.write_all(request.as_bytes())?;
                 let words = hmp_words(&response(&mut reader)?);
+                if matches!(check, TitleCheck::VmImports)
+                    && words.len() == 36
+                    && words[0] == 0x4d564258
+                {
+                    fs::write(
+                        root.join("vm-import-results.txt"),
+                        format!("guest_words={words:?}\n"),
+                    )?;
+                    vm_words = Some(words);
+                    break;
+                }
                 if matches!(check, TitleCheck::NullCall)
                     && words.len() == 2
                     && words[0] == 0x46584258
@@ -398,6 +454,75 @@ fn run_inner(
     )?;
     let _ = drain.join();
     lease.sync_storage()?;
+    if matches!(relaunch, Some((_, TitleCheck::VmImports))) {
+        let path = root.join("kernel.log");
+        if fs::metadata(&path)?.len() > 1024 * 1024 {
+            return Err("unexpected synthetic serial log size".into());
+        }
+        let text = fs::read_to_string(path)?;
+        let exceptions = text
+            .lines()
+            .filter(|line| line.starts_with("XBX-EXCEPTION "))
+            .count();
+        let mut guest_contract = false;
+        let mut calls_correlated = false;
+        if let Some(w) = &vm_words {
+            let preserved = [0x11223344, 0x55667788, 0x99aabbcc, 0x13579bdf];
+            guest_contract = w[1..8] == [6, 0, 7, 7, 0, 0, 0]
+                && (0x20000..=0x7ffd0000).contains(&w[8])
+                && w[8] & 0xffff == 0
+                && w[9] == 0x10000
+                && w[10] == w[8] + 0x1000
+                && w[11] == 0x2000
+                && w[12] == w[8]
+                && w[13] == 0x10000
+                && w[14..16] == [2048, 2048]
+                && w[16..22]
+                    .chunks_exact(2)
+                    .all(|p| p[0] != 0 && p[0] & 3 == 0 && p[0] == p[1])
+                && w[22..34].chunks_exact(4).all(|r| r == preserved)
+                && w[34] as u64 == symbols[1].1
+                && w[35] as u64 == symbols[2].1;
+            let records: Vec<_> = text
+                .lines()
+                .filter(|line| line.starts_with("XBX-VM "))
+                .collect();
+            calls_correlated = [
+                (symbols[3].1, 0, 0x10000, w[8], 0x2000),
+                (symbols[4].1, w[10], 0x2000, w[10], 0x1000),
+            ]
+            .iter()
+            .all(|(caller, base, size, result, kind)| {
+                let caller = format!("caller={caller:08x}");
+                let matching: Vec<_> = records
+                    .iter()
+                    .filter(|line| line.split_ascii_whitespace().any(|word| word == caller))
+                    .collect();
+                let fields = [
+                    "status=00000000".to_owned(),
+                    format!("base={base:08x}"),
+                    format!("size={size:08x}"),
+                    format!("result_base={result:08x}"),
+                    format!("result_size={size:08x}"),
+                    format!("type={kind:08x}"),
+                    "protect=00000004".to_owned(),
+                ];
+                matching.len() == 1
+                    && fields.iter().all(|field| {
+                        matching[0]
+                            .split_ascii_whitespace()
+                            .any(|word| word == field)
+                    })
+            });
+        }
+        booted = guest_contract && calls_correlated && exceptions == 0;
+        fs::write(
+            root.join("vm-import-acceptance.txt"),
+            format!(
+                "guest_contract={guest_contract}\nallocation_calls_correlated={calls_correlated}\nunexpected_exceptions={exceptions}\naccepted={booted}\n"
+            ),
+        )?;
+    }
     if matches!(relaunch, Some((_, TitleCheck::NullCall))) {
         let log = root.join("kernel.log");
         if fs::metadata(&log)?.len() > 1024 * 1024 {
@@ -437,6 +562,8 @@ fn run_inner(
         "{}: {booted}; normal QMP shutdown: {}",
         if matches!(relaunch, Some((_, TitleCheck::NullCall))) {
             "synthetic null CALL handled/resumed and diagnostic return PC correlated"
+        } else if matches!(relaunch, Some((_, TitleCheck::VmImports))) {
+            "synthetic title-import VM/ABI contract observed"
         } else if relaunch.is_some() {
             "two-stage title entry, carried data and D: mapping observed"
         } else if kernel.is_some() {

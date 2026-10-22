@@ -18,6 +18,13 @@ Xbox CONTEXT/registration offsets use interface facts from the pinned kernel.
 The pinned OXOS `mkxbe.py` and `mkxiso.py` tools are invoked to wrap the generated
 fixture, retaining their own terms; their implementations are not copied here.
 
+`native/fixtures/vm-imports.S` is also an original MIT mechanical i386 ABI shim.
+It uses only public interface facts from OXOS `kernel/include/xk/mm.h` and
+`kernel/exports.tsv` at the pin below: allocation/free ordinals, stdcall argument
+sizes, flags and types. No allocator implementation or title code is copied.
+The same pinned wrapping tools are invoked under their existing terms. Rust owns
+the build and acceptance policy; see [VM_IMPORT_CONTRACT.md](docs/VM_IMPORT_CONTRACT.md).
+
 ## Qualification build lineage
 
 The selected **qualification candidate**, not a shipping compatibility claim,

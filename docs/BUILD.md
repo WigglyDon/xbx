@@ -102,6 +102,11 @@ to future checkpoint media identity, alongside the source image fingerprint.
 
 ## Boundary checks
 
+The finite loaded-title reserve/commit/free and caller ABI check is documented
+with its actual desktop result and exact retained inputs in
+[VM_IMPORT_CONTRACT.md](VM_IMPORT_CONTRACT.md). It uses original synthetic code;
+it requires no game, phone, APK build or firmware rebuild.
+
 ```sh
 cargo test --workspace --offline -j 1
 cargo test -p xbx-host --offline -j 1 --test boundaries qcow2_current -- --ignored --nocapture
