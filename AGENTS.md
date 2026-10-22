@@ -13,7 +13,9 @@ local work and worker acknowledgments before creating another worker.
 
 The owner requests a public, free-source Xbox sister to PSX named `xbx`, with
 separate branding and app identity. Original Xbox is the initial interpretation;
-Android ARM64 on the owner's stock Fold is the first desired playable target.
+Android ARM64 on the owner's stock Fold was the first desired playable target.
+The owner's October 22 continuation prioritizes the accessible stock Pixel 4
+for compatibility work; Fold qualification remains in scope.
 Xbox 360/later systems, a full iOS port and multiple live games are later work.
 Preserve the game-first, direct-launch, durable-return experience in PRODUCT.md.
 

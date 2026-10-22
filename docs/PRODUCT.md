@@ -20,8 +20,10 @@ interpretation of "Xbox" and is explicit for Master review. Future Xbox 360 or
 later systems need separate engine, resource, rights and performance decisions.
 Do not ship dead sections or imply that an original-Xbox core runs those games.
 
-First desired device: the owner's stock Android ARM64 Fold. Measure the actual
-OS, GPU, host page size and available memory in an authorized window; do not
+The owner's initial desired device was the stock Android ARM64 Fold. The owner's
+October 22 continuation makes the more accessible stock Pixel 4 the higher
+priority compatibility target; retain the Fold as a supported target to qualify.
+Measure the actual OS, GPU, host page size and available memory in an authorized window; do not
 infer them from a product nickname or from a different phone. Host diagnostics
 on Linux/macOS may establish causes, not mobile acceptance. Keep an iPhone/store
 route as a product goal without pretending a normal stock-iOS build can use a
