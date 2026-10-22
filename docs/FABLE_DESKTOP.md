@@ -149,6 +149,15 @@ For B use `/new/private/scratch-B` and replace only the flash argument with:
 
 The executed A2/B1 Rust runner SHA-256 is
 `20e7216e3b05cbc707adf54d05d1b2dbc191b39eae63d62c034cc82a264cef1c`.
+Its exact source is `471f6cb4ccf0de439390042a02b2c2e70ca1c4f6`; a rebuilt
+binary from that source matched the executed digest, and the executable is
+retained privately. A subsequent source-review correction moves fallible native
+PID-receipt publication inside the native termination/reaping/sync path and
+updates CLI usage. This is host cleanup policy, not a Fable repair; workspace
+checks were rerun, with no further game trial or Android acceptance claimed.
+The final source-review build SHA-256 is
+`f6aaeeae2e5f03c31b7356cc1e7347f258361806323714c31635abb59319444e`;
+it is distinct from the actually executed A2/B1 artifact above.
 A1's earlier preparation build was
 `f5ae943ff6a03ca17e8118f656c923376d1f44a6165ee3f6adcce3341e7daee8`.
 The ordinary runner and JSON-view policy are original MIT Rust. Existing QEMU/
@@ -162,6 +171,12 @@ copy/failed-attempt receipts, run commands/output, summaries and complete hashes
 Full game/source hashes and synthetic EEPROM identity stay local. The receipt
 separates native command success from failed game acceptance.
 
+Observation receipt SHA-256: A2
+`8f7311bb7c501cadde1d66c7dde119656f67b1764d9d7522b068addcbebd0d65`, B1
+`9d075b7318ba59e84877268b9a7619b9beca1e9e96dab60a852ae5d1a747a9f1`.
+All three native termination receipts hash to
+`9dfd2c0bd250dd7006f233ed21926e85e38ee7db9709c0cde666fb7b66e31d57`.
+
 Workspace checks: **21 passed, three gated native/storage tests ignored**;
 the existing raw-view integration test additionally passed explicitly, now covering
 the desktop JSON filename form and read-only behavior. Clippy with warnings denied,
@@ -174,6 +189,8 @@ inventoried firmware/maps/receipts, fixture outputs, native core, Android select
 selected assets, the d87 image and common synthetic EEPROM template. Both phone
 originals and existing phone profiles remain preserved; only the Pixel source
 was read. Owner private evidence was not reopened for game-code analysis.
+The identical before/after manifest SHA-256 is
+`d50f67293e9ec874f5ec6da58116586c46636047333f8b9320e0626f876b168b`.
 
 **No demonstrated working route exists for Pixel 4 continuation.** No Android
 build, install or game trial was performed. The optional reference comparison

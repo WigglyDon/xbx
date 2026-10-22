@@ -81,5 +81,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         return Ok(());
     }
-    Err("usage: xbx-host inspect-disc <complete-local-image> | boot-probe <source-built-xemu> <new-scratch-directory>".into())
+    Err("usage: xbx-host inspect-disc IMAGE | run-title ENGINE NEW_SCRATCH FLASH HDD EEPROM MEDIA SECONDS [MCPX] | boot-probe ENGINE NEW_SCRATCH".into())
 }

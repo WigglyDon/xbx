@@ -117,7 +117,6 @@ pub fn run(
     lease.begin_writes()?;
     lease.inherit_for(&mut command);
     let mut owned = OwnedChild(command.spawn()?);
-    fs::write(root.join("native.pid"), owned.0.id().to_string())?;
     drop(command);
     drop(incoming);
     let drain = std::thread::spawn(move || {
@@ -138,6 +137,9 @@ pub fn run(
     let mut reason = "observation_budget_expired_requires_visual_review";
     let mut monitor_keepalive = None;
     let observation = (|| -> Result<(), Box<dyn std::error::Error>> {
+        // Receipt publication can fail too; keep it inside the same native
+        // termination/reaping/storage-sync path as monitor failures.
+        fs::write(root.join("native.pid"), owned.0.id().to_string())?;
         while !qmp.exists() && Instant::now() < deadline {
             if owned.0.try_wait()?.is_some() {
                 return Err("native exited before monitor readiness".into());
