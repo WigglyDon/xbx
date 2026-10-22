@@ -2,16 +2,55 @@
 
 ## Seed inventory
 
-This foundation contains original project documentation and Bash repository
-bootstrap scripts. **It contains no emulator, firmware, game, font, logo or PSX
-implementation code.** Its source links and candidate observations do not
-incorporate those upstream projects or certify their provenance.
+The initial foundation at `59fbcfa` contained documentation/bootstrap only.
+The qualification implementation now builds the candidate below from pinned
+public source in ignored local storage. No game, proprietary firmware, EEPROM,
+save, signing key, font/logo asset or PSX implementation is incorporated here.
 
 Original contributions use the root MIT license. That grant does not cover
 software added from elsewhere. A future combined distribution must satisfy the
 exact licenses of its core, dependencies, assets, firmware and copied source.
 
-## Candidate lineage, not incorporated code
+## Qualification build lineage
+
+The selected **qualification candidate**, not a shipping compatibility claim,
+is `izzy2lost/xemu` at `4967efd3ee594cc236869a45ee4cb396e25af1ac`, compared to
+`xemu-project/xemu` at `03b988c9d76553b33ed712ba00822ffdf49f0e7d`.
+[source-inputs.lock.json](source-inputs.lock.json) records the actual recursive
+Git/archive bindings. Its DSP Cargo.lock hash binds registry dependency checksums
+at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.md).
+
+- `patches/xemu-android.patch` modifies retained GPL-lineage source and build
+  files: deterministic dependencies, profile paths, EEPROM preservation,
+  cross-thread control flags, hidden snapshot servicing and source-built desktop
+  DSP input. Individual upstream terms remain applicable.
+- `native/xbx_xemu_bridge.c` adapts the mechanical init/display/thread entry from
+  the pinned `android/app/src/main/cpp/xemu_android.cpp`; GPL-2.0-or-later, with
+  [GPL text](LICENSES/GPL-2.0.txt). This is not covered by the root MIT grant.
+- The APK compiles SDL's platform Java sources from the exact SDL 3.4.14 archive,
+  `android-project/app/src/main/java/org/libsdl/app/`, under SDL's zlib license.
+  The small xbx Java subclass is original mechanical platform glue, MIT.
+- Original Rust modules are MIT. No PSX files were copied. XDVDFS offsets/layout
+  were cross-checked against the pinned fork's MIT `android/third_party/xdvdfs-core`
+  by antangelo, specifically `blockdev/offset.rs` and `layout/`; no parser code
+  was copied. The synthetic reset ROM contains original diagnostic instructions.
+
+The actual native graph includes QEMU/xemu (root GPLv2 terms and per-file
+exceptions), SDL3 (zlib and component notices), toml++ (MIT), libslirp (BSD-style
+and per-file terms), nv2a_vsh_cpu (MIT), adrenotools/linkernsbypass (MIT), volk
+(MIT), VulkanMemoryAllocator (MIT), glslang (BSD/MIT/Apache and per-file terms),
+SPIRV-Reflect (Apache-2.0), DSP56300 (MIT plus its locked Rust dependencies),
+GLib 2.66.8 (LGPL and component terms), libffi (MIT-style), and proxy-libintl
+(GNU Library GPL v2 text and source-specific terms). Toolchain/runtime notices
+also apply. This inventory does not substitute for the complete file-level
+notices/corresponding-source bundle required for a public binary.
+
+**Distribution review remains open:** SPIRV-Reflect's Apache-2.0 source is linked
+alongside the donor's GPLv2 combined-work terms; the selected file-level license
+compatibility and resulting distribution obligations require explicit review.
+An upstream build is not clearance. No public binary is released by this work.
+
+## Candidates not incorporated as firmware
 
 - xemu derives from QEMU. Its LICENSE describes GPL version 2 overall, with
   other terms in individual components. Do not assume GPL-2.0-or-later for every
@@ -28,7 +67,10 @@ exact licenses of its core, dependencies, assets, firmware and copied source.
   GPL cores, fonts or firmware and label the resulting tree MIT-only.
 
 Observed revisions and source URLs are in `upstream-candidates.json` and
-[docs/SOURCES.md](docs/SOURCES.md). No candidate is selected by this inventory.
+[docs/SOURCES.md](docs/SOURCES.md). Neither open-kernel candidate is selected as
+a distributable default. OXOS documents non-stock save-signature keys and a
+separate proprietary comparison-image route; neither may be silently substituted
+beneath an existing profile. Roswell's 128 MiB configuration is unqualified here.
 
 ## Before incorporation
 

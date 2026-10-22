@@ -39,6 +39,13 @@ wrong firmware/core, corrupt state, killed writer, unavailable content and full
 storage use fixtures; never deliberately exhaust the owner's device or modify
 their only live save. Preserve errors and show an actionable recovery route.
 
+Include process death after the dirty-runtime epoch is durable but before a
+checkpoint commit, and verify final lineage validation happens under the OS
+lease. Test checkpoint requests while the surface is hidden and the VM already
+paused: no dependency on a later visible frame, no stale device-state capture,
+and no delayed native publication after ownership changes. A pause request is
+not quiescence; a completed block fixture is not an in-game save or VM resume.
+
 Check supported app update with retained IDs, disk lineage and signing identity.
 No claim of arbitrary cross-core state compatibility. A normal reboot/restart is
 safe only where authorized and does not interrupt unrelated user work.

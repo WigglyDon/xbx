@@ -1,0 +1,105 @@
+# Qualification builds
+
+This builds a diagnostic candidate, not the finished player or an approved
+binary release. The active issue owns progress and acceptance evidence.
+`source-inputs.lock.json` and `patches/xemu-android.patch` bind the engine graph.
+First-party Rust has no external Cargo dependencies; DSP dependencies use its
+pinned upstream Cargo.lock with `--locked`.
+
+## Host preparation
+
+Use existing read-only tool installations. The measured pass used Linux x86_64,
+Rust 1.96.1, CMake 4.3.0, Ninja 1.13.2, Meson 1.9.2, NDK 30.0.16248370,
+Android platform/build tools 37.0 and OpenJDK 25.0.4.1. Target API is 36; native
+minimum API 29 follows the port's ELF TLS requirement. These are build inputs,
+not Fold observations. No SDK directory is modified by xtask.
+
+```sh
+python3 -m venv .local/tools
+.local/tools/bin/pip install meson==1.9.2
+export XBX_NDK=/path/to/read-only/ndk/30.0.16248370
+export XBX_SDK=/path/to/read-only/android-sdk
+cargo xtask capacity 6
+cargo xtask source-prepare
+cargo xtask source-check
+cargo xtask android-configure
+cargo xtask android-build
+cargo xtask android-host
+cargo xtask android-apk
+```
+
+`xtask` checks free space and Btrfs metadata/allocation/global-reserve accounting,
+retains 12 GiB plus estimated growth and at least 1 GiB usable metadata when
+device-unallocated space is low, and holds one xbx build-writer lease. It does
+not reserve space against other projects, qualify performance, repair a
+filesystem, install packages or delete a cache. Inspect host jobs before growth;
+the native/DSP builds use one compiler job. The first 6 GiB peak estimate includes
+source/dependencies/objects/evidence and must be re-evaluated for media conversion.
+One interrupted compilation is resumed in the same build directory.
+
+The output is `.local/xbx-qualification.apk`, package `com.machinerhythm.xbx`,
+activity process `:engine`, ARM64 only. Signing is generated separately under
+protected `.local/signing`; preserve that directory and password file. The build
+does not access PSX signing/data. It does not install an app, access a phone or
+publish an APK. Verify a fresh device operating window before any phone action.
+
+The qualification APK requires a deliberately prepared private
+`xbx-qualification` profile containing `flash.bin`, `hdd.qcow2` and `disc.xiso`.
+It is not a file-picker/player UX. Firmware is not supplied or qualified by this
+recipe. Do not copy owner saves into this scratch profile. Rust reads the disc
+structurally, takes the writer lease before final validation, generates fixed
+profile paths, fsyncs a dirty epoch before QEMU writes, and holds ownership until
+process exit. Automatic snapshot restore is disabled. The 128 MiB diagnostic
+configuration is not a qualified Fable profile.
+
+## Boundary checks
+
+```sh
+cargo test --workspace --offline -j 1
+cargo test -p xbx-host --offline -j 1 --test boundaries qcow2_current -- --ignored --nocapture
+cargo run -p xbx-host --offline -- inspect-disc /authorized/complete/game.iso
+```
+
+The explicit qcow2 experiment requires host `qemu-img` and `qemu-io` (tested
+10.2.2). It uses only synthetic 16 MiB disks and retains one named result under
+ignored `target/scratch`. Reopened newer bytes, a refused older generation and a
+deliberate rollback copy are **block-storage** evidence, not in-game saving or
+full-machine resume. Other checks cover cross-process writer exclusion,
+inherited ownership after supervisor loss, crash-release, interrupted manifest
+publication and bounded XDVDFS/XBE parsing. The parser ignores filename suffixes;
+it does not certify all disc files, game compatibility, edition or completeness
+of an ongoing download. Do not inspect an owner's partial download as a ready game.
+
+## Native contract and remaining qualification
+
+The retained source owns TCG x86-to-AArch64 execution and core/render threads;
+SDL3 supplies platform windows/controllers/audio, and the initial GPU route is
+system Vulkan. `native/xbx_xemu_bridge.c` exposes configuration, QEMU entry,
+display readiness/loop, thread completion and pause/resume requests. Rust owns
+profile/launch/lifetime policy. A pause request is not a quiescence acknowledgment.
+Native display-ready and shutdown paths still need actual Android failure and
+surface-transition testing. Source review does not prove 16 KiB JIT/runtime safety.
+
+The patch preserves incompatible EEPROMs rather than regenerating/repairing them,
+binds caches/previews to the selected profile, uses atomic cross-thread control
+flags and services snapshot requests even while the display is hidden/paused.
+The retained paused-device-state capture path remains in place. Snapshot I/O,
+durable completion/cancellation and coherent firmware/media/EEPROM/disk manifests
+are not qualified; the Rust host does not expose autosave or the donor menu's
+blocking snapshot dispatcher. Touch controls, the collection, shortcuts, Fable
+gameplay/audio, ordinary saves, full resume and device performance remain unearned.
+
+For an optional desktop CPU diagnostic, build the same source and DSP using
+`cargo xtask desktop-dsp`, `desktop-configure`, `desktop-build`, then run
+`cargo run -p xbx-host --offline -- boot-probe /path/to/source-built/xemu /new/short/scratch`.
+The desktop configure uses task-local pkg-config headers under
+`.local/host-sysroot` when system development headers are unavailable; no package
+installation is performed. The probe generates an original 1 MiB reset ROM,
+checks a guest debug-port banner and requests QMP shutdown. Its inherited profile
+lease survives supervisor loss. It contains no game, MCPX dump or Xbox kernel and
+does not establish gameplay, GPU presentation, sound, saves or Fold acceptance.
+
+All private artifacts, interrupted logs and synthetic experiment data remain
+local. No owner media, EEPROM/key material or signing credential belongs in a
+source bundle. License review and a complete corresponding-source/notices bundle
+precede any public binary; see [THIRD_PARTY.md](../THIRD_PARTY.md).

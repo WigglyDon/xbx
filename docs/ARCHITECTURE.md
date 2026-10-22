@@ -76,9 +76,17 @@ recoverable incomplete candidate, never a fabricated current state.
 
 One OS-owned writer lease covers every writable resource in the console profile,
 including disk overlays, EEPROM and checkpoint publication. Hold it through all
-engine threads' final I/O and clean teardown. Process death releases the lease;
-a new runtime validates actual state before acquiring write ownership. If a
-shared-console profile is later added, its lease is profile-wide, not just GameId.
+engine threads' final I/O and clean teardown. Process death releases the lease.
+Read-only preflight may precede ownership, but acquire the exclusive profile
+lease before final lineage/recovery validation and before opening any native
+writer. If a shared-console profile is later added, its lease is profile-wide,
+not just GameId.
+
+Persist a conservative dirty-runtime epoch before permitting any later disk or
+EEPROM write, including launches that die before publishing a checkpoint. An
+unchanged last-checkpoint counter is not proof that storage stayed unchanged.
+The first diagnostic Rust host durably advances this epoch before QEMU entry;
+it does not yet publish or load machine checkpoints.
 
 A checkpoint that names an older disk generation cannot be resumed over newer
 accepted saves automatically. Preserve it and the current disk, explain the
@@ -94,6 +102,21 @@ Export/recovery must describe which disk/profile/firmware components are require
 exporting just an opaque RAM state is not a complete backup.
 
 ## Engine lifetime and presentation
+
+The XBX-1 Master amendment accepts one isolated Android engine process as the
+provisional boundary for pinned X1 BOX `4967efd3`. Its native frontend joins the
+QEMU thread and uses `_exit` because late SDL/JVM surface callbacks can race
+in-process teardown. The Rust qualification entry follows this lifetime and
+keeps the profile lease until process exit. This is source-backed policy, not
+earned Android shutdown/restart acceptance.
+
+Pause requested, machine quiesced, checkpoint durably committed and native
+teardown complete are distinct events. The pinned Android menu snapshot
+dispatcher waits on a condition variable while hidden/paused display-loop
+paths skip snapshot servicing. This source-inferred deadlock risk must be
+resolved before automatic departure saving. Do not release ownership on a
+timeout while an untracked native write could still complete. The diagnostic
+host does not expose that dispatcher or automatic snapshot restore.
 
 Initially keep one live emulated machine. Prove start, pause, snapshot, stop and
 start-another-game in the same process if the donor supports that lifetime. If

@@ -9,9 +9,12 @@ icon should open that game directly rather than an emulator configuration screen
 
 ## Status
 
-**Project foundation, not a working Xbox emulator or an APK.** No xbx core has
-been incorporated, no game has been run by this seed, and no mobile/store
-compatibility has been earned. See [current state](docs/state.toml).
+**Native candidate qualification; gameplay is not yet demonstrated.** The pinned
+xemu Android core and Rust entry build for ARM64, and a separately signed local
+qualification APK has been packaged. No installation, game/audio/input, in-game
+save, full resume, Fold performance or store result has been earned.
+See [build instructions](docs/BUILD.md), [current state](docs/state.toml), and
+[XBX-1](https://github.com/WigglyDon/xbx/issues/1) for actual evidence.
 
 Initial scope is the **original Xbox**, with the owner's stock Android Fold as
 the first desired playable device. Xbox 360 and later generations are future
@@ -57,9 +60,9 @@ cd xbx
 bash scripts/start-codex.sh
 ```
 
-There is deliberately no speculative Cargo framework or fake emulator in this
-seed. The first implementation must establish a real engine boundary and build
-one useful executable slice, not manufacture a test badge for an empty player.
+The Rust qualification host uses a narrow native entry and private scratch
+profile. The game-first collection, touch player and coherent automatic resume
+remain implementation work. Source/build success is separate from acceptance.
 
 ## Independence
 

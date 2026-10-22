@@ -1,0 +1,350 @@
+diff --git a/android/app/src/main/cpp/CMakeLists.txt b/android/app/src/main/cpp/CMakeLists.txt
+index 1b4d5c1..74166bd 100644
+--- a/android/app/src/main/cpp/CMakeLists.txt
++++ b/android/app/src/main/cpp/CMakeLists.txt
+@@ -108,6 +108,7 @@ elseif(XEMU_FETCH_SDL3)
+   FetchContent_Declare(
+     SDL3
+     URL "https://github.com/libsdl-org/SDL/archive/refs/tags/release-${SDL3_VERSION}.zip"
++    URL_HASH "SHA256=e4f151f878ec08c6a8644761db56e0f97b347f160574aec4fb42505ae7a6a14c"
+   )
+   FetchContent_MakeAvailable(SDL3)
+ endif()
+@@ -215,7 +216,7 @@ if(XEMU_ENABLE_VULKAN)
+   FetchContent_Declare(
+     adrenotools
+     GIT_REPOSITORY "https://github.com/bylaws/libadrenotools"
+-    GIT_TAG "master"
++    GIT_TAG "8fae8ce254dfc1344527e05301e43f37dea2df80"
+     GIT_SHALLOW TRUE
+   )
+   FetchContent_MakeAvailable(adrenotools)
+@@ -402,7 +403,7 @@ endif()
+ # Matches the version upstream xemu pins in subprojects/dsp56300/meson.build.
+ # v0.1.3 is API-compatible with dsp_jit.c (all 14 dsp56300_* entry points we
+ # call are unchanged) and cross-compiles cleanly for aarch64-linux-android.
+-set(DSP56300_GIT_REV "v0.1.3")
++set(DSP56300_GIT_REV "bde7c233a447d32d558c48cb4438e1425fe0bbcc")
+ FetchContent_Declare(
+   dsp56300_src
+   GIT_REPOSITORY "https://github.com/mborgerson/dsp56300.git"
+@@ -499,6 +500,7 @@ add_custom_command(
+     ${DSP56300_CARGO_ENV_VARS}
+     "${CARGO_EXECUTABLE}" build
+     --manifest-path "${DSP56300_RS_DIR}/Cargo.toml"
++    --locked
+     --release
+     --target "${DSP56300_RS_TARGET}"
+   DEPENDS ${DSP56300_RS_SOURCES}
+@@ -1275,6 +1277,10 @@ add_library(xemu SHARED
+   xemu_hdd_tools_jni.c
+ )
+ 
++if(DEFINED XBX_BRIDGE_SOURCE)
++  target_sources(xemu PRIVATE "${XBX_BRIDGE_SOURCE}")
++endif()
++
+ target_compile_definitions(xemu PRIVATE ANDROID __ANDROID__ XBOX CONFIG_SDL CONFIG_OPENGL
+   CONFIG_RENDERDOC
+   $<$<BOOL:${XEMU_OPT_NATIVE_FLOAT}>:XEMU_OPT_NATIVE_FLOAT=1>
+diff --git a/android/app/src/main/cpp/patch_glib.cmake b/android/app/src/main/cpp/patch_glib.cmake
+index d366166..1592054 100644
+--- a/android/app/src/main/cpp/patch_glib.cmake
++++ b/android/app/src/main/cpp/patch_glib.cmake
+@@ -4,6 +4,19 @@ endif()
+ 
+ string(REPLACE "\"" "" GLIB_SOURCE_DIR "${GLIB_SOURCE_DIR}")
+ 
++# Freeze the transitive GLib inputs actually compiled by this Android build.
++foreach(PIN_SPEC "libffi|meson|83d0cfd00d7d37af4b4349511d29f1f0512621b3"
++                 "proxy-libintl|0.1|e792f40de9b2d5c660003276c022ba8d3038fe62")
++  string(REPLACE "|" ";" PIN_PARTS "${PIN_SPEC}")
++  list(GET PIN_PARTS 0 PIN_NAME)
++  list(GET PIN_PARTS 1 PIN_OLD)
++  list(GET PIN_PARTS 2 PIN_SHA)
++  set(PIN_WRAP "${GLIB_SOURCE_DIR}/subprojects/${PIN_NAME}.wrap")
++  file(READ "${PIN_WRAP}" PIN_CONTENT)
++  string(REPLACE "revision=${PIN_OLD}\n" "revision=${PIN_SHA}\n" PIN_CONTENT "${PIN_CONTENT}")
++  file(WRITE "${PIN_WRAP}" "${PIN_CONTENT}")
++endforeach()
++
+ set(MESON_FILE "${GLIB_SOURCE_DIR}/glib/meson.build")
+ if(NOT EXISTS "${MESON_FILE}")
+   message(FATAL_ERROR "glib meson.build not found at ${MESON_FILE}")
+diff --git a/android/app/src/main/cpp/xemu_settings_android.cc b/android/app/src/main/cpp/xemu_settings_android.cc
+index 99f62d2..73b4bc6 100644
+--- a/android/app/src/main/cpp/xemu_settings_android.cc
++++ b/android/app/src/main/cpp/xemu_settings_android.cc
+@@ -278,6 +278,17 @@ const char *xemu_settings_get_base_path(void)
+         return base_path;
+     }
+ 
++    // xbx supplies an absolute, validated profile config under its writer lease.
++    // Keep shader/cache and fallback storage in that same profile.
++    if (settings_path && *settings_path) {
++        std::string profile(settings_path);
++        const auto slash = profile.find_last_of("/\\");
++        if (slash != std::string::npos) {
++            base_path = strdup(profile.substr(0, slash + 1).c_str());
++            return base_path;
++        }
++    }
++
+     /* SDL3: GetPrefPath is caller-owned, GetBasePath is owned by SDL. */
+     char *pref = SDL_GetPrefPath("xemu", "xemu");
+     const char *base = pref ? pref : SDL_GetBasePath();
+diff --git a/android/app/src/main/cpp/xemu_snapshots_stub.c b/android/app/src/main/cpp/xemu_snapshots_stub.c
+index 699b8ef..60de59a 100644
+--- a/android/app/src/main/cpp/xemu_snapshots_stub.c
++++ b/android/app/src/main/cpp/xemu_snapshots_stub.c
+@@ -1,5 +1,6 @@
+ #include "qemu/osdep.h"
+ #include "ui/xemu-snapshots.h"
++#include "ui/xemu-settings.h"
+ #include "qapi/error.h"
+ #include "migration/snapshot.h"
+ #include "migration/qemu-file.h"
+@@ -72,14 +73,14 @@ static void sanitize_snapshot_name(const char *in, char *out, size_t out_len)
+ 
+ static char *get_snapshot_preview_dir(void)
+ {
+-    const char *base = SDL_GetAndroidInternalStoragePath();
++    const char *base = xemu_settings_get_base_path();
+     char *dir;
+ 
+     if (!base || !base[0]) {
+         return NULL;
+     }
+ 
+-    dir = g_strdup_printf("%s/x1box/snapshots", base);
++    dir = g_strdup_printf("%s/snapshots", base);
+     if (g_mkdir_with_parents(dir, 0700) != 0) {
+         SNAP_LOGW("failed to create snapshot preview dir: %s", dir);
+         g_free(dir);
+diff --git a/subprojects/dsp56300/meson.build b/subprojects/dsp56300/meson.build
+index 4eb588b..4d132cd 100644
+--- a/subprojects/dsp56300/meson.build
++++ b/subprojects/dsp56300/meson.build
+@@ -1,48 +1,14 @@
+-project('dsp56300', version: '0.1.1')
+-
++# xbx diagnostic builds use the audited DSP source, never a release archive.
++# Rust xtask builds this library from the same pinned source as Android.
++project('dsp56300', version: '0.1.3')
+ fs = import('fs')
+-
+-host_cpu = host_machine.cpu_family()
+-host_os = host_machine.system()
+-
+-if host_os == 'darwin'
+-  os_suffix = 'apple-darwin'
+-elif host_os == 'windows'
+-  os_suffix = (host_cpu == 'aarch64') ? 'pc-windows-gnullvm' : 'pc-windows-gnu'
+-elif host_os == 'linux'
+-  os_suffix = 'unknown-linux-gnu'
+-else
+-  error('Unsupported host OS: ' + host_os)
++lib = run_command('printenv', 'XBX_DSP_LIBRARY', check: true).stdout().strip()
++source_root = run_command('printenv', 'XBX_DSP_SOURCE', check: true).stdout().strip()
++if not fs.is_file(lib)
++  error('Run cargo xtask desktop-dsp before configuring the desktop diagnostic')
+ endif
+-rust_target = host_cpu + '-' + os_suffix
+-
+-ver = meson.project_version()
+-prefix = 'dsp56300-@0@-@1@'.format(ver, rust_target)
+-archive = '@0@.tar.gz'.format(prefix)
+-url = 'https://github.com/mborgerson/dsp56300/releases/download/v@0@/@1@'.format(ver, archive)
+-lib = meson.current_build_dir() / prefix / 'lib' / 'libdsp56300_emu_ffi.a'
+-
+-if not fs.exists(lib)
+-  src_archive = meson.current_source_dir() / archive
+-  if not fs.exists(src_archive)
+-    message('Downloading dsp56300 @0@ for @1@...'.format(ver, rust_target))
+-    run_command(find_program('curl'), '-fsSL', url, '-o', src_archive, check: true)
+-  endif
+-  run_command('tar', 'xzf', src_archive, '-C', meson.current_build_dir(), check: true)
+-endif
+-
+-link_args = []
+-if host_os == 'linux'
+-  link_args = ['-lpthread', '-ldl', '-lm']
+-elif host_os == 'windows'
+-  link_args = ['-lbcrypt', '-lntdll', '-luserenv', '-lws2_32']
+-elif host_os == 'darwin'
+-  link_args = ['-lpthread', '-lm', '-framework', 'Security']
+-endif
+-
+ dsp56300_dep = declare_dependency(
+-  link_args: [lib] + link_args,
+-  include_directories: include_directories(prefix / 'include'),
++  link_args: [lib, '-lpthread', '-ldl', '-lm'],
++  include_directories: include_directories(source_root / 'crates/emu-ffi/include'),
+ )
+-
+ meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
+diff --git a/system/vl.c b/system/vl.c
+index 68420b9..8ca0cf7 100644
+--- a/system/vl.c
++++ b/system/vl.c
+@@ -2983,9 +2983,8 @@ static const char *get_eeprom_path(void)
+             bool valid = fread(data, 1, 256, f) == 256;
+             fclose(f);
+             if (valid && xbox_eeprom_detect_version(data) != needed) {
+-                ANDROID_LOGI("EEPROM carries the wrong key for this machine, "
+-                             "regenerating: %s", path);
+-                qemu_unlink(path);
++                xemu_queue_error_message("Incompatible EEPROM identity. The existing file was preserved; select its matching profile/firmware explicitly.");
++                return NULL;
+             }
+         }
+     }
+@@ -2997,12 +2996,8 @@ static const char *get_eeprom_path(void)
+      * display mode -- a black screen that could only be cleared by deleting
+      * the file. Repair it in place instead, keeping the rest of the file.
+      */
+-    if (qemu_access(path, F_OK) == 0 && !is_chihiro) {
+-        if (xbox_eeprom_repair(path)) {
+-            ANDROID_LOGI("EEPROM had an invalid video standard, reset to "
+-                         "NTSC-M: %s", path);
+-        }
+-    }
++    /* xbx never repairs existing EEPROM bytes implicitly. A repair needs its
++     * own retained predecessor and explicit migration/compatibility decision. */
+ 
+     if (qemu_access(path, F_OK) == -1) {
+         if (!xbox_eeprom_generate(path, needed)) {
+diff --git a/ui/xemu.c b/ui/xemu.c
+index 983f50a..595005d 100644
+--- a/ui/xemu.c
++++ b/ui/xemu.c
+@@ -150,9 +150,9 @@ static bool g_android_paused = false;
+  */
+ extern void xemu_android_session_set_state(const char *state);
+ static bool g_android_should_quit = false;
+-static volatile bool g_android_qemu_thread_finished = false;
+-static volatile bool g_android_vm_pause_requested = false;
+-static volatile bool g_android_vm_resume_requested = false;
++static bool g_android_qemu_thread_finished = false;
++static bool g_android_vm_pause_requested = false;
++static bool g_android_vm_resume_requested = false;
+ static uint64_t g_android_frame_counter = 0;
+ static uint64_t g_android_last_hw_frame = 0;
+ static int g_android_target_fps = 60;
+@@ -276,23 +276,23 @@ int xemu_android_get_display_mode_setting(void)
+ 
+ void xemu_android_pause_emulation(void)
+ {
+-    g_android_vm_pause_requested = true;
++    qatomic_set(&g_android_vm_pause_requested, true);
+ }
+ 
+ void xemu_android_resume_emulation(void)
+ {
+-    g_android_vm_resume_requested = true;
++    qatomic_set(&g_android_vm_resume_requested, true);
+ }
+ 
+ void xemu_android_request_exit(void)
+ {
+-    g_android_should_quit = true;
++    qatomic_set(&g_android_should_quit, true);
+     qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_UI);
+ }
+ 
+ void xemu_android_set_qemu_thread_finished(bool finished)
+ {
+-    g_android_qemu_thread_finished = finished;
++    qatomic_set(&g_android_qemu_thread_finished, finished);
+ }
+ 
+ static void xemu_android_refresh_frame_limit_from_env(void)
+@@ -840,7 +840,7 @@ static void handle_windowevent(SDL_Event *ev)
+                 shutdown_action = SHUTDOWN_ACTION_POWEROFF;
+                 qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_UI);
+ #ifdef __ANDROID__
+-                g_android_should_quit = true;
++                qatomic_set(&g_android_should_quit, true);
+                 __android_log_print(ANDROID_LOG_INFO, "xemu-android",
+                                     "android: window close requested");
+ #endif
+@@ -920,7 +920,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
+                 shutdown_action = SHUTDOWN_ACTION_POWEROFF;
+                 qemu_system_shutdown_request(SHUTDOWN_CAUSE_HOST_UI);
+ #ifdef __ANDROID__
+-                g_android_should_quit = true;
++                qatomic_set(&g_android_should_quit, true);
+                 __android_log_print(ANDROID_LOG_INFO, "xemu-android",
+                                     "android: SDL_EVENT_QUIT");
+ #endif
+@@ -928,7 +928,7 @@ void sdl2_poll_events(struct sdl2_console *scon)
+             break;
+ #ifdef __ANDROID__
+         case SDL_EVENT_TERMINATING:
+-            g_android_should_quit = true;
++            qatomic_set(&g_android_should_quit, true);
+             bdrv_flush_all();
+             __android_log_print(ANDROID_LOG_INFO, "xemu-android",
+                                 "android: app terminating, flushed");
+@@ -941,6 +941,8 @@ void sdl2_poll_events(struct sdl2_console *scon)
+                                 "android: app background, flushed");
+             break;
+         case SDL_EVENT_DID_ENTER_BACKGROUND:
++            g_android_paused = true;
++            break;
+         case SDL_EVENT_WILL_ENTER_FOREGROUND:
+         case SDL_EVENT_DID_ENTER_FOREGROUND:
+             g_android_paused = false;
+@@ -1551,10 +1553,10 @@ void xemu_android_display_loop(void)
+     qemu_mutex_unlock_main_loop();
+ 
+     while (1) {
+-        if (g_android_qemu_thread_finished) {
++        if (qatomic_read(&g_android_qemu_thread_finished)) {
+             break;
+         }
+-        if (g_android_should_quit ||
++        if (qatomic_read(&g_android_should_quit) ||
+             qemu_shutdown_requested_get() != SHUTDOWN_CAUSE_NONE) {
+             if ((g_android_frame_counter++ % 120) == 0) {
+                 __android_log_print(ANDROID_LOG_INFO, "xemu-android",
+@@ -1570,7 +1572,7 @@ void xemu_android_display_loop(void)
+             SDL_Delay(16);
+             continue;
+         }
+-        if (g_android_vm_pause_requested) {
++        if (qatomic_xchg(&g_android_vm_pause_requested, false)) {
+             qemu_mutex_lock_main_loop();
+             bql_lock();
+             if (runstate_is_running()) {
+@@ -1586,7 +1588,6 @@ void xemu_android_display_loop(void)
+                 xemu_android_persist_tb_cache();
+ #endif
+             }
+-            g_android_vm_pause_requested = false;
+             bql_unlock();
+             qemu_mutex_unlock_main_loop();
+         }
+@@ -1594,18 +1595,20 @@ void xemu_android_display_loop(void)
+             qemu_mutex_lock_main_loop();
+             bql_lock();
+             sdl2_poll_events(&sdl2_console[0]);
++            /* Snapshot requests must still be serviced with BQL while hidden.
++             * Preview capture has a bounded fallback; no visible frame is required. */
++            xemu_android_process_snapshot_request();
+             bql_unlock();
+             qemu_mutex_unlock_main_loop();
+             SDL_Delay(16);
+             continue;
+         }
+-        if (g_android_vm_resume_requested) {
++        if (qatomic_xchg(&g_android_vm_resume_requested, false)) {
+             qemu_mutex_lock_main_loop();
+             bql_lock();
+             if (!runstate_is_running()) {
+                 vm_start();
+             }
+-            g_android_vm_resume_requested = false;
+             bql_unlock();
+             qemu_mutex_unlock_main_loop();
+         }
