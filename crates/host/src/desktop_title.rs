@@ -1,0 +1,223 @@
+//! Ordinary unchanged-title desktop observation. No guest memory/code probes or
+//! synthetic title markers; visible progression requires separate image review.
+use crate::probe::{OwnedChild, quote, response};
+use crate::storage::ProfileLease;
+use std::fs::{self, File};
+use std::io::{BufReader, Read, Write};
+use std::os::fd::AsRawFd;
+use std::os::unix::{fs::DirBuilderExt, net::UnixStream};
+use std::path::Path;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
+
+#[allow(clippy::too_many_arguments)]
+pub fn run(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    eeprom: &Path,
+    media: &Path,
+    seconds: u64,
+    bootrom: Option<&Path>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if !(15..=300).contains(&seconds) {
+        return Err("ordinary title observation budget must be 15..300 seconds".into());
+    }
+    let video = std::env::var("XBX_DESKTOP_VIDEO_DRIVER").unwrap_or_else(|_| "offscreen".into());
+    if !matches!(video.as_str(), "offscreen" | "x11") {
+        return Err("desktop video driver must be offscreen or x11".into());
+    }
+    let engine = engine.canonicalize()?;
+    let mut media = File::open(media)?;
+    let disc = crate::disc::inspect_open(&mut media)?;
+    let incoming = crate::disc::qemu_media_fd(&media)?;
+    fs::DirBuilder::new().mode(0o700).create(new_root)?;
+    let root = new_root.canonicalize()?;
+    let lease = ProfileLease::acquire(&root)?;
+    for (source, name) in [
+        (flash, "flash.bin"),
+        (disk, "hdd.qcow2"),
+        (eeprom, "eeprom.bin"),
+    ] {
+        fs::copy(source, root.join(name))?;
+    }
+    let boot = if let Some(path) = bootrom {
+        fs::copy(path, root.join("bootrom.bin"))?;
+        root.join("bootrom.bin")
+    } else {
+        std::path::PathBuf::new()
+    };
+    // QEMU's existing raw block view on the retained read-only FD; no media copy,
+    // pathname reopen, extraction, conversion or guest-code inspection.
+    let view = format!(
+        r#"json:{{"driver":"raw","offset":{},"read-only":true,"file":{{"driver":"file","filename":"/dev/fdset/1"}}}}"#,
+        disc.partition_offset
+    );
+    let config = format!(
+        "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[sys.files]\nflashrom_path={}\nbootrom_path={}\nhdd_path={}\ndvd_path={}\neeprom_path={}\n",
+        quote(&root.join("flash.bin"))?,
+        quote(&boot)?,
+        quote(&root.join("hdd.qcow2"))?,
+        quote(Path::new(&view))?,
+        quote(&root.join("eeprom.bin"))?
+    );
+    fs::write(root.join("xemu.toml"), config)?;
+    fs::write(
+        root.join("media-metadata.txt"),
+        format!(
+            "bytes={}\npartition_offset={}\ntitle={:?}\ntitle_id={:08x}\nregion={:08x}\nversion={}\n",
+            disc.bytes,
+            disc.partition_offset,
+            disc.title.name,
+            disc.title.id,
+            disc.title.region,
+            disc.title.version
+        ),
+    )?;
+    let qmp = root.join("qmp.sock");
+    if qmp.as_os_str().len() > 100 {
+        return Err("use a shorter new scratch path".into());
+    }
+    let (mut log_reader, log_writer) = UnixStream::pair()?;
+    let mut log = File::create(root.join("native.log"))?;
+    let mut command = Command::new(engine);
+    command
+        .current_dir(&root)
+        .env("SDL_VIDEO_DRIVER", &video)
+        .env("SDL_AUDIO_DRIVER", "dummy")
+        .env("XBX_ISOLATED_PROCESS_EXIT", "1")
+        .env("LIBGL_ALWAYS_SOFTWARE", "1");
+    for (env, directory) in [
+        ("XDG_DATA_HOME", "data"),
+        ("XDG_CONFIG_HOME", "config"),
+        ("XDG_CACHE_HOME", "cache"),
+        ("XDG_STATE_HOME", "state"),
+        ("MESA_SHADER_CACHE_DIR", "mesa-shader-cache"),
+    ] {
+        command.env(env, root.join(directory));
+    }
+    command
+        .arg("-config_path")
+        .arg(root.join("xemu.toml"))
+        .args(["-accel", "tcg", "-add-fd"])
+        .arg(format!(
+            "fd={},set=1,opaque=xbx-readonly-disc",
+            incoming.as_raw_fd()
+        ))
+        .arg("-qmp")
+        .arg(format!("unix:{},server=on,wait=off", qmp.display()))
+        .args(["-device", "lpc47m157", "-serial"])
+        .arg(format!("file:{}", root.join("kernel.log").display()))
+        .stdin(Stdio::null())
+        .stdout(Stdio::from(std::os::fd::OwnedFd::from(
+            log_writer.try_clone()?,
+        )))
+        .stderr(Stdio::from(std::os::fd::OwnedFd::from(log_writer)));
+    lease.begin_writes()?;
+    lease.inherit_for(&mut command);
+    let mut owned = OwnedChild(command.spawn()?);
+    fs::write(root.join("native.pid"), owned.0.id().to_string())?;
+    drop(command);
+    drop(incoming);
+    let drain = std::thread::spawn(move || {
+        let mut remaining = 4 * 1024 * 1024;
+        let mut buffer = [0u8; 8192];
+        while let Ok(n) = log_reader.read(&mut buffer) {
+            if n == 0 {
+                break;
+            }
+            let keep = n.min(remaining);
+            let _ = log.write_all(&buffer[..keep]);
+            remaining -= keep;
+        }
+        let _ = log.sync_all();
+    });
+    let start = Instant::now();
+    let deadline = start + Duration::from_secs(seconds);
+    let mut reason = "observation_budget_expired_requires_visual_review";
+    let mut monitor_keepalive = None;
+    let observation = (|| -> Result<(), Box<dyn std::error::Error>> {
+        while !qmp.exists() && Instant::now() < deadline {
+            if owned.0.try_wait()?.is_some() {
+                return Err("native exited before monitor readiness".into());
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        let mut socket = UnixStream::connect(&qmp)?;
+        socket.set_read_timeout(Some(Duration::from_secs(3)))?;
+        socket.set_write_timeout(Some(Duration::from_secs(3)))?;
+        let mut reader = BufReader::new(socket.try_clone()?);
+        socket.write_all(b"{\"execute\":\"qmp_capabilities\"}\n")?;
+        response(&mut reader)?;
+        loop {
+            let serial = root.join("kernel.log");
+            let text = if serial.exists() {
+                if fs::metadata(&serial)?.len() > 1024 * 1024 {
+                    return Err("serial log exceeded observation bound".into());
+                }
+                fs::read_to_string(serial)?
+            } else {
+                String::new()
+            };
+            // Existing runtime status only. Exceptions alone do not establish a
+            // terminal failure. An explicit error-dashboard request or bugcheck does.
+            let terminal = text.contains("*** bug check")
+                || text.lines().any(|l| {
+                    l.contains("dashboard_fields=1")
+                        && l.contains("reason=00000001")
+                        && l.contains("code=00000001")
+                });
+            if terminal {
+                reason = "guest_terminal_startup_failure";
+            }
+            if terminal || Instant::now() >= deadline {
+                break;
+            }
+            if owned.0.try_wait()?.is_some() {
+                return Err("native exited during observation".into());
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        socket.write_all(b"{\"execute\":\"stop\"}\n")?;
+        response(&mut reader)?;
+        socket.write_all(b"{\"execute\":\"quit\"}\n")?;
+        response(&mut reader)?;
+        monitor_keepalive = Some((socket, reader));
+        Ok(())
+    })();
+    let stop_deadline = Instant::now() + Duration::from_secs(5);
+    let mut forced = false;
+    let status = loop {
+        if let Some(status) = owned.0.try_wait()? {
+            break status;
+        }
+        if observation.is_err() || Instant::now() >= stop_deadline {
+            forced = true;
+            owned.0.kill()?;
+            break owned.0.wait()?;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    drop(monitor_keepalive);
+    let _ = drain.join();
+    lease.sync_storage()?;
+    fs::write(
+        root.join("termination.txt"),
+        format!("status={status}\nforced={forced}\nqmp={observation:?}\nstorage_synced=true\n"),
+    )?;
+    fs::write(
+        root.join("observation.txt"),
+        format!(
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            start.elapsed().as_secs_f64()
+        ),
+    )?;
+    println!(
+        "Ordinary title observation: {reason}; native={status}; forced={forced}; storage synced. Visual/gameplay acceptance is separate."
+    );
+    if observation.is_err() || !status.success() || forced {
+        return Err("ordinary title runtime failed; scratch and evidence preserved".into());
+    }
+    Ok(())
+}

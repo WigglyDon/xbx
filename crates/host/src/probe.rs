@@ -8,7 +8,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
-struct OwnedChild(std::process::Child);
+pub(crate) struct OwnedChild(pub(crate) std::process::Child);
 impl Drop for OwnedChild {
     fn drop(&mut self) {
         if !matches!(self.0.try_wait(), Ok(Some(_))) {
@@ -18,7 +18,7 @@ impl Drop for OwnedChild {
     }
 }
 
-fn response(reader: &mut BufReader<UnixStream>) -> std::io::Result<String> {
+pub(crate) fn response(reader: &mut BufReader<UnixStream>) -> std::io::Result<String> {
     for _ in 0..16 {
         let mut line = String::new();
         reader.by_ref().take(8192).read_line(&mut line)?;
@@ -32,7 +32,7 @@ fn response(reader: &mut BufReader<UnixStream>) -> std::io::Result<String> {
     Err(std::io::Error::other("bounded QMP response failed"))
 }
 
-fn quote(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) fn quote(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
     let text = path.to_str().ok_or("non-UTF8 diagnostic path")?;
     if text.chars().any(char::is_control) {
         return Err("control character in path".into());

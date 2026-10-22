@@ -3,6 +3,19 @@ use std::path::Path;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args_os().collect();
     #[cfg(not(target_os = "android"))]
+    if (args.len() == 9 || args.len() == 10) && args[1] == "run-title" {
+        return xbx::desktop_title::run(
+            Path::new(&args[2]),
+            Path::new(&args[3]),
+            Path::new(&args[4]),
+            Path::new(&args[5]),
+            Path::new(&args[6]),
+            Path::new(&args[7]),
+            args[8].to_str().ok_or("invalid time budget")?.parse()?,
+            args.get(9).map(Path::new),
+        );
+    }
+    #[cfg(not(target_os = "android"))]
     if args.len() == 8 && args[1] == "boot-vm-imports" {
         return xbx::probe::vm_imports(
             Path::new(&args[2]),

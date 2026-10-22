@@ -106,6 +106,11 @@ to future checkpoint media identity, alongside the source image fingerprint.
 
 ## Boundary checks
 
+The ordinary unchanged-game desktop A/B comparison, isolated profile/FD media
+boundary, actual failures and input/custody limits are recorded in
+[FABLE_DESKTOP.md](FABLE_DESKTOP.md). A synthetic probe pass is not a substitute
+for that selected-game result.
+
 The finite loaded-title reserve/commit/free and caller ABI check is documented
 with its actual desktop result and exact retained inputs in
 [VM_IMPORT_CONTRACT.md](VM_IMPORT_CONTRACT.md). It uses original synthetic code;

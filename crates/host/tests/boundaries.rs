@@ -117,6 +117,33 @@ fn fixture(path: &Path, partition: u64) {
     file.write_all(&xbe).unwrap();
 }
 
+#[cfg(not(target_os = "android"))]
+#[test]
+fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
+    let dir = scratch("ordinary-title-existing-profile");
+    let media = dir.join("synthetic-disc");
+    fixture(&media, 0);
+    for name in ["flash.bin", "hdd.qcow2", "eeprom.bin", "generation"] {
+        fs::write(dir.join(name), b"preserve predecessor").unwrap();
+    }
+    let _lease = ProfileLease::acquire(&dir).unwrap();
+    let result = xbx::desktop_title::run(
+        Path::new("/bin/true"),
+        &dir,
+        &dir.join("flash.bin"),
+        &dir.join("hdd.qcow2"),
+        &dir.join("eeprom.bin"),
+        &media,
+        15,
+        None,
+    );
+    assert!(result.is_err());
+    assert!(!dir.join("native.log").exists());
+    for name in ["flash.bin", "hdd.qcow2", "eeprom.bin", "generation"] {
+        assert_eq!(fs::read(dir.join(name)).unwrap(), b"preserve predecessor");
+    }
+}
+
 #[test]
 fn structural_disc_checks_preserve_media_and_reject_partial_download() {
     let dir = scratch("disc");
@@ -369,6 +396,23 @@ fn raw_disc_partition_view_is_read_only_and_bounded() {
             .args(["--image-opts", "-r", "-c", "read -P 0x31 0 4096"])
             .arg(&options),
     );
+    // Same existing raw view through the JSON filename form required by the
+    // desktop frontend, whose DVD option is passed as a filename.
+    let json = format!(
+        r#"json:{{"driver":"raw","offset":4096,"size":4096,"read-only":true,"file":{{"driver":"file","filename":"{}"}}}}"#,
+        source.display()
+    );
+    native(
+        Command::new("qemu-io")
+            .args(["-r", "-c", "read -P 0x31 0 4096"])
+            .arg(&json),
+    );
+    let rejected_json_write = Command::new("qemu-io")
+        .args(["-r", "-c", "write -P 0x00 0 512"])
+        .arg(&json)
+        .output()
+        .unwrap();
+    assert!(!rejected_json_write.status.success());
     let rejected_write = Command::new("qemu-io")
         .args(["--image-opts", "-r", "-c", "write -P 0x00 0 512"])
         .arg(&options)
