@@ -94,7 +94,8 @@ For a full-disc XDVDFS layout, the engine uses QEMU's existing read-only raw
 block view at the validated partition offset. The source image is not repacked
 or patched. Native media-view fixtures establish offset/bounds/read-only behavior;
 the supplied Fable image passes the bounded filesystem/executable/certificate
-inspection and identifies itself as Fable. Android disc execution remains untested.
+inspection and identifies itself as Fable. The Fold subsequently loaded that executable through the retained FD, then
+failed during the boot handoff described below.
 Certificate metadata does not certify edition, authenticity or every payload byte.
 Byte offset belongs
 to future checkpoint media identity, alongside the source image fingerprint.
@@ -195,6 +196,71 @@ synthetic EEPROM/disk bytes; Rust tests separately verify rejected->display->
 foreground cannot resume. A failed diagnostic attempt used QEMU's error_report
 before monitor initialization and asserted; plain stderr corrected that issue.
 Owned desktop test children now disable core dumps and retain bounded logs.
+
+## First stock-Fold execution
+
+The October 22 run used the same normal-play firmware/disk seed and persisted
+scoped Fable grant. The device reported a stock `user` build and 4096-byte pages;
+16 KiB alignment checks remain build evidence, not a 16 KiB device result.
+The separately signed `com.machinerhythm.xbx` APK installed and its own private
+profile survived the successive source-built candidate updates.
+
+Observed startup repairs are now in the source:
+
+- Rust 1.96's `File::try_lock` returns unsupported on Android. Use Bionic's
+  kernel `flock` contract and distinguish contention from other OS errors.
+  Existing host cross-process/inherited-owner/death tests exercise that same
+  primitive; Android acquisition was observed, not an Android race test.
+- QEMU's `-add-fd` requires CLOEXEC clear on its incoming descriptor. Clear only
+  the read-only capability duplicate; retain the original grant/flags. QEMU
+  duplicates it back to a CLOEXEC-owned FD. A focused fixture proves original
+  flags unchanged, duplicate accepted flags, refused writes and refused RW input.
+- The Android static link discarded the `stdio` chardev and `lpc47m157` Super I/O
+  registration objects. Narrow force-link references retain these existing
+  diagnostic components without changing the kernel or device models.
+- The stock picker request now permits ten minutes for human selection. The
+  prior three-minute request expired during navigation; no VM was started by it.
+
+The final run initialized system Vulkan, connected the xbx virtual controller to
+port 1 and logged the normal OXOS processor/HAL/memory/scheduler/object/I/O/AV/IDE
+startup. Its serial sequence was:
+
+```text
+cold boot
+load \Device\CdRom0\default.xbe: 0x0
+quick boot
+load \Device\Harddisk0\Partition2\xboxdash.xbe: 0xc0000034
+cold boot
+*** fatal error 21
+```
+
+This proves kernel execution and successful loader return for the selected disc
+executable, not Fable gameplay. The cause of the quick reboot has not yet been
+traced; do not claim that adding a dashboard alone fixes it. No game frames were
+observed, and guest flip samples stayed zero. The touch overlay rendered, but
+its bottom controls were partly occluded by system navigation; no touch-to-game
+acceptance or audible sound was established. Ordinary saves/reload, automatic
+checkpoint resume and shortcuts were not tested. Full-machine restore stayed
+disabled; no disk rollback or firmware/profile substitution was performed.
+
+In this failure loop the one sampled process reported PSS 1,423,033 KiB, RSS
+1,572,028 KiB and thermal status 1. These are startup/error-loop observations,
+not a gameplay benchmark or thermal qualification. The Pixel 4 was authorized as
+a supplementary performance target; it was not operated because gameplay was
+not reached. A prior rejected-device initialization also produced a FORTIFY
+mutex-destruction failure during donor fatal-exit cleanup. The final run passed
+that initialization, but arbitrary native fatal-exit/lifecycle paths remain
+unqualified.
+
+A USB interruption was re-admitted only after the owner confirmed normal phone
+operation and reconnection. Final return stopped only xbx and verified locked,
+screen OFF, no task clients/tunnels and released physical ownership. The private
+profile, EEPROM, disk, dirty epoch, media grant and failed logs were preserved.
+Stopping the failure loop was a process stop, not a clean checkpoint publication.
+The owner's two original media copies remained on the phones. A newly discovered
+PC extraction was independently full-hashed against the verified transfers before
+only that duplicate ISO and its identified Fable archive were removed at the
+owner's request; no owner game was copied into the APK or back from the phone.
 
 All private artifacts, interrupted logs and synthetic experiment data remain
 local. No owner media, EEPROM/key material or signing credential belongs in a

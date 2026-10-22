@@ -22,7 +22,8 @@ at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.
 
 - `patches/xemu-android.patch` modifies retained GPL-lineage source and build
   files: deterministic dependencies, profile paths, EEPROM preservation,
-  cross-thread control flags, hidden snapshot servicing and source-built desktop
+  cross-thread control flags, hidden snapshot servicing, narrow Android serial
+  diagnostic registration retention and source-built desktop
   DSP input. Individual upstream terms remain applicable.
   The candidate also removes the arcade path's built-in Chihiro EEPROM fallback
   include/data use. That optional donor path now requires explicit external

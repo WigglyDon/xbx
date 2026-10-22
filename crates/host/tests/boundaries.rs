@@ -367,3 +367,24 @@ fn qcow2_current_progress_survives_reopen_and_old_snapshot_is_refused() {
     // Retain this named synthetic experiment for review (under ignored target/scratch).
     println!("retained synthetic evidence: {}", dir.display());
 }
+
+#[test]
+fn qemu_media_handoff_clears_only_duplicate_cloexec_and_stays_read_only() {
+    use std::os::fd::AsRawFd;
+    unsafe extern "C" {
+        fn fcntl(fd: i32, command: i32, ...) -> i32;
+    }
+    let root = scratch("media-fd-flags");
+    let path = root.join("disc.bin");
+    fs::write(&path, b"synthetic read-only disc").unwrap();
+    let grant = File::open(&path).unwrap();
+    let original = unsafe { fcntl(grant.as_raw_fd(), 1) };
+    let fd = xbx::disc::qemu_media_fd(&grant).unwrap();
+    assert_eq!(unsafe { fcntl(fd.as_raw_fd(), 1) } & 1, 0);
+    assert_eq!(unsafe { fcntl(grant.as_raw_fd(), 1) }, original);
+    let mut copy = File::from(fd);
+    assert!(copy.write_all(b"changed").is_err());
+    assert_eq!(fs::read(&path).unwrap(), b"synthetic read-only disc");
+    assert!(xbx::disc::qemu_media_fd(&File::options().write(true).open(&path).unwrap()).is_err());
+    fs::remove_dir_all(root).unwrap();
+}

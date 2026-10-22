@@ -121,6 +121,32 @@ index 699b8ef..60de59a 100644
      if (g_mkdir_with_parents(dir, 0700) != 0) {
          SNAP_LOGW("failed to create snapshot preview dir: %s", dir);
          g_free(dir);
+diff --git a/chardev/char-stdio.c b/chardev/char-stdio.c
+index 2568164..02ebfbd 100644
+--- a/chardev/char-stdio.c
++++ b/chardev/char-stdio.c
+@@ -173,3 +173,8 @@ static void register_types(void)
+ }
+ 
+ type_init(register_types);
++
++#ifdef __ANDROID__
++/* Keep the serial diagnostic backend when linking the Android static core. */
++void xbx_force_char_stdio_link(void) {}
++#endif
+diff --git a/hw/xbox/lpc47m157.c b/hw/xbox/lpc47m157.c
+index b9b6596..e8d9fbd 100644
+--- a/hw/xbox/lpc47m157.c
++++ b/hw/xbox/lpc47m157.c
+@@ -314,3 +314,8 @@ static void lpc47m157_register_types(void)
+ }
+ 
+ type_init(lpc47m157_register_types)
++
++#ifdef __ANDROID__
++/* Retain this optional debug Super I/O device in the Android static core. */
++void xbx_force_lpc47m157_link(void) {}
++#endif
 diff --git a/hw/xbox/nv2a/pgraph/profile.c b/hw/xbox/nv2a/pgraph/profile.c
 index de118a2..4186fc7 100644
 --- a/hw/xbox/nv2a/pgraph/profile.c

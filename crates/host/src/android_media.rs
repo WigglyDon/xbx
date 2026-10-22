@@ -159,7 +159,7 @@ pub fn select(root: &Path, firmware: &str) -> Result<LiveRuntime, Box<dyn std::e
         unsafe { xbx_platform_open(saved.as_ref().map_or(std::ptr::null(), |s| s.as_ptr())) };
         let slot = RESULT.lock().map_err(|_| "Media handoff failed")?;
         let (mut slot, wait) = DELIVERED
-            .wait_timeout_while(slot, Duration::from_secs(180), |v| v.is_none())
+            .wait_timeout_while(slot, Duration::from_secs(600), |v| v.is_none())
             .map_err(|_| "Media handoff failed")?;
         if wait.timed_out() && slot.is_none() {
             return Err("Game selection timed out; no machine was started".into());

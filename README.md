@@ -11,8 +11,10 @@ icon should open that game directly rather than an emulator configuration screen
 
 **Fable player qualification; gameplay is not yet demonstrated.** The pinned
 xemu Android core and Rust entry build for ARM64, and a separately signed local
-qualification APK has been packaged. No installation, game/audio/input, in-game
-save, full resume, Fold performance or store result has been earned.
+qualification APK installs on the stock Fold. The open kernel boots and loads
+Fable’s disc executable, then quick-reboots to a missing dashboard and fatal
+error 21. Gameplay, audio/input acceptance, in-game saves, full resume, Fold
+performance and store qualification remain unearned.
 See [build instructions](docs/BUILD.md), [current state](docs/state.toml), and
 [XBX-1](https://github.com/WigglyDon/xbx/issues/1) for actual evidence.
 

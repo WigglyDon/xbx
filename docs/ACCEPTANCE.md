@@ -1,8 +1,13 @@
 # Acceptance: prove the player, not just the build
 
-No xbx check below has run in this seed. Record actual pass/fail/unrun results
-against a source and build identity. The engine's compatibility list is context,
-not a substitute for our own integration observations.
+Record actual pass/fail/unrun results against a source and build identity.
+Source builds and selected desktop boot/storage markers pass. On the stock Fold,
+installation, retained read-only media validation, native kernel boot and Fable
+executable loading have been observed. The run then quick-reboots to a missing
+dashboard and fatal error 21. Gameplay, audible sound, touch acceptance, ordinary
+saves/reload, full resume, shortcuts and gameplay performance remain unqualified.
+See BUILD.md and live XBX-1 for the exact evidence. Compatibility lists do not
+replace integration observations.
 
 ## Source and build
 

@@ -32,6 +32,31 @@ pub fn inspect(path: &Path) -> io::Result<Disc> {
     inspect_open(&mut file)
 }
 
+/// Duplicate a validated read-only capability for QEMU's -add-fd parser.
+/// QEMU requires CLOEXEC clear on this incoming FD and sets it on its own copy.
+/// The original grant keeps its flags and remains owned by LiveRuntime.
+pub fn qemu_media_fd(file: &File) -> io::Result<std::os::fd::OwnedFd> {
+    use std::os::fd::AsRawFd;
+    unsafe extern "C" {
+        fn fcntl(fd: i32, command: i32, ...) -> i32;
+    }
+    let access = unsafe { fcntl(file.as_raw_fd(), 3) }; // F_GETFL
+    if access < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if access & 3 != 0 {
+        return Err(io::Error::other(
+            "QEMU disc handoff requires a read-only file",
+        ));
+    }
+    let copy: std::os::fd::OwnedFd = file.try_clone()?.into();
+    let flags = unsafe { fcntl(copy.as_raw_fd(), 1) }; // F_GETFD
+    if flags < 0 || unsafe { fcntl(copy.as_raw_fd(), 2, flags & !1) } < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(copy)
+}
+
 /// Inspect the retained grant object, never reopen a provider display path.
 pub fn inspect_open(file: &mut File) -> io::Result<Disc> {
     if !file.metadata()?.is_file() {

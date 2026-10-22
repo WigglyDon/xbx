@@ -48,8 +48,20 @@ impl ProfileLease {
             .create(true)
             .truncate(false)
             .open(root.join("writer.lock"))?;
-        lock.try_lock()
-            .map_err(|_| io::Error::other("profile already has a writer"))?;
+        // Rust 1.96's File::try_lock is unsupported on Android. Bionic exposes
+        // the same kernel flock contract used by Rust's Linux implementation.
+        // Ownership follows the open file description, including inherited FDs.
+        unsafe extern "C" {
+            fn flock(fd: i32, operation: i32) -> i32;
+        }
+        const LOCK_EX_NONBLOCK: i32 = 2 | 4;
+        if unsafe { flock(lock.as_raw_fd(), LOCK_EX_NONBLOCK) } < 0 {
+            let error = io::Error::last_os_error();
+            if error.kind() == io::ErrorKind::WouldBlock {
+                return Err(io::Error::new(error.kind(), "profile already has a writer"));
+            }
+            return Err(error);
+        }
         Ok(Self { _lock: lock, root })
     }
 

@@ -177,7 +177,7 @@ fn run() -> Result<i32, Box<dyn std::error::Error>> {
     unsafe { xbx_platform_callbacks(&CALLBACKS) };
     let firmware = media::prepare_profile(&root)?;
     let runtime = media::select(&root, &firmware)?;
-    let media_fd = runtime.media.try_clone()?.into_raw_fd();
+    let media_fd = crate::disc::qemu_media_fd(&runtime.media)?.into_raw_fd();
     let config = super::profile_config(&root)?;
     let config_path = root.join("xemu.toml");
     // This is generated policy, never an owner-supplied arbitrary QEMU config.

@@ -10,6 +10,8 @@
 #include "xemu-settings.h"
 
 extern void qemu_init(int argc, char **argv);
+extern void xbx_force_char_stdio_link(void);
+extern void xbx_force_lpc47m157_link(void);
 extern int (*qemu_main)(void);
 extern void xemu_android_display_preinit(void);
 extern bool xemu_android_display_poll_ready(void);
@@ -36,6 +38,8 @@ XBX_EXPORT bool xbx_engine_resume_allowed(void) { return resume_gate && resume_g
 
 XBX_EXPORT int xbx_engine_prepare(const char *config, uint64_t media_offset, bool allow_create, bool (*gate)(void))
 {
+    xbx_force_char_stdio_link();
+    xbx_force_lpc47m157_link();
     dvd_offset = media_offset;
     create_eeprom = allow_create;
     resume_gate = gate;
