@@ -197,6 +197,10 @@ foreground cannot resume. A failed diagnostic attempt used QEMU's error_report
 before monitor initialization and asserted; plain stderr corrected that issue.
 Owned desktop test children now disable core dumps and retain bounded logs.
 
+The bounded follow-up build/profile/fixture is described in
+[LAUNCH_DIAGNOSTIC.md](LAUNCH_DIAGNOSTIC.md). Its separate trace mode does not
+replace the following baseline evidence.
+
 ## First stock-Fold execution
 
 The October 22 run used the same normal-play firmware/disk seed and persisted

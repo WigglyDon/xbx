@@ -21,6 +21,49 @@ pub struct Circle {
     pub radius: f32,
 }
 
+/// One platform-supplied safe content rectangle in View coordinates.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Viewport {
+    pub left: f32,
+    pub top: f32,
+    pub width: f32,
+    pub height: f32,
+    pub density: f32,
+}
+impl Viewport {
+    pub fn new(rect: [f32; 4], density: f32) -> Option<Self> {
+        if !rect.iter().all(|x| x.is_finite())
+            || rect[0] < 0.0
+            || rect[1] < 0.0
+            || rect[2] <= 0.0
+            || rect[3] <= 0.0
+            || !density.is_finite()
+            || density <= 0.0
+        {
+            return None;
+        }
+        Some(Self {
+            left: rect[0],
+            top: rect[1],
+            width: rect[2],
+            height: rect[3],
+            density,
+        })
+    }
+    pub fn surface(self) -> [f32; 4] {
+        let mut r = game_rect(self.width, self.height, self.density);
+        r[0] += self.left;
+        r[1] += self.top;
+        r
+    }
+    pub fn control(self, index: usize) -> Circle {
+        let mut c = circle(index, self.width, self.height, self.density);
+        c.x += self.left;
+        c.y += self.top;
+        c
+    }
+}
+
 fn band(h: f32, density: f32) -> f32 {
     (h * 0.48).min(260.0 * density.max(0.5))
 }
@@ -53,14 +96,16 @@ pub fn circle(index: usize, w: f32, h: f32, density: f32) -> Circle {
         (0.055, 0.10),
         (0.62, 0.10),
     ][index];
+    let radius = if index < 2 {
+        (b * 0.18).min(w * 0.12)
+    } else {
+        (w * 0.052).min(b * 0.085)
+    };
+    let radius = radius.min(w * 0.49).min(h * 0.49);
     Circle {
-        x: x * w,
-        y: top + y * b,
-        radius: if index < 2 {
-            (b * 0.18).min(w * 0.12)
-        } else {
-            (w * 0.052).min(b * 0.085)
-        },
+        x: (x * w).clamp(radius, w - radius),
+        y: (top + y * b).clamp(radius, h - radius),
+        radius,
     }
 }
 
@@ -85,6 +130,16 @@ impl Touch {
     }
     pub fn active(&self, control: usize) -> bool {
         self.pointers.values().any(|p| p.control == control)
+    }
+    pub fn event_in(&mut self, id: i32, phase: i32, position: [f32; 2], view: Viewport) -> Pad {
+        self.event(
+            id,
+            phase,
+            [position[0] - view.left, position[1] - view.top],
+            view.width,
+            view.height,
+            view.density,
+        )
     }
     pub fn event(
         &mut self,
@@ -152,6 +207,33 @@ impl Touch {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn safe_geometry_contains_whole_controls_and_transforms_hits() {
+        for rect in [
+            [0.0, 115.0, 2076.0, 1952.0],
+            [40.0, 90.0, 290.0, 620.0],
+            [80.0, 20.0, 700.0, 300.0],
+        ] {
+            let v = Viewport::new(rect, 2.4375).unwrap();
+            for i in 0..COUNT {
+                let c = v.control(i);
+                assert!(
+                    c.x - c.radius >= v.left - 0.01 && c.x + c.radius <= v.left + v.width + 0.01
+                );
+                assert!(
+                    c.y - c.radius >= v.top - 0.01 && c.y + c.radius <= v.top + v.height + 0.01
+                );
+            }
+            let r = v.surface();
+            assert!(r[0] >= v.left && r[1] >= v.top);
+            assert!((r[2] / r[3] - 4.0 / 3.0).abs() < 0.0001);
+            let mut touch = Touch::new();
+            let a = v.control(2);
+            assert_ne!(touch.event_in(1, 0, [a.x, a.y], v).buttons & 1, 0);
+            touch.clear();
+            assert_eq!(touch.pad(v.width, v.height, v.density), Pad::default());
+        }
+    }
     #[test]
     fn simultaneous_sticks_button_and_trigger_cancel_cleanly() {
         let mut t = Touch::default();

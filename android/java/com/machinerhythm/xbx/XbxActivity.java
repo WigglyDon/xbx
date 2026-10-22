@@ -12,6 +12,10 @@ import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
+import android.graphics.Insets;
+import android.view.WindowInsets;
+import android.view.DisplayCutout;
 import android.os.ParcelFileDescriptor;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -28,6 +32,7 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
     private static native float[] nativeLayout(int index, float w, float h, float density);
     private static native String nativeLabel(int index);
     private static native void nativeNeutral();
+    private static native void nativeGeometry(float left,float top,float width,float height,float density);
     private Controls controls;
     private TextView status;
     private AudioManager audio;
@@ -113,9 +118,32 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
 
     private final class Controls extends View {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        Controls() { super(XbxActivity.this); setClickable(true); }
+        Controls() { super(XbxActivity.this); setClickable(true); requestApplyInsets(); }
         private float density() { return getResources().getDisplayMetrics().density; }
+        void geometry() {
+            WindowInsets wi=getRootWindowInsets();
+            int l=0,t=0,r=0,b=0;
+            if(wi!=null) {
+                if(Build.VERSION.SDK_INT>=30) {
+                    Insets i=wi.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());
+                    l=i.left;t=i.top;r=i.right;b=i.bottom;
+                } else {
+                    l=wi.getSystemWindowInsetLeft();t=wi.getSystemWindowInsetTop();r=wi.getSystemWindowInsetRight();b=wi.getSystemWindowInsetBottom();
+                    DisplayCutout c=wi.getDisplayCutout();
+                    if(c!=null){l=Math.max(l,c.getSafeInsetLeft());t=Math.max(t,c.getSafeInsetTop());r=Math.max(r,c.getSafeInsetRight());b=Math.max(b,c.getSafeInsetBottom());}
+                }
+            }
+            int[] at=new int[2];getLocationInWindow(at);
+            int left=Math.max(0,l-at[0]),top=Math.max(0,t-at[1]);
+            int right=Math.max(0,at[0]+getWidth()-(getRootView().getWidth()-r));
+            int bottom=Math.max(0,at[1]+getHeight()-(getRootView().getHeight()-b));
+            nativeGeometry(left,top,Math.max(0,getWidth()-left-right),Math.max(0,getHeight()-top-bottom),density());
+        }
+        @Override public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+            WindowInsets result=super.onApplyWindowInsets(insets);geometry();surfaceRect();invalidate();return result;
+        }
         void surfaceRect() {
+            geometry();
             float[] r = nativeLayout(-1, getWidth(), getHeight(), density());
             if (r[2] < 1 || r[3] < 1) return;
             RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams((int)r[2], (int)r[3]);

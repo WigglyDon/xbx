@@ -1,0 +1,13 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "c0c887a1263ebf89ba765f34a88ca8f132901e25",
+  "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+  "patch": "patches/oxos-launch-trace.patch",
+  "patch_sha256": "ab4094c24e38875ced724264641adbbdb2bafce1f1739f46f4c9e7599d0a1657",
+  "image": "open",
+  "selftest": 0,
+  "serial": 1,
+  "trace_imports": 0,
+  "ram_mib": 64,
+  "baseline_firmware_sha256": "668d08af6de204ce07a1479c8854d8f688af312ed6104e8ab56391dffc301fa6"
+}

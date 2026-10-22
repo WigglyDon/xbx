@@ -62,6 +62,13 @@ alongside the donor's GPLv2 combined-work terms; the selected file-level license
 compatibility and resulting distribution obligations require explicit review.
 An upstream build is not clearance. No public binary is released by this work.
 
+`patches/oxos-launch-trace.patch` narrowly instruments retained OXOS startup,
+loader and firmware-return code at the pin in `kernel-trace.lock.json`; it keeps
+OXOS's actual GPL/per-file terms. The existing kernel-test-title and XDVDFS
+fixture generator are built/invoked from that source without copying them into
+original MIT modules. First-party Rust diagnostic branching, runner and geometry
+policy are original MIT work. See docs/LAUNCH_DIAGNOSTIC.md for reproduction.
+
 ## Boot qualification and distribution boundary
 
 - xemu derives from QEMU. Its LICENSE describes GPL version 2 overall, with

@@ -388,3 +388,185 @@ fn qemu_media_handoff_clears_only_duplicate_cloexec_and_stays_read_only() {
     assert!(xbx::disc::qemu_media_fd(&File::options().write(true).open(&path).unwrap()).is_err());
     fs::remove_dir_all(root).unwrap();
 }
+
+fn fixture_sha(file: &mut File) -> std::io::Result<String> {
+    file.seek(SeekFrom::Start(0))?;
+    let out = Command::new("sha256sum")
+        .stdin(Stdio::from(file.try_clone()?))
+        .output()?;
+    if !out.status.success() {
+        return Err(std::io::Error::other("fixture hash failed"));
+    }
+    Ok(String::from_utf8(out.stdout)
+        .unwrap()
+        .split_whitespace()
+        .next()
+        .unwrap()
+        .to_owned())
+}
+fn branch_fixture(root: &Path) -> (Vec<u8>, Vec<u8>) {
+    for (name, data) in [
+        ("flash.bin", b"baseline firmware".as_slice()),
+        ("hdd.qcow2", b"newest durable saves"),
+        ("eeprom.bin", b"stable synthetic identity"),
+        ("generation", b"12\n"),
+        ("media.uri", b"content://synthetic/retained-disc"),
+    ] {
+        fs::write(root.join(name), data).unwrap();
+    }
+    let mut disk = vec![0u8; 104];
+    disk[..8].copy_from_slice(b"QFI\xfb\0\0\0\x03");
+    disk.extend_from_slice(b"newest durable saves");
+    fs::write(root.join("hdd.qcow2"), disk).unwrap();
+    let baseline = fixture_sha(&mut File::open(root.join("flash.bin")).unwrap()).unwrap();
+    fs::write(
+        root.join("profile.identity"),
+        format!("sha256={baseline}\nram_mib=64\n"),
+    )
+    .unwrap();
+    fs::write(root.join("saved-session"),format!("xbx-saved-session-v1\ngame_id={}\nprofile_id={}\nmedia_sha256=fixture-media\nfirmware_sha256={baseline}\nram_mib=64\n","a".repeat(32),"b".repeat(32))).unwrap();
+    let fw = b"instrumented diagnostic firmware".to_vec();
+    let path = root.join("new-fw-fixture");
+    fs::write(&path, &fw).unwrap();
+    let new = fixture_sha(&mut File::open(path).unwrap()).unwrap();
+    (fw,format!("xbx-qualification-profile-v1\nsha256={new}\nparent_firmware_sha256={baseline}\nram_mib=64\n").into_bytes())
+}
+#[test]
+fn diagnostic_branch_preserves_parent_and_has_independent_writes_and_identity() {
+    let root = scratch("coherent-branch");
+    let parent = root.join("parent");
+    fs::create_dir(&parent).unwrap();
+    let target = root.join("diagnostic");
+    let (fw, identity) = branch_fixture(&parent);
+    let names = [
+        "flash.bin",
+        "hdd.qcow2",
+        "eeprom.bin",
+        "generation",
+        "media.uri",
+        "saved-session",
+        "profile.identity",
+    ];
+    let before: Vec<_> = names
+        .iter()
+        .map(|n| fs::read(parent.join(n)).unwrap())
+        .collect();
+    let branch = xbx::branch::create(
+        &parent,
+        &target,
+        &fw,
+        &identity,
+        &"c".repeat(32),
+        fixture_sha,
+    )
+    .unwrap();
+    assert_eq!(branch.generation().unwrap(), 12);
+    assert!(ProfileLease::acquire(&target).is_err());
+    let _parent = ProfileLease::acquire(&parent).unwrap();
+    for (n, bytes) in names.iter().zip(before) {
+        assert_eq!(fs::read(parent.join(n)).unwrap(), bytes);
+    }
+    assert_eq!(
+        fs::read(parent.join("eeprom.bin")).unwrap(),
+        fs::read(target.join("eeprom.bin")).unwrap()
+    );
+    let session = fs::read_to_string(target.join("saved-session")).unwrap();
+    assert_eq!(
+        xbx::branch::field(&session, "profile_id").unwrap(),
+        "c".repeat(32)
+    );
+    assert_eq!(
+        xbx::branch::field(&session, "game_id").unwrap(),
+        "a".repeat(32)
+    );
+    assert!(
+        fs::read_to_string(target.join("branch.identity"))
+            .unwrap()
+            .contains("parent_generation=12")
+    );
+    fs::write(target.join("hdd.qcow2"), b"diagnostic writes").unwrap();
+    assert!(
+        fs::read(parent.join("hdd.qcow2"))
+            .unwrap()
+            .ends_with(b"newest durable saves")
+    );
+}
+#[test]
+fn diagnostic_branch_refuses_owned_source_and_preserves_incomplete_target() {
+    let root = scratch("refused-branch");
+    let parent = root.join("parent");
+    fs::create_dir(&parent).unwrap();
+    let target = root.join("diagnostic");
+    let (fw, identity) = branch_fixture(&parent);
+    let owner = ProfileLease::acquire(&parent).unwrap();
+    assert!(
+        xbx::branch::create(
+            &parent,
+            &target,
+            &fw,
+            &identity,
+            &"c".repeat(32),
+            fixture_sha
+        )
+        .is_err()
+    );
+    assert!(!target.exists());
+    drop(owner);
+    assert!(
+        xbx::branch::create(
+            &parent,
+            &target,
+            b"wrong firmware bytes",
+            &identity,
+            &"c".repeat(32),
+            fixture_sha
+        )
+        .is_err()
+    );
+    assert!(target.join("hdd.qcow2").is_file());
+    assert!(!target.join("branch.identity").exists());
+    assert!(
+        xbx::branch::create(
+            &parent,
+            &target,
+            &fw,
+            &identity,
+            &"c".repeat(32),
+            fixture_sha
+        )
+        .is_err()
+    );
+    assert!(
+        fs::read(parent.join("hdd.qcow2"))
+            .unwrap()
+            .ends_with(b"newest durable saves")
+    );
+}
+
+#[test]
+fn diagnostic_branch_rejects_external_disk_dependencies_before_copying() {
+    let root = scratch("external-disk-branch");
+    let parent = root.join("parent");
+    fs::create_dir(&parent).unwrap();
+    let (fw, identity) = branch_fixture(&parent);
+    let original = fs::read(parent.join("hdd.qcow2")).unwrap();
+    for (offset, value) in [(8, 1), (79, 4)] {
+        let mut disk = original.clone();
+        disk[offset] = value;
+        fs::write(parent.join("hdd.qcow2"), &disk).unwrap();
+        let target = root.join(format!("branch-{offset}"));
+        assert!(
+            xbx::branch::create(
+                &parent,
+                &target,
+                &fw,
+                &identity,
+                &"c".repeat(32),
+                fixture_sha
+            )
+            .is_err()
+        );
+        assert!(!target.exists());
+        assert_eq!(fs::read(parent.join("hdd.qcow2")).unwrap(), disk);
+    }
+}

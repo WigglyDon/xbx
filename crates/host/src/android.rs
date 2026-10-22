@@ -1,6 +1,5 @@
 //! SDL's retained platform adapter enters Rust here. One engine lifetime per process.
 use crate::startup::Startup;
-use crate::storage::ProfileLease;
 use std::ffi::{CStr, CString, c_char, c_int};
 use std::fs;
 use std::os::fd::IntoRawFd;
@@ -54,6 +53,7 @@ static STARTUP: Startup = Startup::new();
 static FINISHED: AtomicBool = AtomicBool::new(false);
 static FOREGROUND: AtomicBool = AtomicBool::new(true);
 static AUDIO_FOCUS: AtomicBool = AtomicBool::new(false);
+static VIEWPORT: Mutex<Option<crate::input::Viewport>> = Mutex::new(None);
 static TOUCH: Mutex<crate::input::Touch> = Mutex::new(crate::input::Touch::new());
 #[repr(C)]
 struct Callbacks {
@@ -76,26 +76,32 @@ extern "C" fn neutral() {
     }
     unsafe { xbx_pad_apply(0, [0i16; 6].as_ptr()) };
 }
-extern "C" fn touch(id: i32, phase: i32, x: f32, y: f32, w: f32, h: f32, d: f32) {
+extern "C" fn touch(id: i32, phase: i32, x: f32, y: f32, _w: f32, _h: f32, _d: f32) {
     if !STARTUP.may_resume() {
         return;
     }
+    let Some(view) = VIEWPORT.lock().ok().and_then(|v| *v) else {
+        return;
+    };
     if let Ok(mut touch) = TOUCH.lock() {
-        let pad = touch.event(id, phase, [x, y], w, h, d);
+        let pad = touch.event_in(id, phase, [x, y], view);
         unsafe { xbx_pad_apply(pad.buttons, pad.axes.as_ptr()) };
     }
 }
-extern "C" fn layout(index: i32, w: f32, h: f32, d: f32, out: *mut f32) {
-    if out.is_null() || w <= 0.0 || h <= 0.0 || !w.is_finite() || !h.is_finite() {
+extern "C" fn layout(index: i32, _w: f32, _h: f32, _d: f32, out: *mut f32) {
+    if out.is_null() {
         return;
     }
+    let Some(view) = VIEWPORT.lock().ok().and_then(|v| *v) else {
+        return;
+    };
     let out = unsafe { std::slice::from_raw_parts_mut(out, 5) };
     if index == -2 {
         out[0] = crate::input::COUNT as f32;
     } else if index == -1 {
-        out[..4].copy_from_slice(&crate::input::game_rect(w, h, d));
+        out[..4].copy_from_slice(&view.surface());
     } else if (0..crate::input::COUNT as i32).contains(&index) {
-        let c = crate::input::circle(index as usize, w, h, d);
+        let c = view.control(index as usize);
         out[..3].copy_from_slice(&[c.x, c.y, c.radius]);
         out[3] = if TOUCH.lock().is_ok_and(|t| t.active(index as usize)) {
             1.0
@@ -116,6 +122,31 @@ extern "C" fn label(index: i32) -> *const c_char {
         .get(index as usize)
         .map_or(c"".as_ptr(), |s| s.as_ptr())
 }
+/// # Safety
+/// JNI supplies only numeric geometry; Java pointers are not dereferenced.
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeGeometry(
+    _env: *mut std::ffi::c_void,
+    _activity: *mut std::ffi::c_void,
+    left: f32,
+    top: f32,
+    width: f32,
+    height: f32,
+    density: f32,
+) {
+    let next = crate::input::Viewport::new([left, top, width, height], density);
+    let changed = if let Ok(mut current) = VIEWPORT.lock() {
+        let changed = *current != next;
+        *current = next;
+        changed
+    } else {
+        true
+    };
+    if changed {
+        neutral();
+    }
+}
+
 fn focus_changed() {
     STARTUP.foreground(FOREGROUND.load(Ordering::SeqCst) && AUDIO_FOCUS.load(Ordering::SeqCst));
     if !STARTUP.may_resume() {
@@ -168,14 +199,12 @@ fn run() -> Result<i32, Box<dyn std::error::Error>> {
         return Err("Android did not provide private app storage".into());
     }
     let base = unsafe { CStr::from_ptr(base) }.to_str()?;
-    let root = Path::new(base).join("xbx-qualification");
-    fs::create_dir_all(&root)?;
-    let lease = ProfileLease::acquire(&root)?;
+
     if unsafe { xbx_engine_abi() } != 3 {
         return Err("The native engine and Rust entry have different ABI versions".into());
     }
     unsafe { xbx_platform_callbacks(&CALLBACKS) };
-    let firmware = media::prepare_profile(&root)?;
+    let (root, lease, firmware) = media::owned_profile(Path::new(base))?;
     let runtime = media::select(&root, &firmware)?;
     let media_fd = crate::disc::qemu_media_fd(&runtime.media)?.into_raw_fd();
     let config = super::profile_config(&root)?;
@@ -331,6 +360,8 @@ fn diagnostics(root: &Path) -> std::io::Result<std::thread::JoinHandle<()>> {
     Ok(std::thread::spawn(move || {
         let mut remaining = 4 * 1024 * 1024;
         let mut buf = [0; 8192];
+        let mut guest_failed = false;
+        let mut recent = Vec::new();
         let mut dirty = false;
         let mut flushed = Instant::now();
         loop {
@@ -347,6 +378,26 @@ fn diagnostics(root: &Path) -> std::io::Result<std::thread::JoinHandle<()>> {
                 }
                 Err(_) => break,
             };
+            if !guest_failed && n > 0 {
+                recent.extend_from_slice(&buf[..n]);
+                if recent
+                    .windows(b"*** fatal error ".len())
+                    .any(|s| s == b"*** fatal error ")
+                {
+                    guest_failed = true;
+                    STARTUP.report(-4);
+                    neutral();
+                    unsafe {
+                        xbx_engine_pause();
+                    }
+                    media::status(
+                        "The guest reported a boot failure. Diagnostic evidence was preserved.",
+                    );
+                }
+                if recent.len() > 64 {
+                    recent.drain(..recent.len() - 64);
+                }
+            }
             let keep = n.min(remaining);
             if keep > 0 {
                 let _ = log.write_all(&buf[..keep]);

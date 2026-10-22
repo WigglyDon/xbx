@@ -132,6 +132,61 @@ pub fn prepare_profile(root: &Path) -> Result<String, Box<dyn std::error::Error>
         .to_owned())
 }
 
+pub fn owned_profile(
+    base: &Path,
+) -> Result<(std::path::PathBuf, crate::storage::ProfileLease, String), Box<dyn std::error::Error>>
+{
+    let identity = asset("profile.identity")?;
+    let text = std::str::from_utf8(&identity)?;
+    let diagnostic = text.lines().any(|l| l == "mode=launch-diagnostic-v1");
+    let root = base.join(if diagnostic {
+        "xbx-launch-diagnostic-v1"
+    } else {
+        "xbx-qualification"
+    });
+    let lease = if diagnostic && !root.exists() {
+        status("Preparing an isolated diagnostic session…");
+        crate::branch::create(
+            &base.join("xbx-qualification"),
+            &root,
+            &asset("flash.bin")?,
+            &identity,
+            &opaque_id()?,
+            fingerprint,
+        )?
+    } else {
+        if diagnostic && !root.join("branch.identity").is_file() {
+            return Err(
+                "An incomplete diagnostic branch was preserved; baseline storage was not replaced"
+                    .into(),
+            );
+        }
+        fs::create_dir_all(&root)?;
+        crate::storage::ProfileLease::acquire(&root)?
+    };
+    let firmware = prepare_profile(&root)?;
+    Ok((root, lease, firmware))
+}
+fn fingerprint(file: &mut File) -> std::io::Result<String> {
+    file.seek(SeekFrom::Start(0))?;
+    let digest = Digest(unsafe { xbx_digest_new() });
+    if digest.0.is_null() {
+        return Err(std::io::Error::other("digest initialization failed"));
+    }
+    let mut buffer = [0u8; 128 * 1024];
+    loop {
+        let n = file.read(&mut buffer)?;
+        if n == 0 {
+            break;
+        }
+        unsafe { xbx_digest_update(digest.0, buffer.as_ptr(), n) };
+    }
+    Ok(unsafe { CStr::from_ptr(xbx_digest_string(digest.0)) }
+        .to_str()
+        .map_err(std::io::Error::other)?
+        .to_owned())
+}
+
 pub struct LiveRuntime {
     pub media: File,
     pub disc: crate::disc::Disc,

@@ -44,7 +44,7 @@ fn quote(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub fn run(engine: &Path, new_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    run_inner(engine, new_root, None)
+    run_inner(engine, new_root, None, None)
 }
 
 pub fn kernel(
@@ -54,13 +54,43 @@ pub fn kernel(
     disk: &Path,
     map: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    run_inner(engine, new_root, Some((flash, disk, map)))
+    run_inner(engine, new_root, Some((flash, disk, map)), None)
+}
+
+/// Two-stage retained homebrew fixture, not selected-game compatibility.
+pub fn relaunch(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    disc: &Path,
+    title_map: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_inner(engine, new_root, Some((flash, disk, title_map)), Some(disc))
+}
+
+fn hmp_words(reply: &str) -> Vec<u32> {
+    let mut words = Vec::new();
+    for line in reply.split("\\n") {
+        if let Some((_, tail)) = line.rsplit_once(':') {
+            for token in tail.split_ascii_whitespace() {
+                if let Some(hex) = token.strip_prefix("0x") {
+                    let hex: String = hex.chars().take_while(char::is_ascii_hexdigit).collect();
+                    if let Ok(value) = u32::from_str_radix(&hex, 16) {
+                        words.push(value);
+                    }
+                }
+            }
+        }
+    }
+    words
 }
 
 fn run_inner(
     engine: &Path,
     new_root: &Path,
     kernel: Option<(&Path, &Path, &Path)>,
+    relaunch: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let engine = engine.canonicalize()?;
     fs::DirBuilder::new().mode(0o700).create(new_root)?;
@@ -82,20 +112,34 @@ fn run_inner(
         fs::copy(flash, root.join("flash.bin"))?;
         fs::copy(disk, root.join("hdd.qcow2"))?;
         let map = fs::read_to_string(map)?;
-        for name in [
-            "KiBootStage",
-            "KiBugCheckCode",
-            "KiTestMmDone",
-            "KiTestFatxDone",
-            "KiTestFatxWriteOk",
-        ] {
+        if relaunch.is_some() {
             let line = map
                 .lines()
-                .find(|line| line.contains(&format!("?{name}@@")))
-                .ok_or("self-test symbol missing from the selected map")?;
-            let address =
-                u64::from_str_radix(line.split_whitespace().nth(2).ok_or("invalid map")?, 16)?;
-            symbols.push((name, address));
+                .find(|l| l.split_whitespace().nth(1) == Some("_XkTitleResults"))
+                .ok_or("title results symbol missing")?;
+            symbols.push((
+                "XkTitleResults",
+                u64::from_str_radix(
+                    line.split_whitespace().nth(2).ok_or("invalid title map")?,
+                    16,
+                )?,
+            ));
+        } else {
+            for name in [
+                "KiBootStage",
+                "KiBugCheckCode",
+                "KiTestMmDone",
+                "KiTestFatxDone",
+                "KiTestFatxWriteOk",
+            ] {
+                let line = map
+                    .lines()
+                    .find(|line| line.contains(&format!("?{name}@@")))
+                    .ok_or("self-test symbol missing from the selected map")?;
+                let address =
+                    u64::from_str_radix(line.split_whitespace().nth(2).ok_or("invalid map")?, 16)?;
+                symbols.push((name, address));
+            }
         }
     } else {
         fs::write(root.join("flash.bin"), rom)?;
@@ -113,13 +157,22 @@ fn run_inner(
     } else {
         config
     };
+    let config = if let Some(disc) = relaunch {
+        config.replace(
+            "dvd_path=\"\"",
+            &format!("dvd_path={}", quote(&disc.canonicalize()?)?),
+        )
+    } else {
+        config
+    };
     fs::write(root.join("xemu.toml"), config)?;
     let qmp = root.join("qmp.sock");
     // Unix socket paths are kernel-bounded. Refuse before launching a writer.
     if qmp.as_os_str().len() > 100 {
         return Err("use a shorter new scratch directory for QMP".into());
     }
-    let log = File::create(root.join("native.log"))?;
+    let mut log = File::create(root.join("native.log"))?;
+    let (mut log_reader, log_writer) = UnixStream::pair()?;
     let mut command = Command::new(engine);
     command
         .current_dir(&root)
@@ -136,8 +189,10 @@ fn run_inner(
         .args(["-accel", "tcg", "-qmp"])
         .arg(format!("unix:{},server=on,wait=off", qmp.display()))
         .stdin(Stdio::null())
-        .stdout(log.try_clone()?)
-        .stderr(log);
+        .stdout(Stdio::from(std::os::fd::OwnedFd::from(
+            log_writer.try_clone()?,
+        )))
+        .stderr(Stdio::from(std::os::fd::OwnedFd::from(log_writer)));
     if kernel.is_some() {
         command
             .args(["-device", "lpc47m157", "-serial"])
@@ -146,6 +201,22 @@ fn run_inner(
     lease.begin_writes()?;
     lease.inherit_for(&mut command);
     let mut owned = OwnedChild(command.spawn()?);
+    drop(command);
+    let drain = std::thread::spawn(move || {
+        let mut remaining = 4 * 1024 * 1024;
+        let mut buffer = [0u8; 8192];
+        loop {
+            match log_reader.read(&mut buffer) {
+                Ok(0) | Err(_) => break,
+                Ok(n) => {
+                    let keep = n.min(remaining);
+                    let _ = log.write_all(&buffer[..keep]);
+                    remaining -= keep;
+                }
+            }
+        }
+        let _ = log.sync_all();
+    });
     let child = &mut owned.0;
     let deadline = Instant::now() + Duration::from_secs(if kernel.is_some() { 60 } else { 20 });
     let mut booted = false;
@@ -156,6 +227,7 @@ fn run_inner(
         }
         std::thread::sleep(Duration::from_millis(20));
     }
+    let mut monitor_keepalive = None;
     let shutdown = (|| -> Result<(), Box<dyn std::error::Error>> {
         let mut socket = UnixStream::connect(&qmp)?;
         socket.set_read_timeout(Some(Duration::from_secs(2)))?;
@@ -169,6 +241,33 @@ fn run_inner(
         socket.write_all(b"{\"execute\":\"qmp_capabilities\"}\n")?;
         response(&mut reader)?;
         while Instant::now() < deadline {
+            if relaunch.is_some() {
+                let address = symbols[0].1;
+                let request = format!(
+                    "{{\"execute\":\"human-monitor-command\",\"arguments\":{{\"command-line\":\"x/44wx {address:#x}\"}}}}\n"
+                );
+                socket.write_all(request.as_bytes())?;
+                let words = hmp_words(&response(&mut reader)?);
+                if words.len() == 44 && words[0] == 0x54544b58 && words[25] == 1 {
+                    let bytes: Vec<u8> = words.iter().flat_map(|w| w.to_le_bytes()).collect();
+                    let first = String::from_utf8_lossy(&bytes[36..100]);
+                    let second = String::from_utf8_lossy(&bytes[112..176]);
+                    booted = [1, 2, 3, 4, 5, 7, 8, 25, 26, 27]
+                        .iter()
+                        .all(|&i| words[i] == 1)
+                        && first.contains("default.xbe")
+                        && second.contains("media\\second.xbe");
+                    fs::write(
+                        root.join("relaunch-results.txt"),
+                        format!(
+                            "words={words:?}\nfirst={first}\nsecond={second}\naccepted={booted}\n"
+                        ),
+                    )?;
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(100));
+                continue;
+            }
             if kernel.is_some() {
                 markers.clear();
                 for (name, address) in &symbols {
@@ -207,30 +306,43 @@ fn run_inner(
             }
             std::thread::sleep(Duration::from_millis(100));
         }
+        socket.write_all(b"{\"execute\":\"stop\"}\n")?;
+        response(&mut reader)?;
         socket.write_all(b"{\"execute\":\"quit\"}\n")?;
         // Keep the transport alive until QEMU has accepted the request. Closing
         // immediately after write can discard a command still queued at EOF.
         response(&mut reader)?;
+        monitor_keepalive = Some((socket, reader));
         Ok(())
     })();
     let stop_deadline = Instant::now() + Duration::from_secs(5);
+    let mut forced = false;
     let status = loop {
         if let Some(status) = child.try_wait()? {
             break status;
         }
         if shutdown.is_err() || Instant::now() >= stop_deadline {
+            forced = true;
             child.kill()?;
             break child.wait()?;
         }
         std::thread::sleep(Duration::from_millis(20));
     };
+    drop(monitor_keepalive);
+    fs::write(
+        root.join("termination.txt"),
+        format!("status={status}\nforced={forced}\nqmp={shutdown:?}\n"),
+    )?;
+    let _ = drain.join();
     lease.sync_storage()?;
     if kernel.is_some() {
         println!("Bounded open-kernel markers: {markers:?}");
     }
     println!(
         "{}: {booted}; normal QMP shutdown: {}",
-        if kernel.is_some() {
+        if relaunch.is_some() {
+            "two-stage title entry, carried data and D: mapping observed"
+        } else if kernel.is_some() {
             "selected open-kernel markers observed"
         } else {
             "synthetic reset-vector executed"

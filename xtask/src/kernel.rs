@@ -6,7 +6,7 @@ use std::process::Command;
 const OXOS: &str = "c0c887a1263ebf89ba765f34a88ca8f132901e25";
 const CROMWELL: &str = "86f547387184d1001d377cce97d3756c8acf91cc";
 
-fn verify(path: &Path, pin: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn verify(path: &Path, pin: &str, patch: Option<&[u8]>) -> Result<(), Box<dyn std::error::Error>> {
     let head = Command::new("git")
         .arg("-C")
         .arg(path)
@@ -15,7 +15,7 @@ fn verify(path: &Path, pin: &str) -> Result<(), Box<dyn std::error::Error>> {
     let diff = Command::new("git")
         .arg("-C")
         .arg(path)
-        .args(["diff", "--exit-code", "HEAD"])
+        .args(["diff", "--binary", "HEAD"])
         .output()?;
     let untracked = Command::new("git")
         .arg("-C")
@@ -25,6 +25,7 @@ fn verify(path: &Path, pin: &str) -> Result<(), Box<dyn std::error::Error>> {
     if !head.status.success()
         || String::from_utf8(head.stdout)?.trim() != pin
         || !diff.status.success()
+        || diff.stdout != patch.unwrap_or_default()
         || !untracked.status.success()
         || !untracked.stdout.is_empty()
     {
@@ -35,11 +36,38 @@ fn verify(path: &Path, pin: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn build(root: &Path, play: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
     let _lease = crate::capacity::writer(root, 1)?;
     let source = root.join(".local/src/oxos");
-    verify(&source, OXOS)?;
-    verify(&source.join("third_party/cromwell"), CROMWELL)?;
+    let trace = mode == "trace";
+    let play = mode == "play" || trace;
+    let patch = if trace {
+        Some(std::fs::read(root.join("patches/oxos-launch-trace.patch"))?)
+    } else {
+        None
+    };
+    verify(&source, OXOS, patch.as_deref())?;
+    verify(&source.join("third_party/cromwell"), CROMWELL, None)?;
+    let trace_hash = if trace {
+        let out = Command::new("sha256sum")
+            .arg(root.join("patches/oxos-launch-trace.patch"))
+            .output()?;
+        if !out.status.success() {
+            return Err("trace patch hash failed".into());
+        }
+        let sha = String::from_utf8(out.stdout)?
+            .split_whitespace()
+            .next()
+            .ok_or("missing patch digest")?
+            .to_owned();
+        let lock = std::fs::read_to_string(root.join("kernel-trace.lock.json"))?;
+        if !lock.contains(&format!("\"patch_sha256\": \"{sha}\"")) {
+            return Err("trace patch differs from recorded identity".into());
+        }
+        Some(sha)
+    } else {
+        None
+    };
     let ndk = PathBuf::from(
         std::env::var_os("XBX_NDK").ok_or("set XBX_NDK to the read-only LLVM toolchain")?,
     );
@@ -48,11 +76,15 @@ pub fn build(root: &Path, play: bool) -> Result<(), Box<dyn std::error::Error>> 
     if let Some(path) = std::env::var_os("PATH") {
         paths.extend(std::env::split_paths(&path));
     }
-    let build = root.join(if play {
-        ".local/build-oxos-play"
+    let build = if let Some(ref sha) = trace_hash {
+        root.join(format!(".local/build-oxos-launch-{}", &sha[..12]))
     } else {
-        ".local/build-oxos"
-    });
+        root.join(if play {
+            ".local/build-oxos-play"
+        } else {
+            ".local/build-oxos"
+        })
+    };
     run(Command::new("make")
         .arg("-C")
         .arg(source.join("kernel"))
@@ -62,6 +94,7 @@ pub fn build(root: &Path, play: bool) -> Result<(), Box<dyn std::error::Error>> 
             "bios",
             "IMAGE=open",
             "SERIAL=1",
+            "TRACE_IMPORTS=0",
             "SPLASH=",
             "MCPX16=0",
             "BIOS_BASE=",
@@ -75,13 +108,59 @@ pub fn build(root: &Path, play: bool) -> Result<(), Box<dyn std::error::Error>> 
         // slots. New LLVM diagnoses this retained donor cast; keep the warning
         // visible and all other -Werror checks rather than changing its ABI.
         .arg(format!(
-            "CXX={} -Wno-error=cast-function-type-mismatch",
-            llvm.join("clang++").display()
+            "CXX={} -Wno-error=cast-function-type-mismatch {}",
+            llvm.join("clang++").display(),
+            if trace { "-DXK_XBX_LAUNCH_TRACE=1" } else { "" }
         ))
         .arg(format!("LD={}", llvm.join("lld-link").display()))
         .arg(format!("OBJCOPY={}", llvm.join("llvm-objcopy").display())))?;
+    if let Some(ref sha) = trace_hash {
+        let out = Command::new("sha256sum")
+            .arg(build.join("bios.bin"))
+            .output()?;
+        if !out.status.success() {
+            return Err("image hash failed".into());
+        }
+        let fw = String::from_utf8(out.stdout)?
+            .split_whitespace()
+            .next()
+            .ok_or("missing firmware hash")?
+            .to_owned();
+        std::fs::write(
+            build.join("build.identity"),
+            format!(
+                "source={OXOS}\npatch_sha256={sha}\nfirmware_sha256={fw}\nselftest=0\nserial=1\ntrace_imports=0\nram_mib=64\n"
+            ),
+        )?;
+        std::fs::write(
+            root.join(".local/selected-launch-build"),
+            build.to_str().ok_or("invalid launch build path")?,
+        )?;
+    }
     println!(
         "Local open-image build complete. Provenance, boot, game/save compatibility and shipping default remain unqualified."
     );
+    Ok(())
+}
+
+/// Build only the retained title; no upstream test campaign or HDD download.
+pub fn title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let _lease = crate::capacity::writer(root, 1)?;
+    let source = root.join(".local/src/oxos");
+    let patch = std::fs::read(root.join("patches/oxos-launch-trace.patch"))?;
+    verify(&source, OXOS, Some(&patch))?;
+    let ndk = PathBuf::from(std::env::var_os("XBX_NDK").ok_or("set XBX_NDK")?);
+    let llvm = ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin");
+    let build = root.join(".local/build-relaunch-title");
+    run(Command::new("make")
+        .arg("-C")
+        .arg(source.join("kernel"))
+        .arg("-j1")
+        .arg(format!("BUILD={}", build.display()))
+        .arg(format!("CXX={}", llvm.join("clang++").display()))
+        .arg(format!("LD={}", llvm.join("lld-link").display()))
+        .arg(build.join("kernel-test-title.xbe")))?;
+    run(Command::new("python3").args(["-I","-c","import sys;sys.path.insert(0,sys.argv[1]);import mkxiso;mkxiso.build(sys.argv[2],open(sys.argv[3],'rb').read(),True)"])
+        .arg(source.join("tests")).arg(build.join("relaunch.iso")).arg(build.join("kernel-test-title.xbe")))?;
     Ok(())
 }
