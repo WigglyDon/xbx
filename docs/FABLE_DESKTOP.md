@@ -108,7 +108,7 @@ parser read metadata only, not game instructions.
 | A1, v4/offscreen, 180-second maximum | Entry dispatch, existing runtime records zero-PC access violation c0000005 and bugcheck0x1e; stopped at88.894s. Generic QMP screenshots unavailable. | QMP acknowledged; exit0, forced=false, storage synced |
 | A2, v4/ordinary X11 window, 300-second maximum | Same entry/startup-failure boundary; stopped at105.964s. Own-window image reviewed: open-kernel splash, no Fable menu/gameplay. | QMP acknowledged; exit0, forced=false, storage synced |
 | B1, retained d87/same X11 settings/template, 300-second maximum | Same entry, zero-PC access violation and bugcheck0x1e; stopped at92.710s. Own-window image reviewed: open-kernel splash, no Fable menu/gameplay. | QMP acknowledged; exit0, forced=false, storage synced |
-| C | Unavailable: no inventoried already-owned reference BIOS/MCPX bundle in the documented xbx input location. | Not run |
+| C | Unavailable: no inventoried already-owned reference BIOS/MCPX bundle; owner subsequently confirmed none available. | Not run |
 
 A2 is the single focused repeat to correct the demonstrated screenshot integration
 limit, not another firmware/configuration campaign. A2/B1 use identical core,
@@ -193,8 +193,12 @@ The identical before/after manifest SHA-256 is
 `d50f67293e9ec874f5ec6da58116586c46636047333f8b9320e0626f876b168b`.
 
 **No demonstrated working route exists for Pixel 4 continuation.** No Android
-build, install or game trial was performed. The optional reference comparison
-needs an already-owned compatible BIOS/MCPX bundle identified by the owner;
-absent that, a concrete separately scoped platform investigation needs Master's
-decision. Private game-code/disassembly remains paused. Gameplay, audio, ordinary
+build, install or game trial was performed. The owner confirmed no reference
+BIOS/MCPX bundle is available and reiterated the product requirement: a
+distributable, setup-free environment beyond supplying a game, as intended for
+the sister product. C was an optional diagnostic, not a proposed product
+dependency. No proprietary acquisition is requested. These results leave an
+unattributed public-platform compatibility defect; the next concrete scoped
+kernel/core investigation needs Master's decision rather than an unsupported
+patch or broad campaign. Private game-code/disassembly remains paused. Gameplay, audio, ordinary
 saving, full resume, shortcuts, performance and owner acceptance remain unqualified.
