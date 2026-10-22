@@ -213,6 +213,19 @@ fn callsite_probe_bounds_code_excludes_headers_and_preserves_existing_evidence()
 }
 
 #[test]
+fn diagnostic_modes_cannot_alias_a_used_profile_or_choose_arbitrary_paths() {
+    use xbx::branch::diagnostic_root;
+    assert_eq!(diagnostic_root("ram_mib=64\n").unwrap(), None);
+    let old = diagnostic_root("mode=launch-diagnostic-v1\n").unwrap();
+    let next = diagnostic_root("mode=launch-diagnostic-v2\n").unwrap();
+    assert_ne!(old, next);
+    assert_ne!(old, Some("xbx-qualification"));
+    assert_ne!(next, Some("xbx-qualification"));
+    assert!(diagnostic_root("mode=../xbx-qualification\n").is_err());
+    assert!(diagnostic_root("mode=launch-diagnostic-v2\nmode=launch-diagnostic-v1\n").is_err());
+}
+
+#[test]
 fn retained_read_only_document_is_not_reopened_after_path_replacement() {
     let dir = scratch("retained-media");
     let path = dir.join("source.iso");

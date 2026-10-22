@@ -1,4 +1,4 @@
-//! One explicit diagnostic branch. Never substitute firmware beneath the parent.
+//! Explicit diagnostic branches. Never substitute firmware beneath a used profile.
 use crate::storage::ProfileLease;
 use std::{
     fs::{self, File, OpenOptions},
@@ -17,6 +17,19 @@ pub fn field<'a>(text: &'a str, name: &str) -> io::Result<&'a str> {
         return Err(io::Error::other("duplicate profile binding"));
     }
     Ok(value)
+}
+
+/// Each instrumented firmware campaign gets its own fixed root. Unknown or
+/// duplicate modes cannot alias a previously used baseline/diagnostic profile.
+pub fn diagnostic_root(identity: &str) -> io::Result<Option<&'static str>> {
+    if !identity.lines().any(|line| line.starts_with("mode=")) {
+        return Ok(None);
+    }
+    match field(identity, "mode")? {
+        "launch-diagnostic-v1" => Ok(Some("xbx-launch-diagnostic-v1")),
+        "launch-diagnostic-v2" => Ok(Some("xbx-launch-diagnostic-v2")),
+        _ => Err(io::Error::other("unknown diagnostic profile mode")),
+    }
 }
 fn put(root: &Path, name: &str, bytes: &[u8]) -> io::Result<()> {
     let mut f = OpenOptions::new()

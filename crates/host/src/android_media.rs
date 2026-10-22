@@ -138,13 +138,9 @@ pub fn owned_profile(
 {
     let identity = asset("profile.identity")?;
     let text = std::str::from_utf8(&identity)?;
-    let diagnostic = text.lines().any(|l| l == "mode=launch-diagnostic-v1");
-    let root = base.join(if diagnostic {
-        "xbx-launch-diagnostic-v1"
-    } else {
-        "xbx-qualification"
-    });
-    let lease = if diagnostic && !root.exists() {
+    let diagnostic = crate::branch::diagnostic_root(text)?;
+    let root = base.join(diagnostic.unwrap_or("xbx-qualification"));
+    let lease = if diagnostic.is_some() && !root.exists() {
         status("Preparing an isolated diagnostic session…");
         crate::branch::create(
             &base.join("xbx-qualification"),
@@ -155,7 +151,7 @@ pub fn owned_profile(
             fingerprint,
         )?
     } else {
-        if diagnostic && !root.join("branch.identity").is_file() {
+        if diagnostic.is_some() && !root.join("branch.identity").is_file() {
             return Err(
                 "An incomplete diagnostic branch was preserved; baseline storage was not replaced"
                     .into(),

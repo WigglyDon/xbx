@@ -3,7 +3,7 @@
   "commit": "c0c887a1263ebf89ba765f34a88ca8f132901e25",
   "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
   "patch": "patches/oxos-launch-trace.patch",
-  "patch_sha256": "ab4094c24e38875ced724264641adbbdb2bafce1f1739f46f4c9e7599d0a1657",
+  "patch_sha256": "667b076f48968acb195170168d771930795a4f9caa46ad3a343fc6228b2a0f94",
   "image": "open",
   "selftest": 0,
   "serial": 1,

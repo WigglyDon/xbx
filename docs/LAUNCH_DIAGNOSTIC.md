@@ -151,6 +151,62 @@ code stays in private `callsite-evidence/code`; the numeric map stays beside it.
 Neither is suitable for public source or issue upload. Existing/partial output
 is preserved and refused on repetition. The process exits without starting QEMU.
 Synthetic tests cover bounds, header exclusion, refused non-code mapping,
-read-only media and preservation of prior evidence. A new device window is
-required to collect the actual title callsite; this preparation is not a causal
-repair or Fable compatibility result.
+read-only media and preservation of prior evidence. The October 22 Pixel 4 run
+collected the requested 12 KiB and numeric import map through this path, then
+exited without QEMU entry. Neither raw output is published.
+
+## Pixel 4 priority and first execution
+
+The owner made the accessible stock Pixel 4 the priority compatibility target.
+Its active lab policy and complete prior return were checked before acquiring
+exclusive custody. Actual Android 13/API33, ARM64, stock user build and 4096-byte
+pages matched the qualified binding. The xbx package was absent. Baseline APK
+`5ccf0e39bf36af88b017a52b44df57ea98ab2d3d59151fc0c8b334085fb5130e`
+(source 6612ba2, baseline firmware above) installed into that absent namespace.
+The exact existing Fable document was selected through the stock picker without
+copying media. A new phone-local profile executed the kernel and disc loader,
+then reproduced quick reboot, missing dashboard and fatal 21; flip samples were
+zero. This is compatibility evidence, not a performance benchmark.
+
+The data-preserving update to version 4 / `0.3.1-callsite-diagnostic`, APK
+`1e50520270e5498a7ca66e334c17606a742032e8f4b3ba4c20c5af6dc7f40321`,
+created an independent v1 diagnostic branch. It reproduced the Fold's first
+routine-2 caller, page fields/adoption and downstream failure. Private checks
+confirmed distinct profile IDs, matching ancestry, retained GameId/media and
+seven unchanged baseline files. The new safe-area geometry showed complete
+circles on the Pixel as well. The optional callsite request was created only
+after stopping emulation, then removed after collecting its bounded output.
+The phone returned booted, USB connected, xbx stopped and physical screen OFF;
+no passcode-lock claim, settings changes or owned clients/tunnels remained.
+Fold was not queried or operated during this continuation.
+
+Private callsite inspection narrows the observed error to process/heap setup,
+drive-link setup, or main returning. It does not yet select which occurred and
+does not justify suppressing the error or adding a dashboard.
+
+## Startup trace extension, version 2
+
+The current patch adds the already-existing VM allocation failure counters,
+last drive-link result/caller, and at most eight return addresses at each of the
+first four firmware returns. Stack walking checks alignment, monotonically
+increasing frames, current-thread stack bounds and both mapped ends before
+reading; it emits return PCs only, never frame arguments or memory payload.
+No full import trace or RAM increase is introduced.
+
+Current patch SHA-256 is
+`667b076f48968acb195170168d771930795a4f9caa46ad3a343fc6228b2a0f94`;
+built image SHA-256 is
+`36cb1425e6d125df899eeb0e2761919309a639c944e6277f1599325ba0cf35d1`.
+The pinned source, build flags and commands above still apply. The prior v1
+patch/image/APKs remain available at b654b6d and in retained private candidates.
+Version 5 / `0.3.2-startup-trace` assets explicitly select a new fixed
+`xbx-launch-diagnostic-v2` root, cloned coherently from the stopped baseline.
+It cannot substitute firmware beneath v1 or the baseline. Both known modes
+have distinct roots; unknown or duplicate modes refuse provisioning.
+
+The extended firmware passed the two-stage native relaunch boundary. Its first
+desktop teardown acknowledged QMP but ended with SIGSEGV after a GLib source
+reference assertion. The bounded debugger follow-up passed both the title
+boundary and normal shutdown; the intermittent cleanup defect is preserved and
+is not declared fixed. No core dump was stored. Android's separate process-stop
+lifetime remains distinct from clean desktop QMP shutdown.
