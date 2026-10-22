@@ -36,7 +36,10 @@
   "psx_reference": {
     "repository": "WigglyDon/psx",
     "commit": "1e4ba86fa0a5fc1470837b6bcc06bd20b6642c11",
-    "implementation_copied": false
+    "implementation_copied": true,
+    "source_paths": ["crates/player/src/input.rs", "LICENSE"],
+    "destination_paths": ["crates/host/src/input/layout.rs", "LICENSES/PSX-MIT.txt"],
+    "scope": "MIT side-column and clear 4:3 geometry; Xbox-specific adaptation"
   },
   "requirements_before_incorporation": [
     "recursive_dependency_pin",

@@ -99,9 +99,9 @@ pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> 
         .arg(assets)
         .args([
             "--version-code",
-            "6",
+            "7",
             "--version-name",
-            "0.3.3-watch-lifetime",
+            "0.4.0-xbox-landscape",
         ]))?;
     fs::copy(dex.join("classes.dex"), stage.join("classes.dex"))?;
     run(Command::new("zip")

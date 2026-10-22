@@ -1,11 +1,39 @@
 //! Original one-pad touch model. Captures survive moves; cancellation neutralizes all channels.
 use std::collections::BTreeMap;
+mod layout;
 
 pub const COUNT: usize = 18;
 pub const LABELS: [&str; COUNT] = [
     "L", "R", "A", "B", "X", "Y", "↑", "↓", "←", "→", "Back", "Start", "White", "Black", "LS",
     "RS", "LT", "RT",
 ];
+
+/// ARGB drawing values owned by the Rust player, consumed by the platform canvas.
+pub fn color(index: usize, pressed: bool, part: i32) -> u32 {
+    let (fill, ink) = match index {
+        2 => (0xff249b45, 0xffffffff), // Xbox A: green
+        3 => (0xffd32d35, 0xffffffff), // B: red
+        4 => (0xff247bd1, 0xffffffff), // X: blue
+        5 => (0xfff2ce32, 0xff171b20), // Y: yellow
+        12 => (0xffeeeeee, 0xff171b20),
+        13 => (0xff101317, 0xffeeeeee),
+        _ => (0xe6323942, 0xffeeeeee),
+    };
+    match part {
+        0 => fill,
+        1 => ink,
+        _ if pressed => 0xffffffff,
+        _ => 0xff8b949e,
+    }
+}
+
+pub fn label_scale(index: usize) -> f32 {
+    if (2..6).contains(&index) { 1.1 } else { 0.68 }
+}
+
+pub fn outline_width(pressed: bool) -> f32 {
+    if pressed { 3.0 } else { 1.0 }
+}
 // SDL gamepad button indices. Xbox White/Black use the retained shoulder mapping.
 const BUTTON: [usize; 14] = [0, 1, 2, 3, 11, 12, 13, 14, 4, 6, 9, 10, 7, 8];
 
@@ -68,12 +96,18 @@ fn band(h: f32, density: f32) -> f32 {
     (h * 0.48).min(260.0 * density.max(0.5))
 }
 pub fn game_rect(w: f32, h: f32, density: f32) -> [f32; 4] {
+    if w > h * 1.35 {
+        return layout::picture(w, h, density);
+    }
     let available = (h - band(h, density)).max(1.0);
     let height = available.min(w * 0.75);
     let width = height * 4.0 / 3.0;
     [(w - width) * 0.5, (available - height) * 0.5, width, height]
 }
 pub fn circle(index: usize, w: f32, h: f32, density: f32) -> Circle {
+    if w > h * 1.35 {
+        return layout::controls(w, h, density)[index];
+    }
     let b = band(h, density);
     let top = h - b;
     let (x, y) = [
@@ -207,6 +241,54 @@ impl Touch {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn landscape_controls_leave_a_clear_picture_and_preserve_every_hit() {
+        // Both Pixel landscape cutout positions, Fold, and a transient resize.
+        for rect in [
+            [95.0, 0.0, 2090.0, 1014.0],
+            [0.0, 66.0, 2090.0, 1014.0],
+            [80.0, 20.0, 1952.0, 1080.0],
+            [0.0, 0.0, 280.0, 160.0],
+        ] {
+            let view = Viewport::new(rect, 2.75).unwrap();
+            let [x, y, w, h] = view.surface();
+            assert!(w > 0.0 && h > 0.0);
+            assert!(h > view.height * 0.6, "picture too small for {rect:?}");
+            assert!((w / h - 4.0 / 3.0).abs() < 0.0001);
+            assert!(x >= view.left && y >= view.top);
+            assert!(x + w <= view.left + view.width + 0.01);
+            assert!(y + h <= view.top + view.height + 0.01);
+            for i in 0..COUNT {
+                let c = view.control(i);
+                assert!(c.x - c.radius >= view.left - 0.01);
+                assert!(c.y - c.radius >= view.top - 0.01);
+                assert!(c.x + c.radius <= view.left + view.width + 0.01);
+                assert!(c.y + c.radius <= view.top + view.height + 0.01);
+                assert!(
+                    c.x + c.radius <= x
+                        || c.x - c.radius >= x + w
+                        || c.y + c.radius <= y
+                        || c.y - c.radius >= y + h
+                );
+                for j in 0..i {
+                    let other = view.control(j);
+                    assert!(
+                        (c.x - other.x).hypot(c.y - other.y) >= c.radius + other.radius - 0.01,
+                        "overlap {i}/{j}"
+                    );
+                }
+                let mut touch = Touch::new();
+                let p = touch.event_in(1, 0, [c.x, c.y], view);
+                assert!(touch.active(i), "wrong control captured for {i}");
+                if i >= 16 {
+                    assert_eq!(p.axes[i - 12], 32767);
+                } else if i >= 2 {
+                    assert_eq!(p.buttons, 1 << BUTTON[i - 2]);
+                }
+                assert_eq!(touch.event_in(1, 3, [c.x, c.y], view), Pad::default());
+            }
+        }
+    }
     #[test]
     fn safe_geometry_contains_whole_controls_and_transforms_hits() {
         for rect in [

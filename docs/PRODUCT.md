@@ -44,6 +44,10 @@ path execution. Removing a shortcut does not delete content or saves.
 
 The picture is aspect-correct and clear of controls by default. Touch layout
 adapts to actual usable window size, cutouts, inner/outer displays and rotations.
+Phone play defaults to sensor landscape, with controls in side columns and a
+clear 4:3 picture using the public PSX layout geometry. Face buttons retain
+original Xbox A green, B red, X blue and Y yellow; Black and White have distinct
+caps and text, alongside Back, Start, both triggers and stick clicks.
 Retain multi-touch capture, cancellation, useful analog dead zones and editable
 per-display profiles. Original Xbox input includes two sticks, stick clicks,
 analog triggers, D-pad, A/B/X/Y, Start/Back and Black/White. Preserve pressure

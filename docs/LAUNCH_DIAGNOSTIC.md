@@ -258,3 +258,50 @@ forking fixture may briefly retain a pre-exec descriptor, so actual OS lease
 acquisition proves release rather than inferring it from one reaped PID. The
 previous immediate-acquisition assertion failed once and remains in private
 failure evidence. Host and Android Clippy pass with warnings denied.
+
+## Pixel startup localization and landscape candidate
+
+After the other product's verified handback, version 6 was installed and run on
+the qualified stock Pixel 4 under a finite exclusive transaction. The independent
+v2 profile reached Fable's title thread and reproduced the dashboard-error return.
+All seven baseline fingerprints and all seven v1 diagnostic fingerprints remained
+unchanged. The return-frame chain plus bounded private executable inspection
+localizes that return to process-heap creation returning null, before the title's
+drive-link setup or main function. No VM allocation failure was recorded; that
+does not establish that no allocation was attempted. The kernel's existing
+exception globals describe unhandled exceptions only, so an empty report does
+not exclude a caught setup exception. The actual underlying failure is unresolved.
+
+A second bounded read collected only the next 12 KiB executable range needed for
+heap setup and numeric import mappings. It ran before native machine entry; all
+seven v2 profile fingerprints remained unchanged. Both transactions stopped xbx
+and verified physical screen OFF before releasing custody. No security-lock claim,
+gameplay, audible audio, ordinary-save, snapshot or performance result is earned.
+Raw executable fragments, logs and profile identities remain private.
+
+Version 7 / `0.4.0-xbox-landscape` builds the owner's landscape/original-controller
+request. Public PSX Rust side-column/clear-picture geometry is pinned and noticed
+in THIRD_PARTY.md; Xbox channels and data policy stay separate. Rust owns geometry,
+labels, ARGB colors, label sizing and pressed outlines; Android forwards Canvas,
+safe insets and sensor-landscape orientation mechanically. Portrait/square safe
+geometry remains available for resized windows. No device rotation setting changes.
+
+APK SHA-256 `cd2ea82cde686f439207060960ce4240c71e8664bb924e4c6027084a6105bbbe`;
+Rust library `7330ca521d6367c9fb6fe8926890d9368f7f2c1dfb328fa38c3e4c5eeba59a35`.
+Core and v2 firmware hashes remain as above. Reproduce with the existing selected
+v2 profile assets and read-only SDK/NDK:
+
+```sh
+cargo test --workspace --offline -j1
+cargo clippy --workspace --all-targets --offline -j1 -- -D warnings
+XBX_NATIVE_LIB_DIR="$PWD/.local/build-android" cargo clippy -p xbx-host --lib --target aarch64-linux-android --offline -j1 -- -D warnings
+cargo xtask android-host
+cargo xtask android-apk
+```
+
+Workspace checks pass: 18 tests, three explicit native fixtures ignored. The new
+boundary test checks every landscape hit/channel, cancellation, whole-circle safe
+bounds, nonoverlapping controls and a clear aspect-correct picture across inset
+arrangements and a transient resize. Host and Android Clippy pass with warnings
+denied. APK build/signature/alignment pass; version 7 device layout inspection is
+pending. Prior APKs, firmware and unique failure evidence are retained.

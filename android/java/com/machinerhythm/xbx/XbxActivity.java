@@ -30,6 +30,8 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
     private static native void nativeDocument(int fd, String uri, String error);
     private static native void nativeTouch(int id, int phase, float x, float y, float w, float h, float density);
     private static native float[] nativeLayout(int index, float w, float h, float density);
+    private static native int nativeColor(int index, boolean pressed, int part);
+    private static native float nativeOutline(boolean pressed);
     private static native String nativeLabel(int index);
     private static native void nativeNeutral();
     private static native void nativeGeometry(float left,float top,float width,float height,float density);
@@ -162,11 +164,17 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
             int count = (int)nativeLayout(-2, getWidth(), getHeight(), density())[0];
             for (int i=0; i<count; i++) {
                 float[] p = nativeLayout(i, getWidth(), getHeight(), density());
-                paint.setColor(p[3] != 0 ? 0xcc6ca9dc : 0xaa303945);
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(nativeColor(i,p[3] != 0,0));
                 canvas.drawCircle(p[0], p[1], p[2], paint);
-                paint.setColor(Color.WHITE);
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(density() * nativeOutline(p[3] != 0));
+                paint.setColor(nativeColor(i,p[3] != 0,2));
+                canvas.drawCircle(p[0], p[1], p[2], paint);
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(nativeColor(i,p[3] != 0,1));
                 paint.setTextAlign(Paint.Align.CENTER);
-                paint.setTextSize(p[2] * 0.68f);
+                paint.setTextSize(p[2] * p[4]);
                 canvas.drawText(nativeLabel(i), p[0], p[1] - (paint.ascent()+paint.descent())/2, paint);
             }
         }

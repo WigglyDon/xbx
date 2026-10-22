@@ -5,7 +5,8 @@
 The initial foundation at `59fbcfa` contained documentation/bootstrap only.
 The qualification implementation now builds the candidate below from pinned
 public source in ignored local storage. No game, proprietary firmware, EEPROM,
-save, signing key, font/logo asset or PSX implementation is incorporated here.
+save, signing key or font/logo asset is incorporated here. Selected public PSX
+Rust layout geometry is reused below with its MIT notice.
 
 Original contributions use the root MIT license. That grant does not cover
 software added from elsewhere. A future combined distribution must satisfy the
@@ -35,7 +36,14 @@ at that source revision. Build commands and limits are in [BUILD.md](docs/BUILD.
 - The APK compiles SDL's platform Java sources from the exact SDL 3.4.14 archive,
   `android-project/app/src/main/java/org/libsdl/app/`, under SDL's zlib license.
   The small xbx Java subclass is original mechanical platform glue, MIT.
-- Original Rust modules are MIT. No PSX files were copied. XDVDFS offsets/layout
+- Original Rust modules are MIT. Landscape side-column geometry and
+  `clear_picture` in `crates/host/src/input/layout.rs` adapt
+  `crates/player/src/input.rs` (`Layout::ps2`, `Rect`, `clear_picture`) from public
+  [PSX at 1e4ba86](https://github.com/WigglyDon/psx/blob/1e4ba86fa0a5fc1470837b6bcc06bd20b6642c11/crates/player/src/input.rs).
+  Copyright (c) 2026 Machine Rhythm contributors; retained
+  [MIT notice](LICENSES/PSX-MIT.txt). Xbox input mappings, colors, storage and
+  runtime remain xbx-owned; no PSX private source or application data was used.
+  XDVDFS offsets/layout
   were cross-checked against the pinned fork's MIT `android/third_party/xdvdfs-core`
   by antangelo, specifically `blockdev/offset.rs` and `layout/`; no parser code
   was copied. The synthetic reset ROM contains original diagnostic instructions.

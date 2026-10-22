@@ -108,7 +108,30 @@ extern "C" fn layout(index: i32, _w: f32, _h: f32, _d: f32, out: *mut f32) {
         } else {
             0.0
         };
+        out[4] = crate::input::label_scale(index as usize);
     }
+}
+/// # Safety
+/// JNI supplies only numeric drawing arguments; Java pointers are not dereferenced.
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeColor(
+    _env: *mut std::ffi::c_void,
+    _activity: *mut std::ffi::c_void,
+    index: i32,
+    pressed: u8,
+    part: i32,
+) -> i32 {
+    crate::input::color(index as usize, pressed != 0, part) as i32
+}
+/// # Safety
+/// JNI supplies a numeric pressed flag; Java pointers are not dereferenced.
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeOutline(
+    _env: *mut std::ffi::c_void,
+    _activity: *mut std::ffi::c_void,
+    pressed: u8,
+) -> f32 {
+    crate::input::outline_width(pressed != 0)
 }
 extern "C" fn label(index: i32) -> *const c_char {
     static LABELS: OnceLock<Vec<CString>> = OnceLock::new();

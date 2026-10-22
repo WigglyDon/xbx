@@ -5,6 +5,7 @@
     android:hasCode="true" android:extractNativeLibs="true"
     android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
     <activity android:name=".XbxActivity" android:exported="true" android:process=":engine"
+      android:screenOrientation="sensorLandscape"
       android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
       android:hardwareAccelerated="true">
       <intent-filter>
