@@ -1,5 +1,11 @@
 # First quick-reboot diagnostic
 
+These versioned sections preserve historical receipts and commands for OXOS
+`c0c887a1263ebf89ba765f34a88ca8f132901e25`. The current separate desktop pin,
+build policy and successful focused upstream correction are recorded in
+[QUICK_REBOOT.md](QUICK_REBOOT.md). Current firmware builds do not update the
+Android selectors; new candidates cannot be labeled as baseline/v4 assets.
+
 Master continuation 6345094692 authorizes this bounded follow-up to the Fold
 failure at 6612ba2. It does not select a shipping kernel or authorize a public
 binary. Baseline firmware, failed profile and both phone media copies remain
@@ -7,11 +13,13 @@ preserved. No PC game image is required.
 
 ## Source and build binding
 
-`kernel-trace.lock.json` pins OXOS/Cromwell and the exact
+At the time of these historical runs, `kernel-trace.lock.json` pinned OXOS/Cromwell and the exact
 `patches/oxos-launch-trace.patch`. From a clean pinned OXOS working tree, apply
 that patch once. The kernel build refuses any other tracked diff or untracked
-source. The trace variant uses its own directory keyed by patch digest, writes
-an image/build receipt, and retains the prior self-test and normal-play builds.
+source. The old trace variant used its own directory keyed by patch digest, wrote
+an image/build receipt, and retained the prior self-test and normal-play builds.
+That directory scheme is superseded; do not use this historical Android build
+sequence to adopt the new desktop-only candidate.
 
 ```sh
 git -C .local/src/oxos apply "$PWD/patches/oxos-launch-trace.patch"

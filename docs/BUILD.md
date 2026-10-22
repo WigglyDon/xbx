@@ -25,8 +25,6 @@ cargo xtask source-check
 cargo xtask android-configure
 cargo xtask android-build
 cargo xtask android-host
-cargo xtask kernel-build play
-cargo xtask profile-assets
 cargo xtask android-apk
 ```
 
@@ -38,6 +36,12 @@ filesystem, install packages or delete a cache. Inspect host jobs before growth;
 the native/DSP builds use one compiler job. The first 6 GiB peak estimate includes
 source/dependencies/objects/evidence and must be re-evaluated for media conversion.
 One interrupted compilation is resumed in the same build directory.
+
+Firmware attempts now use exclusive source/Cromwell/patch/mode output paths and
+preserve interrupted attempts rather than overwriting them. The current desktop
+kernel pin is separate from the retained Android seed. The block above assumes
+existing accepted Android assets; it does not select the new desktop firmware.
+See [QUICK_REBOOT.md](QUICK_REBOOT.md) for the current bounded build/run receipt.
 
 The output is `.local/xbx-qualification.apk`, package `com.machinerhythm.xbx`,
 activity process `:engine`, ARM64 only.
@@ -163,26 +167,35 @@ the monitor transport before quit acknowledgment did not complete shutdown.
 These observations do not establish a core shutdown defect or an Android result.
 
 For bounded open-image qualification, sparse-checkout only `kernel`, `tools` and
-`tests/kernel-test-title` of OXOS `c0c887a1263ebf89ba765f34a88ca8f132901e25` under
-`.local/src/oxos`; keep the specification corpus out of the working tree. Its
+`tests/kernel-test-title` of OXOS `d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2` under
+`.local/src/oxos-d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2`; keep the specification corpus out of the working tree. Its
 build requires Cromwell `86f547387184d1001d377cce97d3756c8acf91cc` at
-`.local/src/oxos/third_party/cromwell`. `cargo xtask kernel-build` uses the existing
+that worktree's `third_party/cromwell` (the tested worktree links the retained
+pinned checkout). `cargo xtask kernel-build` uses the existing
 NDK's LLVM tools and the retained Make/Python pipeline with `IMAGE=open`, no
 comparison BIOS/MCPX input, no splash asset and one compile job. Without `play` it builds only
 the self-test image; no dashboard/game download, hardware flashing or firmware
-default selection is performed. Output stays under `.local/build-oxos`.
+default selection is performed. Outputs include full OXOS/Cromwell pins, mode
+and patch digest (`none` for unpatched modes); existing directories refuse reuse.
+`build.inputs` precedes compilation; `build.identity` additionally records the
+actual firmware digest after success. No firmware build updates Android selectors.
 The newer LLVM diagnostic for the donor's intentional equal-width i386 timer
 APC function cast is retained as a warning with
 `-Wno-error=cast-function-type-mismatch`; other donor `-Werror` checks remain.
 This build adjustment does not qualify that ABI at runtime.
-`cargo xtask kernel-build play` uses a separate `.local/build-oxos-play`
-directory with self-tests disabled. `cargo xtask profile-assets` creates a
-versioned private seed and selects its three-file asset inventory for packaging.
+`cargo xtask kernel-build play` uses the separate source-keyed play directory
+with self-tests disabled. No new play or self-test image was built for this
+assignment. `cargo xtask profile-assets` only accepts the historical baseline
+image; `profile-assets trace` only accepts the exact historical v4 image and
+receipt. Both label their actual old source pin. A new desktop candidate refuses
+before profile output/selection, requiring a separate Android profile decision.
 Retain the original self-test artifact and every seed; do not overwrite a used
 profile with a new firmware build. Kernel date/time macros affect image identity,
 so retain the actual built image/digest as well as its source/command.
 
-The bounded desktop self-test attempt used the retained core, 64 MiB and a new
+The historical bounded desktop self-test attempt at
+`c0c887a1263ebf89ba765f34a88ca8f132901e25`, using `.local/build-oxos` and
+`.local/build-oxos-play`, used the retained core, 64 MiB and a new
 formatted disk, with no MCPX/game/dashboard. It observed KiBootStage=0x30,
 KiBugCheckCode=0, KiTestMmDone=1, KiTestFatxDone=1, KiTestFatxWriteOk=1, followed
 by acknowledged QMP shutdown. This is a selected boot/storage mechanism result,

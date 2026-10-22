@@ -3,8 +3,28 @@ use crate::run;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const OXOS: &str = "c0c887a1263ebf89ba765f34a88ca8f132901e25";
+const OXOS: &str = "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2";
 const CROMWELL: &str = "86f547387184d1001d377cce97d3756c8acf91cc";
+
+fn source(root: &Path) -> PathBuf {
+    root.join(format!(".local/src/oxos-{OXOS}"))
+}
+
+// Full pins/digest and mode separate all three firmware variants. Exclusive
+// creation also preserves interrupted attempts and date/time-dependent images.
+fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Result<PathBuf> {
+    let build = root.join(format!(".local/build-oxos-{pin}-{CROMWELL}-{mode}-{patch}"));
+    std::fs::create_dir(&build)?;
+    std::fs::write(
+        build.join("build.inputs"),
+        format!(
+            "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports=0\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
+            u8::from(mode == "selftest"),
+            u8::from(mode == "trace")
+        ),
+    )?;
+    Ok(build)
+}
 
 fn verify(path: &Path, pin: &str, patch: Option<&[u8]>) -> Result<(), Box<dyn std::error::Error>> {
     let head = Command::new("git")
@@ -37,8 +57,11 @@ fn verify(path: &Path, pin: &str, patch: Option<&[u8]>) -> Result<(), Box<dyn st
 }
 
 pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if !matches!(mode, "trace" | "play" | "selftest") {
+        return Err("kernel mode must be trace, play or selftest".into());
+    }
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = root.join(".local/src/oxos");
+    let source = source(root);
     let trace = mode == "trace";
     let play = mode == "play" || trace;
     let patch = if trace {
@@ -61,7 +84,10 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
             .ok_or("missing patch digest")?
             .to_owned();
         let lock = std::fs::read_to_string(root.join("kernel-trace.lock.json"))?;
-        if !lock.contains(&format!("\"patch_sha256\": \"{sha}\"")) {
+        if !lock.contains(&format!("\"patch_sha256\": \"{sha}\""))
+            || !lock.contains(&format!("\"commit\": \"{OXOS}\""))
+            || !lock.contains(&format!("\"cromwell_commit\": \"{CROMWELL}\""))
+        {
             return Err("trace patch differs from recorded identity".into());
         }
         Some(sha)
@@ -76,15 +102,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
     if let Some(path) = std::env::var_os("PATH") {
         paths.extend(std::env::split_paths(&path));
     }
-    let build = if let Some(ref sha) = trace_hash {
-        root.join(format!(".local/build-oxos-launch-{}", &sha[..12]))
-    } else {
-        root.join(if play {
-            ".local/build-oxos-play"
-        } else {
-            ".local/build-oxos"
-        })
-    };
+    let build = reserve_build(root, OXOS, trace_hash.as_deref().unwrap_or("none"), mode)?;
     run(Command::new("make")
         .arg("-C")
         .arg(source.join("kernel"))
@@ -114,7 +132,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         ))
         .arg(format!("LD={}", llvm.join("lld-link").display()))
         .arg(format!("OBJCOPY={}", llvm.join("llvm-objcopy").display())))?;
-    if let Some(ref sha) = trace_hash {
+    {
         let out = Command::new("sha256sum")
             .arg(build.join("bios.bin"))
             .output()?;
@@ -129,16 +147,14 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         std::fs::write(
             build.join("build.identity"),
             format!(
-                "source={OXOS}\npatch_sha256={sha}\nfirmware_sha256={fw}\nselftest=0\nserial=1\ntrace_imports=0\nram_mib=64\n"
+                "{}firmware_sha256={fw}\n",
+                std::fs::read_to_string(build.join("build.inputs"))?
             ),
-        )?;
-        std::fs::write(
-            root.join(".local/selected-launch-build"),
-            build.to_str().ok_or("invalid launch build path")?,
         )?;
     }
     println!(
-        "Local open-image build complete. Provenance, boot, game/save compatibility and shipping default remain unqualified."
+        "Local open-image candidate: {}. No Android selector changed; boot/game/save compatibility and shipping default remain unqualified.",
+        build.display()
     );
     Ok(())
 }
@@ -146,12 +162,13 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
 /// Build only the retained title; no upstream test campaign or HDD download.
 pub fn title(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = root.join(".local/src/oxos");
+    let source = source(root);
     let patch = std::fs::read(root.join("patches/oxos-launch-trace.patch"))?;
     verify(&source, OXOS, Some(&patch))?;
     let ndk = PathBuf::from(std::env::var_os("XBX_NDK").ok_or("set XBX_NDK")?);
     let llvm = ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin");
-    let build = root.join(".local/build-relaunch-title");
+    let build = root.join(format!(".local/build-relaunch-title-{OXOS}"));
+    std::fs::create_dir(&build)?;
     run(Command::new("make")
         .arg("-C")
         .arg(source.join("kernel"))
@@ -198,7 +215,7 @@ fn abi_title(
     disc: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = root.join(".local/src/oxos");
+    let source = source(root);
     let patch = std::fs::read(root.join("patches/oxos-launch-trace.patch"))?;
     verify(&source, OXOS, Some(&patch))?;
     let build = root.join(".local").join(directory);
@@ -244,4 +261,49 @@ fn abi_title(
     run(Command::new("python3").args(["-I", "-c", "import sys;sys.path.insert(0,sys.argv[1]);import mkxiso;mkxiso.build(sys.argv[2],open(sys.argv[3],'rb').read(),False)"])
         .arg(source.join("tests")).arg(build.join(disc)).arg(build.join("title.xbe")))?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn firmware_attempts_preserve_prior_images_and_inputs() {
+        let root = std::env::temp_dir().join(format!(
+            "xbx-build-policy-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(root.join(".local")).unwrap();
+        let prior = reserve_build(&root, "prior-source", "prior-patch", "trace").unwrap();
+        std::fs::write(
+            prior.join("bios.bin"),
+            b"preserve interrupted or accepted image",
+        )
+        .unwrap();
+        let receipt = std::fs::read(prior.join("build.inputs")).unwrap();
+        assert_eq!(
+            reserve_build(&root, "prior-source", "prior-patch", "trace")
+                .unwrap_err()
+                .kind(),
+            std::io::ErrorKind::AlreadyExists
+        );
+        for (pin, patch, mode) in [
+            ("new-source", "prior-patch", "trace"),
+            ("prior-source", "new-patch", "trace"),
+            ("prior-source", "prior-patch", "play"),
+            ("prior-source", "prior-patch", "selftest"),
+        ] {
+            assert_ne!(reserve_build(&root, pin, patch, mode).unwrap(), prior);
+        }
+        assert_eq!(
+            std::fs::read(prior.join("bios.bin")).unwrap(),
+            b"preserve interrupted or accepted image"
+        );
+        assert_eq!(std::fs::read(prior.join("build.inputs")).unwrap(), receipt);
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

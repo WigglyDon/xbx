@@ -4,6 +4,12 @@ Observed during seed preparation on 2026-10-21. Recheck changing claims at actua
 qualification/release. Sources explain candidate behavior, not xbx results. A
 source author saying "clean-room" or "legal" is not independent certification.
 
+October 22 qualification update: the current desktop kernel pin is
+[OXOS d87cfc33](https://github.com/kooscode/oxos/commit/d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2),
+upstream's one-file quick-reboot mapping correction. The source map below retains
+the initial observations. Actual tested inputs/results and the unchanged Android
+bindings are in [QUICK_REBOOT.md](QUICK_REBOOT.md).
+
 | ID | Primary source | Use in this seed |
 | --- | --- | --- |
 | S1 | [xemu source](https://github.com/xemu-project/xemu), observed `03b988c9d76553b33ed712ba00822ffdf49f0e7d` | Upstream reference lineage; source/build audit needed |

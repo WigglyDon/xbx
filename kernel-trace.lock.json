@@ -1,6 +1,6 @@
 {
   "source": "https://github.com/kooscode/oxos",
-  "commit": "c0c887a1263ebf89ba765f34a88ca8f132901e25",
+  "commit": "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2",
   "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
   "patch": "patches/oxos-launch-trace.patch",
   "patch_sha256": "7eb48fb10ca5784a887d93db23f02c07ec83dc7b105930e1a71204724e0a0dc5",

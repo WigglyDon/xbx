@@ -20,7 +20,7 @@ fixture, retaining their own terms; their implementations are not copied here.
 
 `native/fixtures/vm-imports.S` is also an original MIT mechanical i386 ABI shim.
 It uses only public interface facts from OXOS `kernel/include/xk/mm.h` and
-`kernel/exports.tsv` at the pin below: allocation/free ordinals, stdcall argument
+`kernel/exports.tsv` at the historical `c0c887a1263ebf89ba765f34a88ca8f132901e25` pin: allocation/free ordinals, stdcall argument
 sizes, flags and types. No allocator implementation or title code is copied.
 The same pinned wrapping tools are invoked under their existing terms. Rust owns
 the build and acceptance policy; see [VM_IMPORT_CONTRACT.md](docs/VM_IMPORT_CONTRACT.md).
@@ -108,11 +108,14 @@ an original Rust module for this repair.
   describes a GPL-2.0 combined work with per-file terms.
 - OXOS (`kooscode/oxos`) advertises GPL-2.0 and an original boot/kernel path. Its
   source/provenance and comparison-image paths require review for distribution.
-  Private qualification now builds its open route at
-  `c0c887a1263ebf89ba765f34a88ca8f132901e25` with Cromwell
+  Desktop qualification now builds its open route at
+  `d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2` with Cromwell
   `86f547387184d1001d377cce97d3756c8acf91cc`; it uses neither a comparison BIOS
-  nor MCPX dump. The private player candidate includes that normal-play image,
-  not a proprietary console image or an approved distributable default.
+  nor MCPX dump. This adopts upstream's one-file quick-reboot mapping correction
+  with its original GPL/per-file terms, not a duplicate first-party backport.
+  The private Android player retains its existing images from
+  `c0c887a1263ebf89ba765f34a88ca8f132901e25`; no new Android mode or shipping
+  default is selected. See [QUICK_REBOOT.md](docs/QUICK_REBOOT.md).
 - PSX is a related product, not an xbx dependency. Any selected public MIT host
   source may be reused with its original copyright notice. Do not copy its
   GPL cores, fonts or firmware and label the resulting tree MIT-only.
