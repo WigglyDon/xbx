@@ -4,7 +4,7 @@
   "candidate_commit": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
   "reference_commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
   "patch": "patches/xemu-android.patch",
-  "patch_sha256": "6b1324c97f8e3178c1056ed417dfcc4f4075219470cf0ccbd3196a81a51a3a23",
+  "patch_sha256": "26027ec1436fb6c5f7a51200bf7fe96ceb90ba5695d568a72db29ef446ff461f",
   "git_dependencies": [
     {
       "name": "adrenotools",

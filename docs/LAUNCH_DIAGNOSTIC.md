@@ -208,5 +208,36 @@ The extended firmware passed the two-stage native relaunch boundary. Its first
 desktop teardown acknowledged QMP but ended with SIGSEGV after a GLib source
 reference assertion. The bounded debugger follow-up passed both the title
 boundary and normal shutdown; the intermittent cleanup defect is preserved and
-is not declared fixed. No core dump was stored. Android's separate process-stop
-lifetime remains distinct from clean desktop QMP shutdown.
+was not declared fixed by those debugger passes. No core dump was stored.
+
+## Scoped native cleanup correction
+
+A bounded critical-handler backtrace identified `io_remove_watch_poll` during
+socket chardev finalization after monitor cleanup. The retained watch returned a
+borrowed pointer after dropping its initial source reference; its owning context
+could release that final reference before the chardev used the pointer. Retain
+the initial reference until removal, clear the chardev pointer before finalizing,
+then destroy/unref the source. The native patch and original file notices retain
+their applicable terms.
+
+After that repair, two non-debugger runs still ended with SIGSEGV. A narrow
+stderr marker established that QEMU cleanup had already completed before the
+crash in process exit. The donor's desktop QEMU thread calls C-library `exit`
+while its frontend render thread remains alive; this can race frontend atexit
+handlers/global destructors. The Rust diagnostic supervisor now explicitly sets
+`XBX_ISOLATED_PROCESS_EXIT=1` for its owned child. Only that opt-in invokes
+immediate process exit after QEMU cleanup closes block storage and stdio is
+flushed. Ordinary donor launches retain their existing exit path. Rust retains
+the inherited storage lease through actual process termination and then syncs
+storage; this is process isolation, not in-process teardown/reinitialization.
+Android's existing separate-process exit policy stays separate.
+
+With both changes, two bounded native two-stage relaunch regressions under
+`G_DEBUG=fatal-criticals` completed acknowledged QMP stop/quit, cleanup and status
+0, without forced kill or a GLib critical. Earlier failures and intermediate
+artifacts remain retained. This is evidence for the exercised cleanup path,
+not arbitrary fatal-exit, gameplay, save or snapshot acceptance. The current
+xemu patch digest is
+`26027ec1436fb6c5f7a51200bf7fe96ceb90ba5695d568a72db29ef446ff461f`;
+the source pin and native ABI remain unchanged. Version 6 packages this narrow
+watch correction alongside the same version-2 trace firmware/profile selection.

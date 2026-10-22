@@ -178,6 +178,10 @@ fn run_inner(
         .current_dir(&root)
         .env("SDL_VIDEO_DRIVER", "offscreen")
         .env("SDL_AUDIO_DRIVER", "dummy")
+        // This child is the complete runtime owner. QEMU closes block storage
+        // before immediate process exit; do not run frontend global destructors
+        // against its still-live render thread. Hold the lease through reaping.
+        .env("XBX_ISOLATED_PROCESS_EXIT", "1")
         .env("LIBGL_ALWAYS_SOFTWARE", "1")
         .env("XDG_DATA_HOME", root.join("data"))
         .env("XDG_CONFIG_HOME", root.join("config"))

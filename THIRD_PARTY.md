@@ -69,6 +69,11 @@ fixture generator are built/invoked from that source without copying them into
 original MIT modules. First-party Rust diagnostic branching, runner and geometry
 policy are original MIT work. See docs/LAUNCH_DIAGNOSTIC.md for reproduction.
 
+The targeted `chardev/char-io.c` watch-reference repair and its header comment
+remain modifications of retained QEMU source, preserving their existing file
+notices and combined-work obligations. No emulator source was translated into
+an original Rust module for this repair.
+
 ## Boot qualification and distribution boundary
 
 - xemu derives from QEMU. Its LICENSE describes GPL version 2 overall, with

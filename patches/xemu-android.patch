@@ -121,6 +121,37 @@ index 699b8ef..60de59a 100644
      if (g_mkdir_with_parents(dir, 0700) != 0) {
          SNAP_LOGW("failed to create snapshot preview dir: %s", dir);
          g_free(dir);
+diff --git a/chardev/char-io.c b/chardev/char-io.c
+index 3be17b5..bb7448e 100644
+--- a/chardev/char-io.c
++++ b/chardev/char-io.c
+@@ -126,7 +126,8 @@ GSource *io_add_watch_poll(Chardev *chr,
+     g_free(name);
+ 
+     g_source_attach(&iwp->parent, context);
+-    g_source_unref(&iwp->parent);
++    /* Chardev owns the initial reference until remove_fd_in_watch(). The
++     * monitor's I/O context may be destroyed before chardev finalization. */
+     return (GSource *)iwp;
+ }
+ 
+@@ -136,13 +137,15 @@ static void io_remove_watch_poll(GSource *source)
+ 
+     iwp = io_watch_poll_from_source(source);
+     g_source_destroy(&iwp->parent);
++    g_source_unref(&iwp->parent);
+ }
+ 
+ void remove_fd_in_watch(Chardev *chr)
+ {
+     if (chr->gsource) {
+-        io_remove_watch_poll(chr->gsource);
++        GSource *source = chr->gsource;
+         chr->gsource = NULL;
++        io_remove_watch_poll(source);
+     }
+ }
+ 
 diff --git a/chardev/char-stdio.c b/chardev/char-stdio.c
 index 2568164..02ebfbd 100644
 --- a/chardev/char-stdio.c
@@ -216,6 +247,19 @@ index d5a138d..3fb43dd 100644
          }
  
          isa_create_simple(isa_bus, "chihiro-lpc");
+diff --git a/include/chardev/char-io.h b/include/chardev/char-io.h
+index ac379ea..880e33e 100644
+--- a/include/chardev/char-io.h
++++ b/include/chardev/char-io.h
+@@ -28,7 +28,7 @@
+ #include "chardev/char.h"
+ #include "qemu/main-loop.h"
+ 
+-/* Can only be used for read */
++/* Read only. The returned watch is owned until remove_fd_in_watch(). */
+ GSource *io_add_watch_poll(Chardev *chr,
+                         QIOChannel *ioc,
+                         IOCanReadHandler *fd_can_read,
 diff --git a/subprojects/dsp56300/meson.build b/subprojects/dsp56300/meson.build
 index 4eb588b..4d132cd 100644
 --- a/subprojects/dsp56300/meson.build
@@ -278,6 +322,28 @@ index 4eb588b..4d132cd 100644
  )
 -
  meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
+diff --git a/system/main.c b/system/main.c
+index 22e26f1..e5e5516 100644
+--- a/system/main.c
++++ b/system/main.c
+@@ -71,6 +71,17 @@ static void *qemu_default_main(void *opaque)
+      */
+     return GINT_TO_POINTER(status);
+ #else
++#ifdef XBOX
++    /* The Rust diagnostic supervisor owns a whole isolated process. QEMU has
++     * closed block storage above; frontend atexit/global destructors can race
++     * the still-live SDL render thread. Ordinary donor launches retain exit(). */
++    const char *isolated = getenv("XBX_ISOLATED_PROCESS_EXIT");
++    if (isolated && strcmp(isolated, "1") == 0) {
++        fprintf(stderr, "XBX QEMU cleanup completed; isolated process exit\n");
++        fflush(NULL);
++        _exit(status);
++    }
++#endif
+     exit(status);
+ #endif
+ }
 diff --git a/system/vl.c b/system/vl.c
 index 68420b9..1ea7bca 100644
 --- a/system/vl.c
