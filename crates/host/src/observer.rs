@@ -32,6 +32,9 @@ pub struct Capture {
 }
 
 pub(crate) fn kind(ordinal: u32, version: u32) -> u32 {
+    if version >= 3 && matches!(ordinal, 65 | 67 | 327 | 328) {
+        return 2;
+    }
     if version >= 2 && matches!(ordinal, 24 | 37 | 99 | 246) {
         return 2;
     }
@@ -71,7 +74,7 @@ impl Capture {
             return Err(invalid("incomplete observer storage"));
         }
         let h: [u32; 32] = words[..32].try_into()?;
-        if h[0] != 0x58424f31 || !matches!(h[1], 1 | 2) || h[2] != (WORDS * 4) as u32 {
+        if h[0] != 0x58424f31 || !matches!(h[1], 1..=3) || h[2] != (WORDS * 4) as u32 {
             return Err(invalid("observer schema/size differs"));
         }
         if h[3] != 1 || h[4] != 1 {

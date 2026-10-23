@@ -617,10 +617,10 @@ index 175f662..7f62d20 100644
  }
  
 diff --git a/kernel/src/xe/trace.cpp b/kernel/src/xe/trace.cpp
-index 5a69ea5..6ed2b26 100644
+index 5a69ea5..6a2c5b2 100644
 --- a/kernel/src/xe/trace.cpp
 +++ b/kernel/src/xe/trace.cpp
-@@ -1,184 +1,323 @@
+@@ -1,184 +1,324 @@
 -// Import tracing (TRACE_IMPORTS=1): a ring of the title's most recent kernel calls, read by the host tools.
 +// Bounded correlation added to the retained GPL import tracer.
 +// No caller addresses, argument dereferences, buffers, paths or title code.
@@ -639,7 +639,7 @@ index 5a69ea5..6ed2b26 100644
 +    ULONG Header[32], Labels[XK_LABELS][4], Calls[XK_TRACE_RING][8];
 +};
  extern "C" {
-+volatile XK_OBSERVER_STORAGE XkObserverStorage = {{0x58424F31, 2, sizeof(XK_OBSERVER_STORAGE)}, {}, {}};
++volatile XK_OBSERVER_STORAGE XkObserverStorage = {{0x58424F31, 3, sizeof(XK_OBSERVER_STORAGE)}, {}, {}};
 +volatile ULONG XkContractState[64] = {0x58425331, 1};
 +// Fixed whole-startup entry/observed-return/typed-signal/first-status totals.
 +// Only NTSTATUS failure values are retained; pointer results contribute a null
@@ -741,6 +741,7 @@ index 5a69ea5..6ed2b26 100644
 +// Small fixed public-ABI type set. Other scalar/boolean/unknown APIs deliberately
 +// remain unclassified; there is no catch-all EAX-as-NTSTATUS interpretation.
 +static ULONG Kind(ULONG ordinal) {
++    if (ordinal == 65 || ordinal == 67 || ordinal == 327 || ordinal == 328) return 2; // declared NTSTATUS
 +    if ((ordinal >= 184 && ordinal <= 231) || (ordinal >= 233 && ordinal <= 238) ||
 +        ordinal == 254 || ordinal == 255 || ordinal == 256 || ordinal == 257 ||
 +        ordinal == 139 || ordinal == 142 || ordinal == 181 || ordinal == 159 ||

@@ -169,7 +169,7 @@ pub fn capture(
         }
         let context = Context::parse(&words, &base)?;
         fs::write(root.join("context.txt"), context.receipt())?;
-        if base.header[1] == 2 {
+        if base.header[1] >= 2 {
             crate::totals::capture(socket, reader, map, root, &base)?;
         }
         Ok(())

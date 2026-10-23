@@ -10,11 +10,12 @@ const WORDS: usize = 8 + 366 * 4;
 
 pub struct Totals {
     words: Vec<u32>,
+    observer_version: u32,
 }
 impl Totals {
     pub fn parse(w: &[u32], base: &observer::Capture) -> Result<Self, Box<dyn std::error::Error>> {
         if w.len() != WORDS
-            || base.header[1] != 2
+            || !matches!(base.header[1], 2 | 3)
             || w[0] != 0x58425431
             || w[1] != 1
             || w[2] != (WORDS * 4) as u32
@@ -30,7 +31,7 @@ impl Totals {
         let mut returns = 0u64;
         for (i, row) in w[8..].chunks_exact(4).enumerate() {
             let ordinal = i as u32 + 1;
-            let kind = observer::kind(ordinal, 2);
+            let kind = observer::kind(ordinal, base.header[1]);
             if row[1] > row[0]
                 || row[2] > row[1]
                 || (kind == 2 && (row[2] == 0) != (row[3] == 0))
@@ -61,22 +62,25 @@ impl Totals {
         if entries != w[6] as u64 || returns != w[7] as u64 {
             return Err("startup totals do not sum to declared counts".into());
         }
-        Ok(Self { words: w.to_vec() })
+        Ok(Self {
+            words: w.to_vec(),
+            observer_version: base.header[1],
+        })
     }
     fn row(&self, ordinal: usize) -> &[u32] {
         &self.words[8 + (ordinal - 1) * 4..8 + ordinal * 4]
     }
     pub fn receipt(&self) -> String {
         let mut out = format!(
-            "schema=xbx-startup-totals-v1\nevent_order={}\ncall_cutoff={}\nentries={}\nobserved_returns={}\nomitted_APIs_not_covered=true\nfunction_return_is_not_async_completion=true\nnull_or_negative_status_is_not_cause_proof=true\n# ordinal kind entries returns signal_count first_negative_ntstatus\n",
-            self.words[3], self.words[4], self.words[6], self.words[7]
+            "schema=xbx-startup-totals-v1\nobserver_version={}\nevent_order={}\ncall_cutoff={}\nentries={}\nobserved_returns={}\nomitted_APIs_not_covered=true\nfunction_return_is_not_async_completion=true\nnull_or_negative_status_is_not_cause_proof=true\n# ordinal kind entries returns signal_count first_negative_ntstatus\n",
+            self.observer_version, self.words[3], self.words[4], self.words[6], self.words[7]
         );
         for ordinal in 1..=366 {
             let r = self.row(ordinal);
             if r[0] != 0 {
                 out.push_str(&format!(
                     "{ordinal} {} {} {} {} {:08x}\n",
-                    observer::kind(ordinal as u32, 2),
+                    observer::kind(ordinal as u32, self.observer_version),
                     r[0],
                     r[1],
                     r[2],
@@ -214,5 +218,18 @@ mod tests {
         assert!(Totals::parse(&w, &b).is_err());
         assert_eq!(observer::kind(24, 1), 0);
         assert_eq!(observer::kind(24, 2), 2);
+    }
+    #[test]
+    fn section_device_status_types_require_the_declared_observer_version() {
+        let (mut w, mut b) = seed();
+        w[8 + 14 * 4..8 + 15 * 4].fill(0);
+        w[8 + 326 * 4..8 + 327 * 4].copy_from_slice(&[10, 9, 1, 0xc0000008]);
+        assert!(Totals::parse(&w, &b).is_err());
+        b.header[1] = 3;
+        assert!(Totals::parse(&w, &b).is_ok());
+        for ordinal in [65, 67, 327, 328] {
+            assert_eq!(observer::kind(ordinal, 2), 0);
+            assert_eq!(observer::kind(ordinal, 3), 2);
+        }
     }
 }

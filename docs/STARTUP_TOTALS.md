@@ -95,3 +95,42 @@ Their public declarations, rather than untyped EAX values, determine the next
 small classification extension. An independently noticed possible pool tail
 publication/preemption race remains a source finding pending focused proof;
 it is not attributed to Fable or patched speculatively here.
+
+## Completed classification candidate, settled from retained receipts
+
+The existing local continuation is complete: observer version3 additionally
+classifies declared NTSTATUS APIs65/67/327/328, while version1/2 captures retain
+their original meanings. The matching Rust regression rejects reading the new
+typed signals under an older version. Full patch
+80cf64f0bacf4c700be055fd7722017001a3f580d313f48cae7a883598cbccff,
+source `oxos-d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2-startup-totals-v2`;
+the earlier source/build/executable remain retained. At public c0dba59 the
+previous section's commands reproduce version2; this continuation builds version3.
+
+- Firmware5ac9faccb346a9996ec40227249562b81b46d4417a1fecac6abc1502785f8ce1.
+- Mape571aebff973d8df5b5ff2ba4fd9a4aec44088bc8763b2580adccba02d9f7c84.
+- Build receipt2c2f55afdb0d61637a5e39a48bf919091a2099380fa5192c545d7d998917bf24.
+- Supervisora2f7a9ec65248db24aa2b6bebbc5e0a4f88f8f8c73b7eca4316bc33ae2c2cbb3.
+
+The identical retained original fixture passed in a separate fresh profile with
+version3: actual controls, handled fault, continuation/final guest completion,
+acknowledged native exit0/forced=false, valid capture and storage sync.
+32 serialized workspace tests pass/3 gated ignored. Clippy-Dwarnings passes
+after an equivalent range-pattern spelling correction; its initial failure log
+is retained. Fmt/diff checks pass. No extra guest/firmware build was needed to
+recreate these receipts after the interruption.
+
+The already-completed unchanged Fable run used the matched core/64MiB/templates,
+read-only view, ControllerS and X11/software Mesa/dummy audio. Its three device
+creates, one section load and two section unloads returned success. One of five
+symbolic-link creates returned name-collision c0000035. This is a typed result,
+not demonstrated causality. The recorded fault identity matches the preceding
+run; terminal startup failure at83.635seconds, no earned menu/gameplay. No new
+window capture was taken for this run. Required image reads/digests remain intact.
+Stop/quit acknowledged, native exit0/forced=false, valid captures, storage synced.
+
+The retained post-run receipt verifies73 prior identities and the full read-only
+media hash. No phone action occurred. Work stopped after the owner's reported
+content block; no hidden text was recovered. Master's6375615484 replacement
+assignment resumes independently supported public-platform engineering. The
+allocator conformance work is a separate source/regression/candidate boundary.

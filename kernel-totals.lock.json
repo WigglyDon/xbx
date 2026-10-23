@@ -3,7 +3,7 @@
   "commit": "d87cfc33ceb493711b545e83d5b7fd32f1cdf0c2",
   "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
   "patch": "patches/oxos-startup-totals.patch",
-  "patch_sha256": "464f82127919cef2e75455d97401823523b388f55afa4aef096ac4797c5b0c7b",
+  "patch_sha256": "80cf64f0bacf4c700be055fd7722017001a3f580d313f48cae7a883598cbccff",
   "image": "open",
   "selftest": 0,
   "serial": 1,
@@ -13,7 +13,7 @@
   "base_trace_patch": "patches/oxos-launch-trace.patch",
   "base_trace_patch_sha256": "7eb48fb10ca5784a887d93db23f02c07ec83dc7b105930e1a71204724e0a0dc5",
   "mode": "totals",
-  "summary": "fixed-whole-startup-typed-totals-before-first-observed-event",
+  "summary": "whole-startup-totals-including-public-section-and-device-statuses",
   "base_loader_patch_sha256": "420490cdde28fb40a882c179aa735ae6bd6c20aa4a056bed5131dcabfb4d5fcb",
   "base_journal_patch_sha256": "05392437f9dbf14ee01b08e6ed31ffd97e894e55c723df3f6001ee07c2901da5",
   "correction": "preserve_displaced_lazy_FPU_owner_before_restore",
@@ -24,5 +24,7 @@
   "context_storage_bytes": 256,
   "base_context_patch_sha256": "a4cf10e026d0ca64bdb3f23b648d64547bb022d9cf91ad7570079720995e6377",
   "totals_storage_bytes": 5888,
-  "observer_complete_accounting_bytes": 65176
+  "observer_complete_accounting_bytes": 65176,
+  "observer_version": 3,
+  "base_totals_v1_patch_sha256": "464f82127919cef2e75455d97401823523b388f55afa4aef096ac4797c5b0c7b"
 }

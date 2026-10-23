@@ -87,7 +87,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
     }
     let _lease = crate::capacity::writer(root, 1)?;
     let source = if mode == "totals" {
-        root.join(format!(".local/src/oxos-{OXOS}-startup-totals-v1"))
+        root.join(format!(".local/src/oxos-{OXOS}-startup-totals-v2"))
     } else if mode == "context" {
         root.join(format!(".local/src/oxos-{OXOS}-context-v1"))
     } else if mode == "observer" {
