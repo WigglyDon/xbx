@@ -24,6 +24,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("startup-totals-fixture-build") {
+        return kernel::abi_title(
+            root,
+            "startup-totals.S",
+            "build-startup-totals-fixture-v1",
+            "xbx startup totals contract",
+            "0x58425808",
+            "startup-totals.iso",
+        );
+    }
     if args.first().map(String::as_str) == Some("observer-fixture-build") {
         return kernel::abi_title(
             root,

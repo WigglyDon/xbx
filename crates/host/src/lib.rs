@@ -18,6 +18,8 @@ pub mod runtime_summary;
 pub mod session;
 pub mod startup;
 pub mod storage;
+#[cfg(not(target_os = "android"))]
+pub mod totals;
 
 /// Fixed private-profile paths; no arbitrary donor options or automatic snapshot restore.
 pub fn profile_config(root: &std::path::Path) -> std::io::Result<String> {

@@ -1,0 +1,1096 @@
+diff --git a/kernel/src/hal/smbus.cpp b/kernel/src/hal/smbus.cpp
+index 51c9a1e..94eb765 100644
+--- a/kernel/src/hal/smbus.cpp
++++ b/kernel/src/hal/smbus.cpp
+@@ -200,9 +200,14 @@ extern "C" void KiQuickRebootQuiesce() {
+ extern "C" void KiQuickReboot() __attribute__((noreturn));
+ extern "C" volatile UCHAR KiQuickRebootFlag;
+ 
++extern "C" void XbxTraceFirmwareReturn(ULONG, ULONG, ULONG);
++
+ // Routine 2 (quick reboot) runs the shutdown notifications and re-enters the kernel; every other routine resets at
+ // once: 4 (fatal error) first leaves scratch 2 for the next boot (spec/stock/12 §2).
+ XBAPI void NTAPI HalReturnToFirmware(ULONG Routine) {
++#if defined(XK_XBX_LAUNCH_TRACE)
++    XbxTraceFirmwareReturn(Routine, (ULONG)__builtin_return_address(0), (ULONG)__builtin_frame_address(0));
++#endif
+     if (Routine != 2) {
+         if (Routine == 4)
+             HalWriteSMBusValue(SMC_ADDRESS, SMC_SCRATCH, FALSE, 2);
+diff --git a/kernel/src/io/device.cpp b/kernel/src/io/device.cpp
+index e3b9a62..424d57f 100644
+--- a/kernel/src/io/device.cpp
++++ b/kernel/src/io/device.cpp
+@@ -93,8 +93,17 @@ XBAPI void NTAPI IoDeleteDevice(PDEVICE_OBJECT DeviceObject) {
+         IopCompleteUnload(DeviceObject);
+ }
+ 
++#if defined(XK_XBX_LAUNCH_TRACE)
++volatile ULONG XbxLinkCount, XbxLinkCaller, XbxLinkStatus;
++#endif
+ XBAPI NTSTATUS NTAPI IoCreateSymbolicLink(POBJECT_STRING SymbolicLinkName, POBJECT_STRING DeviceName) {
+-    return ObpCreateSymbolicLink(SymbolicLinkName, DeviceName);
++    NTSTATUS status = ObpCreateSymbolicLink(SymbolicLinkName, DeviceName);
++#if defined(XK_XBX_LAUNCH_TRACE)
++    XbxLinkCount = XbxLinkCount + 1;
++    XbxLinkCaller = (ULONG)__builtin_return_address(0);
++    XbxLinkStatus = (ULONG)status;
++#endif
++    return status;
+ }
+ 
+ XBAPI NTSTATUS NTAPI IoDeleteSymbolicLink(POBJECT_STRING SymbolicLinkName) {
+diff --git a/kernel/src/ke/except.cpp b/kernel/src/ke/except.cpp
+index a7bb35f..320b519 100644
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -1,6 +1,9 @@
+ // Structured exception handling: trap translation, handler dispatch, raise, unwind, stack walks (spec/stock/14).
+ #include <xk/arch.h>
+ #include <xk/ke.h>
++#include <xk/mm.h>
++#include <xk/ps.h>
++#include <xk/serial.h>
+ 
+ constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
+                 EXCEPTION_NESTED_CALL = 0x10;
+@@ -54,32 +57,86 @@ static EXCEPTION_REGISTRATION *&KiExceptionList() { return *(EXCEPTION_REGISTRAT
+ 
+ static volatile ULONG KiDispatchDepth;
+ volatile ULONG KiExceptionsDispatched; // diagnostics
++#if defined(XK_XBX_LAUNCH_TRACE)
++extern "C" void XkObserverFault(ULONG, ULONG, ULONG, ULONG, const void *);
++extern "C" void XkContextHandler(const void *, ULONG);
++extern "C" void XkContextResult(const void *, ULONG);
++extern "C" void XkContextInvalidChain(const void *);
++#endif
+ 
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+-static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
++static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context, ULONG Origin) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++#if defined(XK_XBX_LAUNCH_TRACE)
++    // Include handled setup exceptions, which KiLastException* deliberately omit.
++    // Numeric diagnostics only; never read exception payloads or guest strings.
++    static ULONG XbxExceptionEvents;
++    if (XbxExceptionEvents++ < 8) {
++        XkObserverFault(Record->ExceptionCode, Origin,
++                        Record->NumberParameters >= 1 ? Record->ExceptionInformation[0] : 0xFFFFFFFF,
++                        XbxExceptionEvents, Record);
++        ULONG stackPc = 0, sp = 0;
++        bool stackValid = false;
++        auto thread = PsGetCurrentThread();
++        if (!Context->Eip) {
++            // A null CALL leaves its return PC at the saved stack top. Read only
++            // that candidate PC, inside the current thread's mapped stack.
++            ULONG low = (ULONG)thread->Tcb.StackLimit, high = (ULONG)thread->Tcb.StackBase;
++            sp = Context->Esp;
++            stackValid = !(sp & 3) && sp >= low && sp <= 0xFFFFFFFB && sp + 4 <= high &&
++                         MmIsAddressValid((PVOID)sp) && MmIsAddressValid((PVOID)(sp + 3));
++            if (stackValid)
++                stackPc = *(volatile ULONG *)sp;
++        }
++        XK_SERIAL("XBX-EXCEPTION code=%08x pc=%08x fault=%08x origin=%u thread=%08x sp=%08x stack_valid=%u stack_pc=%08x\n",
++                  Record->ExceptionCode, (ULONG)Record->ExceptionAddress,
++                  Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ && Record->NumberParameters >= 2
++                      ? Record->ExceptionInformation[1] : 0,
++                  Origin, (ULONG)thread, sp, stackValid, stackPc);
++    }
++#endif
+     for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
+-        if (((ULONG)r & 3) || (ULONG)r < 0x10000)
++        if (((ULONG)r & 3) || (ULONG)r < 0x10000) {
++#if defined(XK_XBX_LAUNCH_TRACE)
++            XkContextInvalidChain(Record);
++#endif
+             break; // corrupt chain
++        }
+         PVOID dispatcherContext = nullptr;
+         ULONG disposition = r->Handler(Record, r, Context, &dispatcherContext);
++#if defined(XK_XBX_LAUNCH_TRACE)
++        XkContextHandler(Record, disposition);
++#endif
+         if (disposition == ExceptionContinueExecution) {
+             if (Record->ExceptionFlags & EXCEPTION_NONCONTINUABLE) {
++#if defined(XK_XBX_LAUNCH_TRACE)
++                XkContextResult(Record, 3);
++#endif
+                 EXCEPTION_RECORD nested = {STATUS_NONCONTINUABLE_EXCEPTION_, EXCEPTION_NONCONTINUABLE, Record,
+                                            Record->ExceptionAddress, 0, {}};
+                 KeBugCheckEx(KMODE_EXCEPTION_NOT_HANDLED, nested.ExceptionCode, (ULONG)nested.ExceptionAddress,
+                              Record->ExceptionCode, 0);
+             }
++#if defined(XK_XBX_LAUNCH_TRACE)
++            XkContextResult(Record, 2);
++#endif
+             return TRUE;
+         }
+         if (disposition == ExceptionNestedException) {
+             Record->ExceptionFlags |= EXCEPTION_NESTED_CALL;
+             continue;
+         }
+-        if (disposition != ExceptionContinueSearch)
++        if (disposition != ExceptionContinueSearch) {
++#if defined(XK_XBX_LAUNCH_TRACE)
++            XkContextResult(Record, 4);
++#endif
+             KeBugCheckEx(KMODE_EXCEPTION_NOT_HANDLED, STATUS_INVALID_DISPOSITION_, (ULONG)r->Handler, disposition,
+                          Record->ExceptionCode);
++        }
+     }
++#if defined(XK_XBX_LAUNCH_TRACE)
++    XkContextResult(Record, 1);
++#endif
+     return FALSE;
+ }
+ 
+@@ -162,7 +219,7 @@ extern "C" void KiDispatchTrap(KTRAP_FRAME_XK *Frame) {
+     context.Ecx = Frame->Ecx, context.Eax = Frame->Eax, context.Ebp = Frame->Ebp, context.Eip = Frame->Eip;
+     context.SegCs = Frame->SegCs, context.EFlags = Frame->EFlags, context.Esp = (ULONG)(&Frame->EFlags + 1);
+     context.SegSs = 0x10;
+-    BOOLEAN handled = RtlpDispatchException(&record, &context);
++    BOOLEAN handled = RtlpDispatchException(&record, &context, vector);
+     KiDispatchDepth = KiDispatchDepth - 1;
+     if (!handled)
+         KiUnhandled(&record, vector, Frame->ErrorCode);
+@@ -177,7 +234,7 @@ extern "C" void KiDispatchTrap(KTRAP_FRAME_XK *Frame) {
+ // Called by RtlRaiseException with the caller's context.
+ extern "C" [[noreturn]] void KiRaiseException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     Record->ExceptionAddress = (PVOID)Context->Eip;
+-    if (!RtlpDispatchException(Record, Context))
++    if (!RtlpDispatchException(Record, Context, 0xFF))
+         KiUnhandled(Record, 0xFF, 0);
+     KiContinueContext(Context);
+ }
+diff --git a/kernel/src/ke/npx.cpp b/kernel/src/ke/npx.cpp
+index 6f0e6ef..b0d6984 100644
+--- a/kernel/src/ke/npx.cpp
++++ b/kernel/src/ke/npx.cpp
+@@ -111,6 +111,13 @@ XBAPI NTSTATUS NTAPI KeRestoreFloatingPointState(KFLOATING_SAVE_ *FloatSave) {
+     __asm__ volatile("cli");
+     WriteCr0(ReadCr0() & ~CR0_TS);
+     PKTHREAD current = Prcb.CurrentThread;
++    // A caller can have switched out since saving, and can reach this service
++    // without touching FP after resuming. Preserve that other thread's live
++    // state before replacing the register file with this caller's saved state.
++    if (PKTHREAD owner = Prcb.NpxThread; owner && owner != current) {
++        __asm__ volatile("fxsave %0" : "=m"(*(UCHAR(*)[512])NpxArea(owner)));
++        owner->NpxState = NPX_STATE_NOT_LOADED;
++    }
+     __asm__ volatile("fxrstor %0" ::"m"(*(UCHAR(*)[512])area));
+     current->NpxState = NPX_STATE_LOADED;
+     Prcb.NpxThread = current;
+diff --git a/kernel/src/ke/startup.cpp b/kernel/src/ke/startup.cpp
+index 70443ea..e68c1ad 100644
+--- a/kernel/src/ke/startup.cpp
++++ b/kernel/src/ke/startup.cpp
+@@ -33,6 +33,7 @@ static void KiSetStage(UCHAR code) {
+     post(code);
+ }
+ 
++extern "C" void XbxTraceLaunchPage(const char *, ULONG, ULONG);
+ void XeStartTitleLauncher(); // spec/stock/05: load and enter the title
+ void ExInitEeprom();          // spec/stock/12: EEPROM shadow, HD key, game region
+ void AvInit();                // spec/stock/12: AV pack, video encoder
+@@ -95,6 +96,9 @@ extern "C" void KiSystemStartup(ULONG arg0, const UCHAR *bootKeys) {
+     KiBootStep("scheduler");
+     KiInitializeScheduler(KiBootStack + BOOT_STACK_SIZE, KiBootStack);
+     KiBootStep("object manager");
++#if defined(XK_XBX_LAUNCH_TRACE)
++    XbxTraceLaunchPage("post-adoption-scheduler", 0, 0);
++#endif
+     ObInitSystem();
+     KiBootStep("I/O manager");
+     IoInitSystem();
+diff --git a/kernel/src/mm/virtual.cpp b/kernel/src/mm/virtual.cpp
+index 579c5a6..c09eef1 100644
+--- a/kernel/src/mm/virtual.cpp
++++ b/kernel/src/mm/virtual.cpp
+@@ -4,6 +4,7 @@
+ #include <xk/ke.h>
+ #include <xk/mm.h>
+ #include <xk/rtl.h>
++#include <xk/serial.h>
+ 
+ constexpr NTSTATUS STATUS_INVALID_PARAMETER = (NTSTATUS)0xC000000D, STATUS_NO_MEMORY = (NTSTATUS)0xC0000017,
+                    STATUS_CONFLICTING_ADDRESSES = (NTSTATUS)0xC0000018, STATUS_UNABLE_TO_FREE_VM = (NTSTATUS)0xC000001A,
+@@ -179,6 +180,13 @@ XBAPI NTSTATUS NTAPI NtAllocateVirtualMemory(PVOID *BaseAddress, ULONG ZeroBits,
+     ULONG base = (ULONG)*BaseAddress, size = *RegionSize;
+     NTSTATUS status =
+         MiAllocateVirtualMemory(BaseAddress, ZeroBits, RegionSize, AllocationType, Protect, MmVirtualMemoryUsage);
++#if defined(XK_XBX_LAUNCH_TRACE)
++    static ULONG XbxVmEvents;
++    if (XbxVmEvents++ < 8)
++        XK_SERIAL("XBX-VM caller=%08x status=%08x base=%08x size=%08x result_base=%08x result_size=%08x type=%08x protect=%08x\n",
++                  (ULONG)__builtin_return_address(0), (ULONG)status, base, size,
++                  (ULONG)*BaseAddress, *RegionSize, AllocationType, Protect);
++#endif
+     if (!NT_SUCCESS(status)) {
+         MiVmFailures = MiVmFailures + 1;
+         MiVmLastFailure[0] = (ULONG)status;
+diff --git a/kernel/src/xe/loader.cpp b/kernel/src/xe/loader.cpp
+index 175f662..7f62d20 100644
+--- a/kernel/src/xe/loader.cpp
++++ b/kernel/src/xe/loader.cpp
+@@ -69,6 +69,81 @@ static NTSTATUS XeReadFile(HANDLE h, PVOID buffer, ULONG length, ULONG offset, U
+     return status;
+ }
+ 
++// Required extents must not promote a successful EOF-clipped read to a loaded
++// image. The initial header probe remains a probe, not an exact 4 KiB extent.
++struct XBX_IMAGE_READS {
++    ULONG HeaderRequired, HeaderCompleted, ExtentsRequired, ExtentsCompleted;
++    ULONGLONG RawRequired, RawCompleted;
++    ULONG ShortReads, IoFailures, Preloads, Loaded, Ready, Matches, Mismatches, Unusable;
++};
++static NTSTATUS XepReadRequired(HANDLE h, PVOID buffer, ULONG length, ULONG offset, ULONG *completed,
++                               XBX_IMAGE_READS *reads) {
++    ULONG got = 0;
++    NTSTATUS status = XeReadFile(h, buffer, length, offset, &got);
++    *completed = got;
++    if (NT_SUCCESS(status) && got == length) {
++        reads->ExtentsCompleted++;
++        return status;
++    }
++    if (NT_SUCCESS(status) || status == STATUS_END_OF_FILE) {
++        reads->ShortReads++;
++        return STATUS_END_OF_FILE;
++    }
++    reads->IoFailures++;
++    return status;
++}
++
++static void XepSectionDigest(XBE_SECTION_HEADER *s, UCHAR *digest) {
++    UCHAR ctx[116];
++    ULONG raw = s->SizeOfRawData;
++    XcSHAInit(ctx);
++    XcSHAUpdate(ctx, (PUCHAR)&raw, 4);
++    XcSHAUpdate(ctx, (PUCHAR)s->VirtualAddress, raw);
++    XcSHAFinal(ctx, digest);
++}
++
++static void XepAuditPreloads(XBE_SECTION_HEADER *sections, ULONG count, XBX_IMAGE_READS *reads) {
++    // Recheck after every preload has finished, before thunk resolution mutates
++    // raw data. A successful earlier per-section hash is not this boundary.
++    reads->Ready = 1;
++    for (ULONG i = 0; i < count; i++) {
++        auto s = &sections[i];
++        if (!(s->Flags & XBE_SECTION_PRELOAD) || !s->SizeOfRawData)
++            continue;
++        bool zero = true, ones = true;
++        for (ULONG j = 0; j < 20; j++) {
++            zero &= s->SectionDigest[j] == 0;
++            ones &= s->SectionDigest[j] == 0xFF;
++        }
++        if (zero || ones) {
++            reads->Unusable++;
++            continue;
++        }
++        UCHAR digest[20];
++        XepSectionDigest(s, digest);
++        bool match = true;
++        for (ULONG j = 0; j < 20; j++)
++            match &= digest[j] == s->SectionDigest[j];
++        if (match)
++            reads->Matches++;
++        else
++            reads->Mismatches++;
++    }
++}
++
++XK_PERSIST ULONG XbxImageReports;
++static void XepReportImage(NTSTATUS status, const XBX_IMAGE_READS &r) {
++    if (XbxImageReports >= 8)
++        return;
++    ULONG attempt = XbxImageReports + 1;
++    XbxImageReports = attempt;
++    XK_SERIAL("XBX-IMAGE attempt=%u status=%08x hdr_req=%u hdr_done=%u raw_req=%llu raw_done=%llu ext_req=%u ext_done=%u short=%u io_fail=%u\n",
++              attempt, (ULONG)status, r.HeaderRequired, r.HeaderCompleted, r.RawRequired, r.RawCompleted,
++              r.ExtentsRequired, r.ExtentsCompleted, r.ShortReads, r.IoFailures);
++    XK_SERIAL("XBX-INTEGRITY attempt=%u preloads=%u loaded=%u ready=%u match=%u mismatch=%u unusable=%u\n",
++              attempt, r.Preloads, r.Loaded, r.Ready, r.Matches, r.Mismatches, r.Unusable);
++}
++
+ static NTSTATUS XeOpenImage(HANDLE *h) {
+     OBJECT_ATTRIBUTES a = {nullptr, &XeImageFileName, OBJ_CASE_INSENSITIVE};
+     IO_STATUS_BLOCK iosb;
+@@ -78,7 +153,8 @@ static NTSTATUS XeOpenImage(HANDLE *h) {
+ 
+ // --- Sections (refcounted; neighbouring sections share their head/tail pages)
+ 
+-static NTSTATUS XepLoadSection(HANDLE file, XBE_SECTION_HEADER *s) {
++static void XepUnloadSection(XBE_SECTION_HEADER *s);
++static NTSTATUS XepLoadSection(HANDLE file, XBE_SECTION_HEADER *s, XBX_IMAGE_READS *reads = nullptr) {
+     PVOID base = (PVOID)s->VirtualAddress;
+     SIZE_T size = s->VirtualSize;
+     NTSTATUS status = MiCommitImageMemory(&base, &size);
+@@ -86,17 +162,19 @@ static NTSTATUS XepLoadSection(HANDLE file, XBE_SECTION_HEADER *s) {
+         return status;
+     (*s->HeadSharedPageReferenceCount)++;
+     (*s->TailSharedPageReferenceCount)++;
+-    if (s->SizeOfRawData)
+-        status = XeReadFile(file, (PVOID)s->VirtualAddress, s->SizeOfRawData, s->PointerToRawData);
++    if (s->SizeOfRawData) {
++        XBX_IMAGE_READS local = {};
++        ULONG completed = 0;
++        status = XepReadRequired(file, (PVOID)s->VirtualAddress, s->SizeOfRawData, s->PointerToRawData,
++                                &completed, reads ? reads : &local);
++        if (reads)
++            reads->RawCompleted += completed;
++    }
+     if (NT_SUCCESS(status)) {
+         if (s->VirtualSize > s->SizeOfRawData)
+             RtlZeroMemory((PUCHAR)s->VirtualAddress + s->SizeOfRawData, s->VirtualSize - s->SizeOfRawData);
+-        UCHAR ctx[116], digest[20];
+-        ULONG raw = s->SizeOfRawData;
+-        XcSHAInit(ctx);
+-        XcSHAUpdate(ctx, (PUCHAR)&raw, 4);
+-        XcSHAUpdate(ctx, (PUCHAR)s->VirtualAddress, raw);
+-        XcSHAFinal(ctx, digest);
++        UCHAR digest[20];
++        XepSectionDigest(s, digest);
+         // Homebrew images carry no valid digests; like the header signature this is not enforced (policy, spec/stock/05).
+         for (int i = 0; i < 20; i++)
+             if (digest[i] != s->SectionDigest[i]) {
+@@ -105,8 +183,7 @@ static NTSTATUS XepLoadSection(HANDLE file, XBE_SECTION_HEADER *s) {
+             }
+     }
+     if (!NT_SUCCESS(status)) {
+-        (*s->HeadSharedPageReferenceCount)--;
+-        (*s->TailSharedPageReferenceCount)--;
++        XepUnloadSection(s); // retain neighbouring shared pages; undo our commitment/references
+         return status;
+     }
+     s->SectionReferenceCount = 1;
+@@ -152,6 +229,7 @@ XBAPI NTSTATUS NTAPI XeUnloadSection(XBE_SECTION_HEADER *Section) {
+ #define XK_TRACE_IMPORTS 0
+ #endif
+ ULONG XkTraceWrap(USHORT ordinal, ULONG target);
++extern "C" void XkObserverArm();
+ 
+ // --- Kernel thunks: entries are ordinals (low 16 bits), resolved through our own export directory.
+ static NTSTATUS XepResolveKernelThunks(PULONG thunk) {
+@@ -215,6 +293,7 @@ static void XepReleaseImage() {
+ }
+ 
+ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
++    XBX_IMAGE_READS reads = {};
+     if (XeImageFileName.Buffer)
+         ExFreePool(XeImageFileName.Buffer);
+     ULONG n = 0;
+@@ -238,11 +317,33 @@ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
+         return STATUS_INSUFFICIENT_RESOURCES;
+     }
+     status = XeReadFile(h, head, 0x1000, 0, &got);
+-    ULONG sizeOfHeaders = *(ULONG *)(head + 0x108), sizeOfImage = *(ULONG *)(head + 0x10C);
++    ULONG sizeOfHeaders = 0, sizeOfImage = 0;
+     bool reserved = false;
+-    if (NT_SUCCESS(status) && (got < 0x178 || *(ULONG *)head != XBE_MAGIC || sizeOfHeaders < 0x179 ||
+-                               sizeOfImage < sizeOfHeaders || *(ULONG *)(head + 0x104) != XBE_BASE))
+-        status = STATUS_INVALID_IMAGE_FORMAT;
++    reads.HeaderRequired = 0x178;
++    reads.HeaderCompleted = got < 0x178 ? got : 0x178;
++    reads.ExtentsRequired = 1;
++    if (got < 0x178) {
++        if (NT_SUCCESS(status) || status == STATUS_END_OF_FILE)
++            reads.ShortReads++;
++        else
++            reads.IoFailures++;
++    }
++    if (NT_SUCCESS(status)) {
++        if (got < 0x178 || *(ULONG *)head != XBE_MAGIC)
++            status = STATUS_INVALID_IMAGE_FORMAT;
++        else {
++            sizeOfHeaders = *(ULONG *)(head + 0x108);
++            sizeOfImage = *(ULONG *)(head + 0x10C);
++            if (sizeOfHeaders < 0x179 || sizeOfImage < sizeOfHeaders || *(ULONG *)(head + 0x104) != XBE_BASE)
++                status = STATUS_INVALID_IMAGE_FORMAT;
++        }
++    }
++    if (NT_SUCCESS(status)) {
++        reads.HeaderRequired = sizeOfHeaders;
++        reads.HeaderCompleted = got < sizeOfHeaders ? got : sizeOfHeaders;
++        if (sizeOfHeaders <= got)
++            reads.ExtentsCompleted++;
++    }
+     if (NT_SUCCESS(status)) {
+         PVOID base = (PVOID)XBE_BASE;
+         SIZE_T size = sizeOfImage;
+@@ -254,14 +355,21 @@ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
+     }
+     if (NT_SUCCESS(status)) {
+         RtlCopyMemory((PVOID)XBE_BASE, head, got < sizeOfHeaders ? got : sizeOfHeaders);
+-        if (sizeOfHeaders > got)
+-            status = XeReadFile(h, (PVOID)(XBE_BASE + got), sizeOfHeaders - got, got);
++        if (sizeOfHeaders > got) {
++            ULONG completed = 0;
++            status = XepReadRequired(h, (PVOID)(XBE_BASE + got), sizeOfHeaders - got, got, &completed, &reads);
++            reads.HeaderCompleted += completed;
++        }
+     }
+     ExFreePool(head);
+-    ULONG cert = XbeField(0x118), sections = XbeField(0x120), count = XbeField(0x11C);
+-    if (NT_SUCCESS(status) && (cert < XBE_BASE || cert + 0x1D0 > XBE_BASE + sizeOfHeaders || sections < XBE_BASE ||
+-                               sections + count * 0x38 > XBE_BASE + sizeOfHeaders || XbeField(0x15C)))
+-        status = STATUS_INVALID_IMAGE_FORMAT;
++    ULONG cert = 0, sections = 0, count = 0, region = 0;
++    if (NT_SUCCESS(status)) {
++        cert = XbeField(0x118), sections = XbeField(0x120), count = XbeField(0x11C);
++        if (sizeOfHeaders < 0x1D0 || cert < XBE_BASE || cert - XBE_BASE > sizeOfHeaders - 0x1D0 ||
++            sections < XBE_BASE || sections - XBE_BASE > sizeOfHeaders ||
++            count > (sizeOfHeaders - (sections - XBE_BASE)) / sizeof(XBE_SECTION_HEADER) || XbeField(0x15C))
++            status = STATUS_INVALID_IMAGE_FORMAT;
++    }
+     if (NT_SUCCESS(status)) {
+         // Entry point and thunk table are XOR-encoded: retail keys first, then the debug keys.
+         ULONG entry = XbeField(0x128), thunk = XbeField(0x158);
+@@ -278,7 +386,8 @@ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
+     // Media/region policy: XK_RETAIL_MEDIA_POLICY=1 enforces both like a retail kernel; the default behaves like a
+     // modded BIOS (which patches the stock kernel to allow any media and region), so discs that cannot be
+     // authenticated (backups, XISOs in emulators) still start. Authenticated discs are pinned either way.
+-    ULONG region = XbeField(0x118) ? *(ULONG *)(cert + 0xA0) : 0;
++    if (NT_SUCCESS(status))
++        region = *(ULONG *)(cert + 0xA0);
+     if (NT_SUCCESS(status) && !(region & XeConsoleGameRegion) && XK_RETAIL_MEDIA_POLICY)
+         status = STATUS_REGION_MISMATCH;
+     if (NT_SUCCESS(status) && !Dashboard) {
+@@ -295,9 +404,23 @@ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
+         }
+     }
+     auto sec = (XBE_SECTION_HEADER *)sections;
++    if (NT_SUCCESS(status))
++        for (ULONG i = 0; i < count; i++)
++            if (sec[i].Flags & XBE_SECTION_PRELOAD) {
++                reads.Preloads++;
++                if (sec[i].SizeOfRawData) {
++                    reads.RawRequired += sec[i].SizeOfRawData;
++                    reads.ExtentsRequired++;
++                }
++            }
+     for (ULONG i = 0; NT_SUCCESS(status) && i < count; i++)
+-        if (sec[i].Flags & XBE_SECTION_PRELOAD)
+-            status = XepLoadSection(h, &sec[i]);
++        if (sec[i].Flags & XBE_SECTION_PRELOAD) {
++            status = XepLoadSection(h, &sec[i], &reads);
++            if (NT_SUCCESS(status))
++                reads.Loaded++;
++        }
++    if (NT_SUCCESS(status))
++        XepAuditPreloads(sec, count, &reads);
+     // SMC events from now on; an eject handled during boot sends a disc title back (to the dashboard).
+     if (NT_SUCCESS(status) && HalpSmcArmEvents(Dashboard) && !Dashboard)
+         status = (NTSTATUS)0xC000003A;
+@@ -350,6 +473,7 @@ static NTSTATUS XepLoadImage(PCSZ Path, BOOLEAN Dashboard) {
+     NtClose(h);
+     if (!NT_SUCCESS(status) && reserved)
+         XepReleaseImage();
++    XepReportImage(status, reads);
+     XeLastLoadStatus = status;
+     XeLoadHistory[XeLoadCount & 3] = status; // diagnostics: the last four load results
+     XeLoadCount = XeLoadCount + 1;
+@@ -392,6 +516,70 @@ struct LAUNCH_DATA_PAGE {
+ };
+ static_assert(sizeof(LAUNCH_DATA_PAGE) == 0x1000);
+ 
++#if defined(XK_XBX_LAUNCH_TRACE)
++extern "C" volatile ULONG KiQuickRebootCount;
++extern volatile ULONG KiLastExceptionVector, KiLastExceptionCode, KiLastExceptionEip;
++static XK_PERSIST ULONG XbxTraceEvents, XbxFirmwareReturns;
++// Diagnostic only: bounded fields, no launch payload or keys. Raw logs stay private.
++extern "C" void XbxTraceLaunchPage(const char *Phase, ULONG Routine, ULONG Caller) {
++    if (XbxTraceEvents++ >= 48)
++        return;
++    auto thread = PsGetCurrentThread();
++    auto page = (LAUNCH_DATA_PAGE *)LaunchDataPage;
++    bool valid = page && (ULONG)page <= 0xFFFFF000 && !((ULONG)page & 4095) && MmIsAddressValid(page) && MmIsAddressValid((PUCHAR)page + 4095);
++    XK_SERIAL("XBX-LAUNCH phase=%s quick=%u return=%u routine=%u caller=%08x thread=%08x page=%08x valid=%u\n",
++              Phase, KiQuickRebootCount, XbxFirmwareReturns, Routine, Caller,
++              (ULONG)thread, (ULONG)page, valid);
++    if (valid) {
++        char path[121];
++        ULONG n = 0;
++        while (n < 120 && page->LaunchPath[n]) {
++            UCHAR ch = page->LaunchPath[n];
++            path[n++] = ch >= 32 && ch < 127 ? ch : '.';
++        }
++        path[n] = 0;
++        bool dashboard = !page->LaunchPath[0]; // destination is dashboard; keep the raw type beside these fields
++        XK_SERIAL("XBX-LAUNCH type=%08x title=%08x flags=%08x dashboard_fields=%u reason=%08x code=%08x path_truncated=%u\n",
++                  page->LaunchDataType, page->TitleId, page->Flags, dashboard,
++                  dashboard ? page->DashboardReason : 0, dashboard ? page->DashboardCode : 0, n == 120);
++        XK_SERIAL("XBX-LAUNCH path=[%s]\n", path);
++    }
++    XK_SERIAL("XBX-LAUNCH load=%08x missing_ordinal=%u exception=%08x exception_code=%08x exception_eip=%08x\n",
++              XeLastLoadStatus, XeLastMissingOrdinal, KiLastExceptionVector,
++              KiLastExceptionCode, KiLastExceptionEip);
++}
++extern volatile ULONG MiVmFailures, MiVmLastFailure[5];
++extern volatile ULONG XbxLinkCount, XbxLinkCaller, XbxLinkStatus;
++extern "C" void XbxTraceFirmwareReturn(ULONG Routine, ULONG Caller, ULONG Frame) {
++    ++XbxFirmwareReturns;
++    XbxTraceLaunchPage("pre-firmware", Routine, Caller);
++    if (XbxFirmwareReturns > 4)
++        return;
++    XK_SERIAL("XBX-STARTUP vm_failures=%u vm_status=%08x vm_base=%08x vm_size=%08x vm_type=%08x vm_protect=%08x link_count=%u link_caller=%08x link_status=%08x\n",
++              MiVmFailures, MiVmLastFailure[0], MiVmLastFailure[1], MiVmLastFailure[2], MiVmLastFailure[3], MiVmLastFailure[4],
++              XbxLinkCount, XbxLinkCaller, XbxLinkStatus);
++    // Only return addresses, never frame arguments/payload. Frames must be aligned,
++    // monotonic and wholly inside the current thread's mapped kernel stack.
++    auto thread = PsGetCurrentThread();
++    ULONG low = (ULONG)thread->Tcb.StackLimit, high = (ULONG)thread->Tcb.StackBase;
++    for (ULONG index = 0; index < 8; index++) {
++        if ((Frame & 3) || Frame < low || Frame > 0xFFFFFFF7 || Frame + 8 > high ||
++            !MmIsAddressValid((PVOID)Frame) || !MmIsAddressValid((PVOID)(Frame + 7)))
++            break;
++        auto words = (volatile ULONG *)Frame;
++        ULONG next = words[0];
++        XK_SERIAL("XBX-RETURN frame=%u pc=%08x\n", index, words[1]);
++        if (next <= Frame)
++            break;
++        Frame = next;
++    }
++}
++#define XBX_PAGE(phase) XbxTraceLaunchPage(phase, 0, 0)
++#else
++#define XBX_PAGE(phase) ((void)0)
++#endif
++
++
+ // §1: bit 0 the clock was never set (CMOS signature, see NtSetSystemTime) or is outside [2001, 2101);
+ // bits 1/2 the user settings are unreadable or lack a language (+0x08) / time zone (+0x30).
+ static ULONG XepCheckFirstBoot() {
+@@ -416,6 +604,7 @@ static ULONG XepCheckFirstBoot() {
+ }
+ 
+ static void XepLaunchDashboard() {
++    XBX_PAGE("branch-dashboard");
+     if (NT_SUCCESS(XeLoadImage("\\Device\\Harddisk0\\Partition2\\xboxdash.xbe", TRUE)))
+         return;
+     if (!KiQuickRebootFlag) {
+@@ -463,6 +652,10 @@ static bool XepPlainDashboardError(NTSTATUS s) {
+ 
+ // §2. Returns with XeTitleLaunched set once an image is loaded (or does not return).
+ static void XepLaunchTitle(ULONG Reason) {
++    #if defined(XK_XBX_LAUNCH_TRACE)
++    XK_SERIAL("XBX-SELECT reason=%08x quick=%u\n", Reason, (ULONG)KiQuickRebootFlag);
++    #endif
++    XBX_PAGE("select");
+     NTSTATUS status;
+     auto ldp = (LAUNCH_DATA_PAGE *)LaunchDataPage;
+     if (!Reason && ldp && (ldp->Flags & 1)) // already tried once: do not loop
+@@ -476,6 +669,7 @@ static void XepLaunchTitle(ULONG Reason) {
+         if (ldp->LaunchDataType == 0xFFFFFFFF)
+             XepFreeLaunchDataPage();
+         if (!path[0]) {
++            XBX_PAGE("branch-empty-path");
+             XeTitleLaunched = 2;
+             return XepLaunchDashboard();
+         }
+@@ -490,6 +684,7 @@ static void XepLaunchTitle(ULONG Reason) {
+                 linked = NT_SUCCESS(IoCreateSymbolicLink(&link, &dir));
+                 break;
+             }
++        XBX_PAGE("branch-named-title");
+         status = XeLoadImage(path, FALSE);
+         if (NT_SUCCESS(status)) {
+             XeTitleLaunched = 3;
+@@ -501,6 +696,7 @@ static void XepLaunchTitle(ULONG Reason) {
+         // B. The disc, else the dashboard.
+         ULONG tray, before, after;
+         HalReadSMCTrayState(&tray, &before);
++        XBX_PAGE("branch-disc");
+         status = XeLoadImage("\\Device\\CdRom0\\default.xbe", FALSE);
+         if (NT_SUCCESS(status)) {
+             XeTitleLaunched = 1;
+@@ -598,7 +794,13 @@ static void NTAPI XepTitleThread(PVOID, PVOID) {
+     }
+     XepChooseTitle();
+     XepPrepareToEnterTitle();
++    XBX_PAGE("entry-dispatch");
++#if defined(XK_XBX_LAUNCH_TRACE)
++    XkObserverArm();
++    XK_SERIAL("XBX-ENTRY dispatch=%08x kind=%u quick=%u\n", XbeField(0x128), XeTitleLaunched, KiQuickRebootCount);
++#endif
+     ((void(__cdecl *)())XbeField(0x128))();
++    XBX_PAGE("unexpected-entry-return");
+     PsTerminateSystemThread(STATUS_SUCCESS);
+ }
+ 
+diff --git a/kernel/src/xe/trace.cpp b/kernel/src/xe/trace.cpp
+index 5a69ea5..6ed2b26 100644
+--- a/kernel/src/xe/trace.cpp
++++ b/kernel/src/xe/trace.cpp
+@@ -1,184 +1,323 @@
+-// Import tracing (TRACE_IMPORTS=1): a ring of the title's most recent kernel calls, read by the host tools.
++// Bounded correlation added to the retained GPL import tracer.
++// No caller addresses, argument dereferences, buffers, paths or title code.
+ #include <xk/ke.h>
+ #include <xk/rtl.h>
+ #include <xk/ob.h>
+ #include <xk/io.h>
++#include <xk/mm.h>
+ 
+-constexpr ULONG XK_TRACE_MAX_IMPORTS = 512, XK_TRACE_RING = 0x8000;
++constexpr ULONG XK_TRACE_MAX_IMPORTS = 512, XK_TRACE_RING = 1024, XK_LABELS = 128;
++// Exported words: header[32], lifetime rows[128][4], call rows[1024][8].
++// Header 0..24 and all rows freeze together; 25..31 are separate post-capture
++// bookkeeping health counters, never a replacement for the captured window.
++struct XK_OBSERVER_STORAGE {
++    ULONG Header[32], Labels[XK_LABELS][4], Calls[XK_TRACE_RING][8];
++};
+ extern "C" {
++volatile XK_OBSERVER_STORAGE XkObserverStorage = {{0x58424F31, 2, sizeof(XK_OBSERVER_STORAGE)}, {}, {}};
++volatile ULONG XkContractState[64] = {0x58425331, 1};
++// Fixed whole-startup entry/observed-return/typed-signal/first-status totals.
++// Only NTSTATUS failure values are retained; pointer results contribute a null
++// count, never their value. Freeze at the same first event as the recent ring.
++volatile ULONG XkStartupTotals[8 + 366 * 4] = {0x58425431, 1, (8 + 366 * 4) * 4};
+ ULONG XkTraceTargets[XK_TRACE_MAX_IMPORTS];
+ USHORT XkTraceOrdinals[XK_TRACE_MAX_IMPORTS];
+-// Ring entries: ordinal, caller, thread, first three stack arguments, return value, then 32 bytes of name.
+-constexpr ULONG XK_TRACE_WORDS = 15;
+-volatile ULONG (*XkTraceRing)[XK_TRACE_WORDS]; // allocated at the top of RAM (not in the image)
+-// Persisted: with TRACE_IMPORTS=2 the ring above 64 MB keeps the calls from before a quick reboot too.
+-XK_PERSIST volatile ULONG XkTraceCount;
+ void XkTraceEntry();
+ void XkTraceReturn();
+-
+-// Calls in flight per thread (title APCs can nest calls), to find the original return address again. Titles keep
+-// dozens of threads blocked in a wait call, each holding a slot until its thread exits.
+-struct XK_TRACE_SLOT {
+-    ULONG Thread, Depth, Return[8], Entry[8];
+-};
++}
++#define H (XkObserverStorage.Header)
++// These internal pointers/return addresses are not part of exported storage.
++static ULONG XkThreadPointers[XK_LABELS], XkOrder;
++struct XK_TRACE_FRAME { ULONG Return, Token, Ordinal; };
++struct XK_TRACE_SLOT { ULONG Thread, Depth; XK_TRACE_FRAME Frames[8]; };
+ static XK_TRACE_SLOT XkTraceSlots[128];
++static PUCHAR XkStubs;
++static ULONG XkUsed, XkMmDataImported;
++struct XK_ARG_FACTS { ULONG CriticalToken, CriticalFlags, QueryToken, QueryFlags; };
++static XK_ARG_FACTS XkArgFacts[XK_LABELS];
++static const void *XkDispatchRecord;
++static_assert(sizeof(XK_OBSERVER_STORAGE) == 34944);
++static_assert(sizeof(XK_OBSERVER_STORAGE) + sizeof(XkThreadPointers) + sizeof(XkTraceSlots) +
++              sizeof(XkTraceTargets) + sizeof(XkTraceOrdinals) + XK_TRACE_MAX_IMPORTS * 10 + 16 + sizeof(XkContractState) + sizeof(XkArgFacts) + 8 + sizeof(XkStartupTotals) <= 65536);
+ 
+-void XkTraceThreadExit(PKTHREAD Thread) {
+-    ULONG flags;
+-    __asm__ volatile("pushfl; popl %0; cli" : "=r"(flags)); // a title's interrupt routine may be recording
+-    for (auto &s : XkTraceSlots)
+-        if (s.Thread == (ULONG)Thread)
+-            s.Thread = s.Depth = 0;
+-    __asm__ volatile("pushl %0; popfl" ::"r"(flags) : "cc");
++static ULONG Disable() { ULONG f; __asm__ volatile("pushfl; popl %0; cli" : "=r"(f) :: "memory"); return f; }
++static void Restore(ULONG f) { __asm__ volatile("pushl %0; popfl" :: "r"(f) : "cc", "memory"); }
++static void Count(volatile ULONG &v) { if (v != 0xFFFFFFFF) v = v + 1; }
++static bool Frozen() { return H[4] != 0; }
++static ULONG Next() {
++    if (XkOrder == 0xFFFFFFFF) { H[20] = H[20] | 1; H[4] = 3; return 0; }
++    return ++XkOrder;
+ }
+-
+-static XK_TRACE_SLOT *XkTraceSlot(ULONG thread) {
+-    for (auto &s : XkTraceSlots)
+-        if (s.Thread == thread)
+-            return &s;
+-    for (auto &s : XkTraceSlots)
+-        if (!s.Thread || !s.Depth) {
+-            s.Thread = thread;
+-            s.Depth = 0;
+-            return &s;
++// Ledger rows never recycle within this cold-boot run. A retired pointer gets a
++// new monotonic label, even when its old tracer slot was depth zero/reused.
++static ULONG Label(ULONG thread, ULONG order) {
++    for (ULONG i = 0; i < H[15]; i++)
++        if (XkThreadPointers[i] == thread && !XkObserverStorage.Labels[i][2]) return i + 1;
++    if (H[15] == XK_LABELS) { Count(H[16]); return 0; }
++    ULONG i = H[15]; H[15] = i + 1;
++    XkThreadPointers[i] = thread;
++    auto row = XkObserverStorage.Labels[i];
++    row[0] = i + 1; row[1] = order; row[2] = 0; row[3] = 0;
++    // Opaque lifetime reuse flags from this kernel-owned registry only.
++    for (ULONG old = 0; old < i; old++)
++        if (XkThreadPointers[old] == thread && XkObserverStorage.Labels[old][2]) {
++            XkObserverStorage.Labels[old][3] = XkObserverStorage.Labels[old][3] | 1;
++            row[3] = 2;
+         }
++    return i + 1;
++}
++static XK_TRACE_SLOT *Slot(ULONG thread, bool create) {
++    for (auto &s : XkTraceSlots) if (s.Thread == thread) return &s;
++    if (create) for (auto &s : XkTraceSlots) if (!s.Depth) { s.Thread = thread; return &s; }
+     return nullptr;
+ }
+-
+-// The object name of an OBJECT_ATTRIBUTES (or an OBJECT_STRING when `string`), for the file and link APIs.
+-static void XkTraceName(volatile ULONG *e, ULONG p, bool string) {
+-    auto out = (volatile char *)(e + 7);
+-    for (int i = 0; i < 32; i++)
+-        out[i] = 0;
+-    if (p < 0x10000)
+-        return;
+-    auto str = string ? (POBJECT_STRING)p : ((POBJECT_ATTRIBUTES)p)->ObjectName;
+-    if ((ULONG)str < 0x10000 || (ULONG)str->Buffer < 0x10000)
+-        return;
+-    ULONG n = str->Length, skip = n > 31 ? n - 31 : 0; // keep the end of long paths
+-    for (ULONG i = 0; i + skip < n && i < 31; i++)
+-        out[i] = str->Buffer[skip + i];
++// Small fixed public-ABI type set. Other scalar/boolean/unknown APIs deliberately
++// remain unclassified; there is no catch-all EAX-as-NTSTATUS interpretation.
++static ULONG Kind(ULONG ordinal) {
++    if ((ordinal >= 184 && ordinal <= 231) || (ordinal >= 233 && ordinal <= 238) ||
++        ordinal == 254 || ordinal == 255 || ordinal == 256 || ordinal == 257 ||
++        ordinal == 139 || ordinal == 142 || ordinal == 181 || ordinal == 159 ||
++        ordinal == 24 || ordinal == 37 || ordinal == 99 || ordinal == 246)
++        return 2; // NTSTATUS (including STATUS_PENDING as a function return)
++    switch (ordinal) {
++    case 14: case 15: case 165: case 166: case 167: case 168: case 169: case 177:
++        return 3; // pointer; only null/range/alignment category is exported
++    case 17: case 108: case 258: case 284: case 285: case 289: case 290: case 291:
++    case 298: case 320:
++        return 1; // void; EAX is not a result
++    default: return 0;
++    }
+ }
+-
+-ULONG __cdecl XkTraceLeave(ULONG result) {
+-    ULONG flags;
+-    __asm__ volatile("pushfl; popl %0; cli" : "=r"(flags));
+-    XK_TRACE_SLOT *s = XkTraceSlot((ULONG)KeGetCurrentThread());
+-    ULONG ret = 0;
+-    if (s && s->Depth) {
+-        s->Depth--;
+-        ret = s->Return[s->Depth];
+-        XkTraceRing[s->Entry[s->Depth] % XK_TRACE_RING][6] = result;
++static void TotalCount(volatile ULONG &v) {
++    if (v == 0xFFFFFFFF) XkStartupTotals[5] = XkStartupTotals[5] | 1;
++    else v = v + 1;
++}
++static void TotalEntry(ULONG ordinal) {
++    if (!ordinal || ordinal > 366) { XkStartupTotals[5] = XkStartupTotals[5] | 4; return; }
++    TotalCount(XkStartupTotals[8 + (ordinal - 1) * 4]);
++    TotalCount(XkStartupTotals[6]);
++}
++static void TotalReturn(ULONG ordinal, ULONG result) {
++    if (!ordinal || ordinal > 366) { XkStartupTotals[5] = XkStartupTotals[5] | 4; return; }
++    auto row = &XkStartupTotals[8 + (ordinal - 1) * 4];
++    TotalCount(row[1]); TotalCount(XkStartupTotals[7]);
++    ULONG kind = Kind(ordinal);
++    if ((kind == 2 && (result & 0x80000000)) || (kind == 3 && !result)) {
++        TotalCount(row[2]);
++        if (kind == 2 && !row[3]) row[3] = result;
+     }
+-    __asm__ volatile("pushl %0; popfl" ::"r"(flags) : "cc");
+-    return ret;
+ }
+-
+-void __cdecl XkTraceRecord(ULONG index, PULONG frame) {
+-    switch (XkTraceOrdinals[index]) { // too frequent to be useful
++static ULONG PointerCategory(ULONG result) {
++    if (!result) return 0;
++    if (result < 0x10000) return 1;
++    if (result < 0x80000000) return 2;
++    if (result < 0x84000000) return 3;
++    if (result >= 0xD0000000 && result < 0xF0000000) return 4;
++    return 5;
++}
++// Scalar categories only: no argument pointer is followed.
++static ULONG ArgFlags(ULONG value) { return PointerCategory(value) | (value && !(value & 3) ? 8 : 0); }
++static void ContextAtFault(const void *record) {
++    auto t = KeGetCurrentThread();
++    ULONG low = (ULONG)t->StackLimit, high = (ULONG)t->StackBase;
++    ULONG top = high >= NPX_FRAME_LENGTH ? high - NPX_FRAME_LENGTH : 0, tls = (ULONG)t->TlsData;
++    ULONG flags = (tls ? 1 : 0) | (tls && tls > low && tls < top ? 2 : 0) |
++                  (tls && !((tls + 4) & 15) ? 4 : 0) |
++                  ((ULONG)KiPcr.NtTib.StackBase == top ? 8 : 0) |
++                  ((ULONG)KiPcr.NtTib.StackLimit == low ? 16 : 0) |
++                  (KiPcr.NtTib.Self == &KiPcr.NtTib && KiPcr.SelfPcr == &KiPcr &&
++                   KiPcr.Prcb == &KiPcr.PrcbData ? 32 : 0) | (!t->HasTerminated ? 64 : 0);
++    XkContractState[3] = H[5]; XkContractState[4] = H[9]; XkContractState[5] = flags;
++    XkContractState[6] = high >= low ? (high - low) / PAGE_SIZE : 0;
++    XkContractState[7] = flags & 2 ? (top - tls) / 4 : 0;
++    XkContractState[8] = KiPcr.Irql; XkContractState[9] = t->NpxState;
++    if (auto slot = Slot((ULONG)t, false)) {
++        XkContractState[10] = slot->Depth;
++        for (ULONG i = 0; i < slot->Depth; i++) {
++            XkContractState[11 + i * 2] = slot->Frames[i].Token;
++            XkContractState[12 + i * 2] = slot->Frames[i].Ordinal;
++        }
++    }
++    if (H[9] && H[9] <= XK_LABELS) {
++        auto &arg = XkArgFacts[H[9] - 1];
++        XkContractState[27] = arg.CriticalToken; XkContractState[28] = arg.CriticalFlags;
++        XkContractState[29] = arg.QueryToken; XkContractState[30] = arg.QueryFlags;
++    }
++    XkContractState[31] = XkMmDataImported;
++    ULONG head = (ULONG)KiPcr.NtTib.ExceptionList;
++    XkContractState[39] = !head ? 0 : head == 0xFFFFFFFF ? 1 :
++                          !(head & 3) && head >= low && head < high ? 2 : 3;
++    XkContractState[40] = MmAvailablePages; XkContractState[41] = MmNumberOfPhysicalPages;
++    XkStartupTotals[3] = H[5]; XkStartupTotals[4] = H[10];
++    XkDispatchRecord = record;
++    XkContractState[2] = 1;
++}
++extern "C" void XkContextHandler(const void *record, ULONG disposition) {
++    ULONG f = Disable();
++    if (record == XkDispatchRecord && !XkContractState[32]) {
++        Count(XkContractState[33]);
++        Count(XkContractState[disposition == 1 ? 34 : disposition == 0 ? 35 : disposition == 2 ? 36 : 37]);
++    }
++    Restore(f);
++}
++extern "C" void XkContextResult(const void *record, ULONG outcome) {
++    ULONG f = Disable();
++    if (record == XkDispatchRecord && !XkContractState[32]) {
++        XkContractState[32] = outcome;
++        XkDispatchRecord = nullptr;
++    }
++    Restore(f);
++}
++extern "C" void XkContextInvalidChain(const void *record) {
++    ULONG f = Disable();
++    if (record == XkDispatchRecord && !XkContractState[32]) Count(XkContractState[38]);
++    Restore(f);
++}
++static bool Omitted(ULONG ordinal) {
++    switch (ordinal) {
+     case 103: case 104: case 119: case 125: case 126: case 128: case 129: case 160: case 161:
+-    case 221: case 234: case 238: case 277: case 278: case 294: case 295: // Halo 2 spins on 238 (NtYieldExecution)
+-    // and takes a mutant (221 release, 234 wait) around every step
+-        return;
++    case 221: case 234: case 238: case 277: case 278: case 294: case 295: return true;
++    default: return false;
+     }
+-    if (!XkTraceRing)
+-        return;
+-    ULONG flags;
+-    __asm__ volatile("pushfl; popl %0; cli" : "=r"(flags));
+-    ULONG entry = XkTraceCount;
+-    volatile ULONG *e = XkTraceRing[entry % XK_TRACE_RING];
+-    e[0] = XkTraceOrdinals[index];
+-    e[1] = frame[0];
+-    e[2] = (ULONG)KeGetCurrentThread();
+-    e[3] = frame[1];
+-    e[4] = frame[2];
+-    e[5] = frame[3];
+-    e[6] = 0xDEADDEAD; // no return seen yet
+-    switch (e[0]) {
+-    case 190: case 202:           // NtCreateFile, NtOpenFile (object attributes are the 3rd argument)
+-        XkTraceName(e, frame[3], false);
+-        ((volatile UCHAR *)&e[12])[3] = 0; // name: 23 characters; then share access and create/open options
+-        e[13] = e[0] == 202 ? frame[5] : frame[7];
+-        e[14] = e[0] == 202 ? frame[6] : frame[9];
+-        break;
+-    case 210: case 195:           // NtQueryFullAttributesFile, NtDeleteFile (1st)
+-        XkTraceName(e, frame[1], false);
+-        break;
+-    case 67: case 69:             // IoCreateSymbolicLink, IoDeleteSymbolicLink
+-        XkTraceName(e, frame[1], true);
+-        break;
+-    case 219: case 236: {         // NtReadFile/NtWriteFile: ApcContext, IoStatusBlock, Buffer, Length, *ByteOffset,
+-        e[7] = 0x10000000 | e[0]; // and the first dword of the buffer (written data, or what a read overwrites)
+-        e[8] = frame[4];
+-        e[9] = frame[5];
+-        e[10] = frame[6];
+-        e[11] = frame[7];
+-        auto offset = (PULONG)frame[8];
+-        e[12] = offset ? offset[0] : 0xFFFFFFFF;
+-        e[13] = offset ? offset[1] : 0xFFFFFFFF;
+-        e[14] = frame[6] ? *(PULONG)frame[6] : 0;
+-        break;
++}
++extern "C" {
++void XkObserverArm() {
++    ULONG f = Disable();
++    if (!Frozen() && !H[3]) {
++        H[3] = 1; H[22] = 8; H[24] = Next();
++        if (H[10]) XkStartupTotals[5] = XkStartupTotals[5] | 2;
++    }
++    Restore(f);
++}
++// Called only inside the already-existing eight-event observation budget.
++void XkObserverFault(ULONG code, ULONG origin, ULONG access, ULONG observationIndex, const void *record) {
++    ULONG f = Disable();
++    if (!Frozen()) {
++        H[21] = observationIndex;
++        if (H[3] && code == 0xC0000005 && origin == 14) {
++            ULONG order = Next();
++            if (order) {
++                ULONG label = Label((ULONG)KeGetCurrentThread(), order);
++                if (!label) Count(H[23]);
++                H[5] = order; H[6] = code; H[7] = origin;
++                H[8] = access == 0 ? 0 : access == 1 ? 1 : access == 8 ? 2 : 3;
++                H[9] = label; H[11] = observationIndex;
++                ContextAtFault(record);
++                __asm__ volatile("" ::: "memory");
++                H[4] = 1; // first observed qualifying event, not necessarily fatal
++            }
++        } else if (observationIndex == 8) {
++            H[4] = 2; // unavailable: existing observation budget exhausted
++        }
+     }
+-    case 226: {                   // NtSetInformationFile: class, length, the first 4 dwords of the information
+-        e[7] = 0x10000000 | e[0];
+-        e[8] = frame[5];
+-        e[9] = frame[4];
+-        auto info = (PULONG)frame[3];
+-        for (int i = 0; i < 4; i++)
+-            e[10 + i] = info[i];
+-        e[14] = 0;
+-        break;
++    Restore(f);
++}
++void XkTraceThreadExit(PKTHREAD Thread) {
++    ULONG f = Disable(), thread = (ULONG)Thread;
++    auto s = Slot(thread, false);
++    if (!Frozen()) {
++        ULONG order = Next();
++        if (order) {
++            for (ULONG i = 0; i < H[15]; i++) if (XkThreadPointers[i] == thread && !XkObserverStorage.Labels[i][2]) {
++                XkObserverStorage.Labels[i][2] = order;
++                Count(H[19]);
++                break;
++            }
++            if (s) for (ULONG i = 0; i < s->Depth; i++) {
++                ULONG token = s->Frames[i].Token;
++                if (token) {
++                    auto row = XkObserverStorage.Calls[(token - 1) % XK_TRACE_RING];
++                    if (row[0] == token) { row[7] = row[7] | 2; Count(H[17]); }
++                }
++            }
++        }
++    } else {
++        Count(H[27]);
++        for (ULONG i = 0; i < H[15]; i++)
++            if (XkThreadPointers[i] == thread) XkThreadPointers[i] = 0;
+     }
+-    default:
+-        e[7] = 0;
++    if (s) s->Thread = s->Depth = 0;
++    Restore(f);
++}
++ULONG __cdecl XkTraceLeave(ULONG result) {
++    ULONG f = Disable(), ret = 0;
++    auto s = Slot((ULONG)KeGetCurrentThread(), false);
++    if (s && s->Depth) {
++        auto frame = s->Frames[--s->Depth]; ret = frame.Return;
++        if (Frozen()) {
++            Count(H[26]); H[29] = frame.Ordinal;
++            if (frame.Token) Count(H[31]);
++        } else {
++            if (H[3]) TotalReturn(frame.Ordinal, result);
++            ULONG order = Next();
++            auto row = XkObserverStorage.Calls[(frame.Token - 1) % XK_TRACE_RING];
++            if (order && row[0] == frame.Token) {
++                if (row[5] == 2) row[6] = result;
++                else if (row[5] == 3) {
++                    row[6] = PointerCategory(result);
++                    if (result && !(result & 3)) row[7] = row[7] | 4;
++                }
++                row[2] = order;
++            } else if (order) Count(H[18]); // late completion never rewrites reuse
++        }
++    } else if (!Frozen()) H[20] = H[20] | 8;
++    Restore(f); return ret;
++}
++void __cdecl XkTraceRecord(ULONG index, PULONG frame) {
++    ULONG ordinal = XkTraceOrdinals[index], f = Disable();
++    if (Omitted(ordinal)) {
++        if (!Frozen()) { Next(); Count(H[14]); }
++        Restore(f); return;
+     }
+-    XkTraceCount = XkTraceCount + 1;
+-    if (XK_TRACE_SLOT *s = XkTraceSlot(e[2]); s && s->Depth < 8) { // catch the return
+-        s->Return[s->Depth] = frame[0];
+-        s->Entry[s->Depth] = entry;
+-        s->Depth++;
++    ULONG token = 0;
++    auto s = Slot((ULONG)KeGetCurrentThread(), true);
++    bool track = s && s->Depth < 8;
++    if (!Frozen()) {
++        ULONG order = Next();
++        if (order && H[10] != 0xFFFFFFFF) {
++            token = H[10] + 1; H[10] = token;
++            if (H[3]) TotalEntry(ordinal);
++            ULONG label = Label((ULONG)KeGetCurrentThread(), order);
++            if (!label) Count(H[23]);
++            auto row = XkObserverStorage.Calls[(token - 1) % XK_TRACE_RING];
++            row[0] = token; row[1] = order; row[2] = 0; row[3] = label;
++            row[4] = ordinal; row[5] = Kind(ordinal); row[6] = 0;
++            row[7] = track ? 0 : 1;
++            if (label && ordinal == 291) XkArgFacts[label - 1].CriticalToken = token,
++                XkArgFacts[label - 1].CriticalFlags = ArgFlags(frame[1]);
++            if (label && ordinal == 217) XkArgFacts[label - 1].QueryToken = token,
++                XkArgFacts[label - 1].QueryFlags = ArgFlags(frame[1]);
++            if (!track) Count(H[17]);
++            H[12] = token < XK_TRACE_RING ? token : XK_TRACE_RING;
++            H[13] = token > XK_TRACE_RING ? token - XK_TRACE_RING : 0;
++        } else if (order) { H[20] = H[20] | 1; H[4] = 3; }
++    } else { Count(H[25]); H[28] = ordinal; }
++    if (track) {
++        s->Frames[s->Depth++] = {frame[0], token, ordinal};
+         frame[0] = (ULONG)XkTraceReturn;
+-    }
+-    __asm__ volatile("pushl %0; popfl" ::"r"(flags) : "cc");
++    } else if (Frozen()) Count(H[30]);
++    Restore(f);
+ }
+ }
+ 
+-// Returns the address to put in the thunk: a 10-byte stub (mov eax, index; jmp XkTraceEntry) for functions.
+ ULONG XkTraceWrap(USHORT ordinal, ULONG target) {
+-    static PUCHAR stubs;
+-    static ULONG used;
+-    if (!stubs) {
+-#if XK_TRACE_IMPORTS == 2
+-        // TRACE_IMPORTS=2 needs 128 MB (xemu mem_limit = '128'): ring and stubs live above the 64 MB the kernel
+-        // manages, so the title sees exactly the memory of a release build.
+-        ULONG ringBytes = XK_TRACE_RING * XK_TRACE_WORDS * 4;
+-        auto high = (PUCHAR)MmMapIoSpace(0x4000000, ringBytes + XK_TRACE_MAX_IMPORTS * 10, PAGE_READWRITE);
+-        XkTraceRing = (volatile ULONG(*)[XK_TRACE_WORDS])high;
+-        stubs = high ? high + ringBytes : nullptr;
+-#else
+-        stubs = (PUCHAR)ExAllocatePoolWithTag(XK_TRACE_MAX_IMPORTS * 10, 'crTX');
+-        XkTraceRing = (volatile ULONG(*)[XK_TRACE_WORDS])MmAllocateContiguousMemory(XK_TRACE_RING * XK_TRACE_WORDS * 4);
+-        // The count survives a quick reboot but this ring does not: clear it, so older entries read as empty.
+-        if (XkTraceRing)
+-            RtlZeroMemory((PVOID)XkTraceRing, XK_TRACE_RING * XK_TRACE_WORDS * 4);
+-#endif
++    if (ordinal == 102) XkMmDataImported = 1;
++    if (ordinal == 232) return target; // I/O manager requires exact callback identity
++    if (!XkStubs) {
++        XkStubs = (PUCHAR)ExAllocatePoolWithTag(XK_TRACE_MAX_IMPORTS * 10, 'crTX');
++        if (!XkStubs) { H[20] = H[20] | 2; return target; }
+     }
+-    if (!stubs || used == XK_TRACE_MAX_IMPORTS)
+-        return target;
+-    // Only code is wrapped: data exports (KeTickCount, LaunchDataPage, ...) live outside the first (code) section.
++    if (XkUsed == XK_TRACE_MAX_IMPORTS) { H[20] = H[20] | 4; return target; }
++    // Keep the retained code-only export boundary; data exports are never wrapped.
+     auto image = (PUCHAR)0x80010000;
+     PUCHAR nt = image + *(ULONG *)(image + 0x3C);
+     PUCHAR section = nt + 24 + *(USHORT *)(nt + 20);
+-    ULONG textStart = 0x80010000 + *(ULONG *)(section + 12), textEnd = textStart + *(ULONG *)(section + 8);
+-    if (target < textStart || target >= textEnd)
+-        return target;
+-    ULONG i = used++;
+-    XkTraceTargets[i] = target;
+-    XkTraceOrdinals[i] = ordinal;
+-    PUCHAR s = stubs + i * 10;
+-    s[0] = 0xB8;
+-    *(ULONG *)(s + 1) = i;
+-    s[5] = 0xE9;
+-    *(LONG *)(s + 6) = (LONG)((ULONG)XkTraceEntry - (ULONG)(s + 10));
+-    return (ULONG)s;
++    ULONG start = 0x80010000 + *(ULONG *)(section + 12), end = start + *(ULONG *)(section + 8);
++    if (target < start || target >= end) return target;
++    ULONG i = XkUsed++;
++    XkTraceTargets[i] = target; XkTraceOrdinals[i] = ordinal;
++    PUCHAR stub = XkStubs + i * 10;
++    stub[0] = 0xB8; *(ULONG *)(stub + 1) = i; stub[5] = 0xE9;
++    *(LONG *)(stub + 6) = (LONG)((ULONG)XkTraceEntry - (ULONG)(stub + 10));
++    return (ULONG)stub;
+ }

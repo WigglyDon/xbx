@@ -143,6 +143,7 @@ pub fn verify_binding(
         "npx" => include_str!("../../../kernel-npx.lock.json"),
         "observer" => include_str!("../../../kernel-observer.lock.json"),
         "context" => include_str!("../../../kernel-context.lock.json"),
+        "totals" => include_str!("../../../kernel-totals.lock.json"),
         _ => return Err("unrecognized API journal build mode".into()),
     };
     for (key, expected) in [
@@ -173,7 +174,7 @@ pub fn verify_binding(
             return Err("journal map/firmware identity mismatch".into());
         }
     }
-    Ok(if field("mode")? == "context" {
+    Ok(if matches!(field("mode")?, "context" | "totals") {
         JournalFormat::Context
     } else if field("mode")? == "observer" {
         JournalFormat::Observer

@@ -20,10 +20,13 @@ fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Re
         format!(
             "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports={}\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
             u8::from(mode == "selftest"),
-            u8::from(matches!(mode, "journal" | "npx" | "observer" | "context")),
             u8::from(matches!(
                 mode,
-                "trace" | "loader" | "journal" | "npx" | "observer" | "context"
+                "journal" | "npx" | "observer" | "context" | "totals"
+            )),
+            u8::from(matches!(
+                mode,
+                "trace" | "loader" | "journal" | "npx" | "observer" | "context" | "totals"
             ))
         ),
     )?;
@@ -67,15 +70,25 @@ pub(crate) fn verify(
 pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
     if !matches!(
         mode,
-        "trace" | "loader" | "journal" | "npx" | "observer" | "context" | "play" | "selftest"
+        "trace"
+            | "loader"
+            | "journal"
+            | "npx"
+            | "observer"
+            | "context"
+            | "totals"
+            | "play"
+            | "selftest"
     ) {
         return Err(
-            "kernel mode must be trace, loader, journal, npx, observer, context, play or selftest"
+            "kernel mode must be trace, loader, journal, npx, observer, context, totals, play or selftest"
                 .into(),
         );
     }
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = if mode == "context" {
+    let source = if mode == "totals" {
+        root.join(format!(".local/src/oxos-{OXOS}-startup-totals-v1"))
+    } else if mode == "context" {
         root.join(format!(".local/src/oxos-{OXOS}-context-v1"))
     } else if mode == "observer" {
         root.join(format!(".local/src/oxos-{OXOS}-observer-v1"))
@@ -88,13 +101,15 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
     } else {
         source(root)
     };
-    let journal = matches!(mode, "journal" | "npx" | "observer" | "context");
+    let journal = matches!(mode, "journal" | "npx" | "observer" | "context" | "totals");
     let trace = matches!(
         mode,
-        "trace" | "loader" | "journal" | "npx" | "observer" | "context"
+        "trace" | "loader" | "journal" | "npx" | "observer" | "context" | "totals"
     );
     let play = mode == "play" || trace;
-    let patch_path = root.join(if mode == "context" {
+    let patch_path = root.join(if mode == "totals" {
+        "patches/oxos-startup-totals.patch"
+    } else if mode == "context" {
         "patches/oxos-context.patch"
     } else if mode == "observer" {
         "patches/oxos-observer.patch"
@@ -107,7 +122,9 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
     } else {
         "patches/oxos-launch-trace.patch"
     });
-    let lock_path = root.join(if mode == "context" {
+    let lock_path = root.join(if mode == "totals" {
+        "kernel-totals.lock.json"
+    } else if mode == "context" {
         "kernel-context.lock.json"
     } else if mode == "observer" {
         "kernel-observer.lock.json"
@@ -144,7 +161,10 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         {
             return Err("trace patch differs from recorded identity".into());
         }
-        if matches!(mode, "loader" | "journal" | "npx" | "observer" | "context") {
+        if matches!(
+            mode,
+            "loader" | "journal" | "npx" | "observer" | "context" | "totals"
+        ) {
             let base = Command::new("sha256sum")
                 .arg(root.join("patches/oxos-launch-trace.patch"))
                 .output()?;
@@ -173,7 +193,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                     return Err("API journal base loader identity changed".into());
                 }
             }
-            if matches!(mode, "npx" | "observer" | "context") {
+            if matches!(mode, "npx" | "observer" | "context" | "totals") {
                 let out = Command::new("sha256sum")
                     .arg(root.join("patches/oxos-api-journal.patch"))
                     .output()?;
@@ -188,7 +208,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                     return Err("NPX correction base journal identity changed".into());
                 }
             }
-            if matches!(mode, "observer" | "context") {
+            if matches!(mode, "observer" | "context" | "totals") {
                 let out = Command::new("sha256sum")
                     .arg(root.join("patches/oxos-npx-owner.patch"))
                     .output()?;
@@ -204,7 +224,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                 }
             }
         }
-        if mode == "context" {
+        if matches!(mode, "context" | "totals") {
             let out = Command::new("sha256sum")
                 .arg(root.join("patches/oxos-observer.patch"))
                 .output()?;
@@ -218,6 +238,22 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                 || !lock.contains(&format!("\"base_observer_patch_sha256\": \"{hash}\""))
             {
                 return Err("context base observer identity changed".into());
+            }
+        }
+        if mode == "totals" {
+            let out = Command::new("sha256sum")
+                .arg(root.join("patches/oxos-context.patch"))
+                .output()?;
+            let output = String::from_utf8(out.stdout)?;
+            let hash = output
+                .split_whitespace()
+                .next()
+                .ok_or("missing context digest")?;
+            let lock = std::fs::read_to_string(&lock_path)?;
+            if !out.status.success()
+                || !lock.contains(&format!("\"base_context_patch_sha256\": \"{hash}\""))
+            {
+                return Err("startup totals base context identity changed".into());
             }
         }
         Some(sha)

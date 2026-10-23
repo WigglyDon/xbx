@@ -31,7 +31,10 @@ pub struct Capture {
     pub calls: Vec<Call>,
 }
 
-fn kind(ordinal: u32) -> u32 {
+pub(crate) fn kind(ordinal: u32, version: u32) -> u32 {
+    if version >= 2 && matches!(ordinal, 24 | 37 | 99 | 246) {
+        return 2;
+    }
     match ordinal {
         184..=231 | 233..=238 | 254..=257 | 139 | 142 | 181 | 159 => 2,
         14 | 15 | 165..=169 | 177 => 3,
@@ -68,7 +71,7 @@ impl Capture {
             return Err(invalid("incomplete observer storage"));
         }
         let h: [u32; 32] = words[..32].try_into()?;
-        if h[0] != 0x58424f31 || h[1] != 1 || h[2] != (WORDS * 4) as u32 {
+        if h[0] != 0x58424f31 || !matches!(h[1], 1 | 2) || h[2] != (WORDS * 4) as u32 {
             return Err(invalid("observer schema/size differs"));
         }
         if h[3] != 1 || h[4] != 1 {
@@ -144,7 +147,7 @@ impl Capture {
                 || !(1..=366).contains(&c.ordinal)
                 || c.ordinal == 232
                 || omitted(c.ordinal)
-                || c.kind != kind(c.ordinal)
+                || c.kind != kind(c.ordinal, h[1])
                 || c.thread > h[15]
                 || c.flags & !7 != 0
                 || (c.thread == 0 && h[23] == 0)
@@ -201,7 +204,8 @@ impl Capture {
     pub fn receipt(&self) -> String {
         let h = &self.header;
         let mut out = format!(
-            "schema=xbx-contract-observer-v1\nevent=first_observed_after_entry_not_necessarily_terminal\nevent_order={}\nexisting_observation_index={}\ncode=c0000005\norigin=14\naccess_kind={}\nthread_label={}\ncall_cutoff={}\nretained={}\noverwritten={}\nomitted={}\nlabels={}\nlabel_overflows={}\nunavailable_returns_total={}\nlate_completions={}\nretired_labels={}\npost_entries={}\npost_returns={}\npost_exits={}\npost_last_entry_ordinal={}\npost_last_return_ordinal={}\npost_unavailable={}\npost_pre_cutoff_returns={}\nfunction_return_is_not_async_work_completion=true\nrange_category_is_not_pointer_contract_proof=true\n",
+            "schema=xbx-contract-observer-v{}\nevent=first_observed_after_entry_not_necessarily_terminal\nevent_order={}\nexisting_observation_index={}\ncode=c0000005\norigin=14\naccess_kind={}\nthread_label={}\ncall_cutoff={}\nretained={}\noverwritten={}\nomitted={}\nlabels={}\nlabel_overflows={}\nunavailable_returns_total={}\nlate_completions={}\nretired_labels={}\npost_entries={}\npost_returns={}\npost_exits={}\npost_last_entry_ordinal={}\npost_last_return_ordinal={}\npost_unavailable={}\npost_pre_cutoff_returns={}\nfunction_return_is_not_async_work_completion=true\nrange_category_is_not_pointer_contract_proof=true\n",
+            h[1],
             h[5],
             h[11],
             h[8],
