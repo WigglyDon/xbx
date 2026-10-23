@@ -119,6 +119,7 @@ pub fn validate_npx_fixture(
 pub enum JournalFormat {
     Legacy,
     Observer,
+    Context,
 }
 
 pub fn verify_binding(
@@ -141,6 +142,7 @@ pub fn verify_binding(
         "journal" => include_str!("../../../kernel-journal.lock.json"),
         "npx" => include_str!("../../../kernel-npx.lock.json"),
         "observer" => include_str!("../../../kernel-observer.lock.json"),
+        "context" => include_str!("../../../kernel-context.lock.json"),
         _ => return Err("unrecognized API journal build mode".into()),
     };
     for (key, expected) in [
@@ -171,7 +173,9 @@ pub fn verify_binding(
             return Err("journal map/firmware identity mismatch".into());
         }
     }
-    Ok(if field("mode")? == "observer" {
+    Ok(if field("mode")? == "context" {
+        JournalFormat::Context
+    } else if field("mode")? == "observer" {
         JournalFormat::Observer
     } else {
         JournalFormat::Legacy

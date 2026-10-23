@@ -180,15 +180,34 @@ pub fn run(
         response(&mut reader)?;
         // Core-owned device inventory establishes attachment separately from
         // config/source intent. This is not guest input/gameplay acceptance.
-        socket.write_all(b"{\"execute\":\"human-monitor-command\",\"arguments\":{\"command-line\":\"info usb\"}}\n")?;
-        let usb = response(&mut reader)?;
+        // QMP can be ready before the frontend finishes attaching its configured
+        // controller. A first hub-only inventory is not a final rejection.
+        let attachment_deadline = (Instant::now() + Duration::from_secs(10)).min(deadline);
+        let mut attachment_checks = 0;
+        let (usb, controller_attached) = loop {
+            socket.write_all(b"{\"execute\":\"human-monitor-command\",\"arguments\":{\"command-line\":\"info usb\"}}\n")?;
+            let usb = response(&mut reader)?;
+            if attachment_checks == 0 {
+                fs::write(root.join("usb-devices-initial.txt"), &usb)?;
+            }
+            attachment_checks += 1;
+            let attached = usb.contains("Xbox") && usb.contains("Controller");
+            if controller != "keyboard" || attached || Instant::now() >= attachment_deadline {
+                break (usb, attached);
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        };
         fs::write(root.join("usb-devices.txt"), &usb)?;
-        let controller_attached = usb.contains("Xbox") && usb.contains("Controller");
         fs::write(
             root.join("controller-attachment.txt"),
-            format!("requested={controller}\ncontroller_attached={controller_attached}\n"),
+            format!(
+                "requested={controller}\ncontroller_attached={controller_attached}\nattachment_checks={attachment_checks}\n"
+            ),
         )?;
         if controller == "keyboard" && !controller_attached {
+            socket.write_all(b"{\"execute\":\"quit\"}\n")?;
+            response(&mut reader)?;
+            monitor_keepalive = Some((socket, reader));
             return Err("requested desktop Controller S not attached".into());
         }
         loop {
@@ -224,6 +243,9 @@ pub fn run(
         response(&mut reader)?;
         if let Some(map) = journal_map {
             let capture = match journal_format {
+                Some(crate::api_journal::JournalFormat::Context) => {
+                    crate::contract::capture(&mut socket, &mut reader, map, &root)
+                }
                 Some(crate::api_journal::JournalFormat::Observer) => {
                     crate::observer::capture(&mut socket, &mut reader, map, &root)
                 }
@@ -251,7 +273,8 @@ pub fn run(
         if let Some(status) = owned.0.try_wait()? {
             break status;
         }
-        if observation.is_err() || Instant::now() >= stop_deadline {
+        if (observation.is_err() && monitor_keepalive.is_none()) || Instant::now() >= stop_deadline
+        {
             forced = true;
             owned.0.kill()?;
             break owned.0.wait()?;

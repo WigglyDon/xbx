@@ -4,6 +4,8 @@ pub mod api_journal;
 pub mod branch;
 pub mod callsite;
 #[cfg(not(target_os = "android"))]
+pub mod contract;
+#[cfg(not(target_os = "android"))]
 pub mod desktop_title;
 pub mod disc;
 pub mod disk;

@@ -3,6 +3,13 @@ use std::path::Path;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args_os().collect();
     #[cfg(not(target_os = "android"))]
+    if args.len() == 3 && args[1] == "check-context-fixture" {
+        let root = Path::new(&args[2]);
+        let base = xbx::observer::load(&root.join("observer-raw.bin"))?;
+        base.fixture()?;
+        return xbx::contract::load(&root.join("context-raw.bin"), &base)?.fixture();
+    }
+    #[cfg(not(target_os = "android"))]
     if args.len() == 3 && (args[1] == "check-observer-fixture" || args[1] == "summarize-observer") {
         let capture = xbx::observer::load(Path::new(&args[2]))?;
         if args[1] == "check-observer-fixture" {
