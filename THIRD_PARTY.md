@@ -1,5 +1,13 @@
 # Source provenance
 
+The bounded contract observer modifies the retained GPL OXOS import tracer and
+annotates its existing diagnostic point. `patches/oxos-observer.patch` and
+`kernel-observer.lock.json` preserve the full accepted base composition and pins.
+Original `crates/host/src/observer.rs` policy and `native/fixtures/observer.S`
+mechanical ABI fixture are MIT; the latter reuses this repository's original
+null-call fixture's public CONTEXT layout. No game code is included. See
+[OBSERVER.md](docs/OBSERVER.md) for scope, schema, lineage and actual qualification.
+
 `native/fixtures/thread-startup.S` and `npx-ownership.S` are original MIT
 synthetic guest ABI/register-state checks using pinned public interface facts.
 The targeted retained OXOS FPU ownership correction in

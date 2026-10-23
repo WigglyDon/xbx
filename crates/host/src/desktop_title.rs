@@ -25,9 +25,9 @@ pub fn run(
     if !(15..=300).contains(&seconds) {
         return Err("ordinary title observation budget must be 15..300 seconds".into());
     }
-    if let Some(map) = journal_map {
-        crate::api_journal::verify_binding(map, flash)?;
-    }
+    let journal_format = journal_map
+        .map(|map| crate::api_journal::verify_binding(map, flash))
+        .transpose()?;
     let video = std::env::var("XBX_DESKTOP_VIDEO_DRIVER").unwrap_or_else(|_| "offscreen".into());
     if !matches!(video.as_str(), "offscreen" | "x11") {
         return Err("desktop video driver must be offscreen or x11".into());
@@ -161,6 +161,7 @@ pub fn run(
     let deadline = start + Duration::from_secs(seconds);
     let mut reason = "observation_budget_expired_requires_visual_review";
     let mut monitor_keepalive = None;
+    let mut capture_failure = None;
     let observation = (|| -> Result<(), Box<dyn std::error::Error>> {
         // Receipt publication can fail too; keep it inside the same native
         // termination/reaping/storage-sync path as monitor failures.
@@ -222,12 +223,22 @@ pub fn run(
         socket.write_all(b"{\"execute\":\"stop\"}\n")?;
         response(&mut reader)?;
         if let Some(map) = journal_map {
-            crate::api_journal::capture(
-                &mut socket,
-                &mut reader,
-                map,
-                &root.join("api-journal.txt"),
-            )?;
+            let capture = match journal_format {
+                Some(crate::api_journal::JournalFormat::Observer) => {
+                    crate::observer::capture(&mut socket, &mut reader, map, &root)
+                }
+                _ => crate::api_journal::capture(
+                    &mut socket,
+                    &mut reader,
+                    map,
+                    &root.join("api-journal.txt"),
+                ),
+            };
+            // A rejected capture is a failed observation, but must not prevent
+            // acknowledged quit/reap/sync of an otherwise healthy native core.
+            if let Err(error) = capture {
+                capture_failure = Some(error.to_string());
+            }
         }
         socket.write_all(b"{\"execute\":\"quit\"}\n")?;
         response(&mut reader)?;
@@ -252,7 +263,9 @@ pub fn run(
     lease.sync_storage()?;
     fs::write(
         root.join("termination.txt"),
-        format!("status={status}\nforced={forced}\nqmp={observation:?}\nstorage_synced=true\n"),
+        format!(
+            "status={status}\nforced={forced}\nqmp={observation:?}\ncapture_failure={capture_failure:?}\nstorage_synced=true\n"
+        ),
     )?;
     fs::write(
         root.join("observation.txt"),
@@ -271,6 +284,9 @@ pub fn run(
     );
     if observation.is_err() || !status.success() || forced {
         return Err("ordinary title runtime failed; scratch and evidence preserved".into());
+    }
+    if let Some(error) = capture_failure {
+        return Err(format!("observer capture failed; evidence retained: {error}").into());
     }
     Ok(())
 }

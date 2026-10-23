@@ -9,6 +9,8 @@ pub mod disc;
 pub mod disk;
 pub mod input;
 #[cfg(not(target_os = "android"))]
+pub mod observer;
+#[cfg(not(target_os = "android"))]
 pub mod probe;
 pub mod runtime_summary;
 pub mod session;

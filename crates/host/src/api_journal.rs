@@ -116,7 +116,15 @@ pub fn validate_npx_fixture(
     Ok(())
 }
 
-pub fn verify_binding(map: &Path, flash: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub enum JournalFormat {
+    Legacy,
+    Observer,
+}
+
+pub fn verify_binding(
+    map: &Path,
+    flash: &Path,
+) -> Result<JournalFormat, Box<dyn std::error::Error>> {
     let receipt = std::fs::read_to_string(map.with_file_name("build.identity"))?;
     let field = |key: &str| -> Result<&str, Box<dyn std::error::Error>> {
         let prefix = format!("{key}=");
@@ -132,6 +140,7 @@ pub fn verify_binding(map: &Path, flash: &Path) -> Result<(), Box<dyn std::error
     let lock = match field("mode")? {
         "journal" => include_str!("../../../kernel-journal.lock.json"),
         "npx" => include_str!("../../../kernel-npx.lock.json"),
+        "observer" => include_str!("../../../kernel-observer.lock.json"),
         _ => return Err("unrecognized API journal build mode".into()),
     };
     for (key, expected) in [
@@ -162,10 +171,14 @@ pub fn verify_binding(map: &Path, flash: &Path) -> Result<(), Box<dyn std::error
             return Err("journal map/firmware identity mismatch".into());
         }
     }
-    Ok(())
+    Ok(if field("mode")? == "observer" {
+        JournalFormat::Observer
+    } else {
+        JournalFormat::Legacy
+    })
 }
 
-fn kernel_range(address: u64, bytes: u64) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn kernel_range(address: u64, bytes: u64) -> Result<(), Box<dyn std::error::Error>> {
     if address & 3 != 0
         || address < 0x80010000
         || address
@@ -176,7 +189,7 @@ fn kernel_range(address: u64, bytes: u64) -> Result<(), Box<dyn std::error::Erro
     }
     Ok(())
 }
-fn read(
+pub(crate) fn read(
     socket: &mut UnixStream,
     reader: &mut BufReader<UnixStream>,
     address: u64,

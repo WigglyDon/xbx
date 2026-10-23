@@ -1,5 +1,11 @@
 # Qualification builds
 
+The separately bound contract observer uses `cargo xtask kernel-build observer`
+and `cargo xtask observer-fixture-build`; existing `run-title-journal` selects
+its fixed capture schema from the verified build mode. See
+[OBSERVER.md](OBSERVER.md) for exact identities, controls and acceptance limits.
+No Android asset selector or used profile is changed.
+
 The original loaded-title thread/TLS check and demonstrated displaced-FPU-owner
 repair use existing machinery: `cargo xtask thread-fixture-build`,
 `cargo xtask npx-fixture-build`, `cargo xtask kernel-build npx`.
