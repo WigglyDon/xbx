@@ -1,0 +1,9 @@
+{
+  "source": "https://github.com/xemu-project/xemu",
+  "commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "patch": "patches/xemu-reference-desktop.patch",
+  "patch_sha256": "4e317283ddb368c1c80243804aa7fcfdc1e5228ac6d7ddec9ca84cb5cdd138e1",
+  "comparison": "same-lineage-public-platform-not-selected-Android-core",
+  "dsp_source": "bde7c233a447d32d558c48cb4438e1425fe0bbcc",
+  "retained_core_sha256": "51178df74f0b26316c799ff8e8c1a65b1b841b97858cd07dd31903d52ebdcd0d"
+}

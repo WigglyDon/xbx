@@ -1,5 +1,11 @@
 # Qualification builds
 
+The separately pinned upstream desktop comparison is reproduced by
+`cargo xtask reference-configure v3` and `cargo xtask reference-build v3`.
+[REFERENCE_CORE.md](REFERENCE_CORE.md) records its full source/patch/core/DSP
+identities, initial build failure, original guest proof, unchanged-game failure
+and preservation limits. It does not change the selected Android assets.
+
 This builds a diagnostic candidate, not the finished player or an approved
 binary release. The active issue owns progress and acceptance evidence.
 `source-inputs.lock.json` and `patches/xemu-android.patch` bind the engine graph.

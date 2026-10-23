@@ -7,6 +7,7 @@ mod desktop;
 mod kernel;
 mod loader_fixture;
 mod profile;
+mod reference;
 mod source;
 
 fn run(command: &mut Command) -> Result<(), Box<dyn std::error::Error>> {
@@ -23,6 +24,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if let Some(action @ ("reference-configure" | "reference-build")) =
+        args.first().map(String::as_str)
+    {
+        return reference::command(
+            root,
+            action,
+            args.get(1).map(String::as_str).unwrap_or("v1"),
+        );
+    }
     if args.first().map(String::as_str) == Some("journal-fixture-build") {
         return kernel::abi_title(
             root,

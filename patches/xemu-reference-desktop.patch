@@ -1,0 +1,137 @@
+diff --git a/chardev/char-io.c b/chardev/char-io.c
+index 3be17b5..bb7448e 100644
+--- a/chardev/char-io.c
++++ b/chardev/char-io.c
+@@ -126,7 +126,8 @@ GSource *io_add_watch_poll(Chardev *chr,
+     g_free(name);
+ 
+     g_source_attach(&iwp->parent, context);
+-    g_source_unref(&iwp->parent);
++    /* Chardev owns the initial reference until remove_fd_in_watch(). The
++     * monitor's I/O context may be destroyed before chardev finalization. */
+     return (GSource *)iwp;
+ }
+ 
+@@ -136,13 +137,15 @@ static void io_remove_watch_poll(GSource *source)
+ 
+     iwp = io_watch_poll_from_source(source);
+     g_source_destroy(&iwp->parent);
++    g_source_unref(&iwp->parent);
+ }
+ 
+ void remove_fd_in_watch(Chardev *chr)
+ {
+     if (chr->gsource) {
+-        io_remove_watch_poll(chr->gsource);
++        GSource *source = chr->gsource;
+         chr->gsource = NULL;
++        io_remove_watch_poll(source);
+     }
+ }
+ 
+diff --git a/hw/xbox/nv2a/pgraph/thirdparty/meson.build b/hw/xbox/nv2a/pgraph/thirdparty/meson.build
+index fbc3751..1b25347 100644
+--- a/hw/xbox/nv2a/pgraph/thirdparty/meson.build
++++ b/hw/xbox/nv2a/pgraph/thirdparty/meson.build
+@@ -13,6 +13,6 @@ nv2a_vsh_cpu = declare_dependency(include_directories: nv2a_vsh_cpu_subproj.incl
+ 
+ libgloffscreen = static_library('libgloffscreen',
+                           sources: files('gloffscreen/common.c', 'gloffscreen/sdl.c'),
+-                          dependencies: sdl)
++                          dependencies: [sdl, epoxy])
+ gloffscreen = declare_dependency(link_with: libgloffscreen,
+                            include_directories: ['gloffscreen'])
+diff --git a/include/chardev/char-io.h b/include/chardev/char-io.h
+index ac379ea..880e33e 100644
+--- a/include/chardev/char-io.h
++++ b/include/chardev/char-io.h
+@@ -28,7 +28,7 @@
+ #include "chardev/char.h"
+ #include "qemu/main-loop.h"
+ 
+-/* Can only be used for read */
++/* Read only. The returned watch is owned until remove_fd_in_watch(). */
+ GSource *io_add_watch_poll(Chardev *chr,
+                         QIOChannel *ioc,
+                         IOCanReadHandler *fd_can_read,
+diff --git a/subprojects/dsp56300/meson.build b/subprojects/dsp56300/meson.build
+index 808b171..4d132cd 100644
+--- a/subprojects/dsp56300/meson.build
++++ b/subprojects/dsp56300/meson.build
+@@ -1,48 +1,14 @@
++# xbx diagnostic builds use the audited DSP source, never a release archive.
++# Rust xtask builds this library from the same pinned source as Android.
+ project('dsp56300', version: '0.1.3')
+-
+ fs = import('fs')
+-
+-host_cpu = host_machine.cpu_family()
+-host_os = host_machine.system()
+-
+-if host_os == 'darwin'
+-  os_suffix = 'apple-darwin'
+-elif host_os == 'windows'
+-  os_suffix = (host_cpu == 'aarch64') ? 'pc-windows-gnullvm' : 'pc-windows-gnu'
+-elif host_os == 'linux'
+-  os_suffix = 'unknown-linux-gnu'
+-else
+-  error('Unsupported host OS: ' + host_os)
++lib = run_command('printenv', 'XBX_DSP_LIBRARY', check: true).stdout().strip()
++source_root = run_command('printenv', 'XBX_DSP_SOURCE', check: true).stdout().strip()
++if not fs.is_file(lib)
++  error('Run cargo xtask desktop-dsp before configuring the desktop diagnostic')
+ endif
+-rust_target = host_cpu + '-' + os_suffix
+-
+-ver = meson.project_version()
+-prefix = 'dsp56300-@0@-@1@'.format(ver, rust_target)
+-archive = '@0@.tar.gz'.format(prefix)
+-url = 'https://github.com/mborgerson/dsp56300/releases/download/v@0@/@1@'.format(ver, archive)
+-lib = meson.current_build_dir() / prefix / 'lib' / 'libdsp56300_emu_ffi.a'
+-
+-if not fs.exists(lib)
+-  src_archive = meson.current_source_dir() / archive
+-  if not fs.exists(src_archive)
+-    message('Downloading dsp56300 @0@ for @1@...'.format(ver, rust_target))
+-    run_command(find_program('curl'), '-fsSL', url, '-o', src_archive, check: true)
+-  endif
+-  run_command('tar', 'xzf', src_archive, '-C', meson.current_build_dir(), check: true)
+-endif
+-
+-link_args = []
+-if host_os == 'linux'
+-  link_args = ['-lpthread', '-ldl', '-lm']
+-elif host_os == 'windows'
+-  link_args = ['-lbcrypt', '-lntdll', '-luserenv', '-lws2_32']
+-elif host_os == 'darwin'
+-  link_args = ['-lpthread', '-lm', '-framework', 'Security']
+-endif
+-
+ dsp56300_dep = declare_dependency(
+-  link_args: [lib] + link_args,
+-  include_directories: include_directories(prefix / 'include'),
++  link_args: [lib, '-lpthread', '-ldl', '-lm'],
++  include_directories: include_directories(source_root / 'crates/emu-ffi/include'),
+ )
+-
+ meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
+diff --git a/system/main.c b/system/main.c
+index 2f08b20..3aacc34 100644
+--- a/system/main.c
++++ b/system/main.c
+@@ -54,6 +54,15 @@ static void *qemu_default_main(void *opaque)
+     bql_unlock();
+     replay_mutex_unlock();
+ 
++#ifdef XBOX
++    /* QEMU storage cleanup above is complete. The Rust supervisor retains the
++     * profile lease through actual isolated-process death and storage sync. */
++    const char *isolated = getenv("XBX_ISOLATED_PROCESS_EXIT");
++    if (isolated && strcmp(isolated, "1") == 0) {
++        fflush(NULL);
++        _exit(status);
++    }
++#endif
+     exit(status);
+ }
+ 

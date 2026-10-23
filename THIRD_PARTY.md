@@ -1,5 +1,15 @@
 # Source provenance
 
+The separate upstream desktop comparison retains public xemu at
+03b988c9d76553b33ed712ba00822ffdf49f0e7d. Its complete targeted integration diff
+is `patches/xemu-reference-desktop.patch`, bound by `reference-core.lock.json`.
+The character-watch ownership, supervised process exit, Epoxy dependency and
+source-built DSP integration retain QEMU/xemu GPL and applicable per-file terms.
+No emulated CPU/hardware behavior is changed by that patch. Existing dependency
+pins and notices remain. Original Rust build policy is MIT. See
+[the exact build/result receipt](docs/REFERENCE_CORE.md); this comparison does
+not select a new Android core or authorize a public binary release.
+
 ## Seed inventory
 
 The initial foundation at `59fbcfa` contained documentation/bootstrap only.
