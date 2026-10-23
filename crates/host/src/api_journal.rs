@@ -27,9 +27,97 @@ pub fn validate_fixture(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+/// A final sentinel is reachable only after both original guest thread checks.
+/// Successful API statuses alone are deliberately insufficient for acceptance.
+pub fn validate_thread_fixture(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let text = std::fs::read_to_string(path)?;
+    let entries: Vec<_> = text
+        .lines()
+        .filter(|line| line.as_bytes().first().is_some_and(u8::is_ascii_digit))
+        .map(|line| line.split_ascii_whitespace().collect::<Vec<_>>())
+        .collect();
+    let returned_successes = |ordinal: &str| {
+        entries
+            .iter()
+            .filter(|entry| entry.get(1..) == Some(&[ordinal, "1", "00000000"]))
+            .count()
+    };
+    // The retained journal intentionally omits frequent ordinal104. Its actual
+    // results are checked in the guest before the final sentinel, not inferred
+    // from a nonexistent host record.
+    if !text.lines().any(|line| line == "count=10")
+        || entries.len() != 10
+        || entries.iter().enumerate().any(|(i, entry)| {
+            entry.first().and_then(|value| value.parse::<usize>().ok()) != Some(i + 1)
+        })
+        || returned_successes("255") != 2
+        || returned_successes("224") != 1
+        || returned_successes("233") != 2
+        || returned_successes("187") != 2
+        || entries
+            .iter()
+            .filter(|entry| entry.get(1..3) == Some(&["258", "0"]))
+            .count()
+            != 2
+        || entries.last().and_then(|entry| entry.get(1..)) != Some(&["307", "1", "01534c54"])
+    {
+        return Err("original guest thread/TLS checks did not produce the required final sentinel and returns".into());
+    }
+    println!(
+        "Original guest thread/TLS/suspend/resume/wait/close/ABI checks passed. Native termination is separate."
+    );
+    Ok(())
+}
+
+pub fn validate_npx_fixture(
+    path: &Path,
+    corrected: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let text = std::fs::read_to_string(path)?;
+    let entries: Vec<_> = text
+        .lines()
+        .filter(|line| line.as_bytes().first().is_some_and(u8::is_ascii_digit))
+        .map(|line| line.split_ascii_whitespace().collect::<Vec<_>>())
+        .collect();
+    let count = |fields: &[&str]| {
+        entries
+            .iter()
+            .filter(|entry| entry.get(1..) == Some(fields))
+            .count()
+    };
+    let (child, parent, length) = if corrected {
+        ("feca0d60", "0158504e", 14)
+    } else {
+        ("0203d0ba", "0502d0ba", 13)
+    };
+    if entries.len() != length
+        || count(&["142", "1", "00000000"]) != 1
+        || count(&["139", "1", "00000000"]) != 1
+        || count(&["255", "1", "00000000"]) != 1
+        || count(&["159", "1", "00000000"]) != 2
+        || count(&["233", "1", "00000000"]) != 1
+        || count(&["307", "1", child]) != 1
+        || count(&["258", "0", "00000000"]) != 1
+        || count(&["187", "1", "00000000"]) != usize::from(corrected)
+        || entries.last().and_then(|entry| entry.get(1..)) != Some(&["307", "1", parent])
+    {
+        return Err(
+            "original NPX ownership guest did not produce the required before/after result".into(),
+        );
+    }
+    println!(
+        "Original guest NPX ownership: {}. Native termination is separate.",
+        if corrected {
+            "both x87/SSE states preserved"
+        } else {
+            "displaced-owner state loss reproduced"
+        }
+    );
+    Ok(())
+}
+
 pub fn verify_binding(map: &Path, flash: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let receipt = std::fs::read_to_string(map.with_file_name("build.identity"))?;
-    let lock = include_str!("../../../kernel-journal.lock.json");
     let field = |key: &str| -> Result<&str, Box<dyn std::error::Error>> {
         let prefix = format!("{key}=");
         let mut values = receipt
@@ -41,8 +129,12 @@ pub fn verify_binding(map: &Path, flash: &Path) -> Result<(), Box<dyn std::error
         }
         Ok(value)
     };
+    let lock = match field("mode")? {
+        "journal" => include_str!("../../../kernel-journal.lock.json"),
+        "npx" => include_str!("../../../kernel-npx.lock.json"),
+        _ => return Err("unrecognized API journal build mode".into()),
+    };
     for (key, expected) in [
-        ("mode", "journal"),
         ("image", "open"),
         ("selftest", "0"),
         ("trace_imports", "1"),
@@ -153,6 +245,26 @@ pub fn capture(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn thread_success_statuses_do_not_replace_guest_completion() {
+        let path = std::env::temp_dir().join(format!(
+            "xbx-thread-acceptance-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        // Actual original guest ordering, with no pointer-valued results.
+        let completed = "count=10\n1 255 1 00000000\n2 224 1 00000000\n3 233 1 00000000\n4 258 0 00000000\n5 187 1 00000000\n6 255 1 00000000\n7 233 1 00000000\n8 258 0 00000000\n9 187 1 00000000\n10 307 1 01534c54\n";
+        std::fs::write(&path, completed).unwrap();
+        assert!(validate_thread_fixture(&path).is_ok());
+        std::fs::write(&path, completed.replace("01534c54", "00000000")).unwrap();
+        assert!(validate_thread_fixture(&path).is_err());
+        std::fs::write(&path, completed.replace("8 258 0 00000000\n", "")).unwrap();
+        assert!(validate_thread_fixture(&path).is_err());
+        std::fs::remove_file(path).unwrap();
+    }
     #[test]
     fn capture_never_follows_a_title_pointer_or_overflows_kernel_range() {
         for (address, bytes) in [

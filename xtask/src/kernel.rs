@@ -20,8 +20,8 @@ fn reserve_build(root: &Path, pin: &str, patch: &str, mode: &str) -> std::io::Re
         format!(
             "source={pin}\ncromwell={CROMWELL}\nmode={mode}\npatch_sha256={patch}\nimage=open\nselftest={}\nserial=1\ntrace_imports={}\nlaunch_trace={}\nram_mib=64\nsplash=none\nproprietary_inputs=none\n",
             u8::from(mode == "selftest"),
-            u8::from(mode == "journal"),
-            u8::from(matches!(mode, "trace" | "loader" | "journal"))
+            u8::from(matches!(mode, "journal" | "npx")),
+            u8::from(matches!(mode, "trace" | "loader" | "journal" | "npx"))
         ),
     )?;
     Ok(build)
@@ -62,27 +62,37 @@ pub(crate) fn verify(
 }
 
 pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if !matches!(mode, "trace" | "loader" | "journal" | "play" | "selftest") {
-        return Err("kernel mode must be trace, loader, journal, play or selftest".into());
+    if !matches!(
+        mode,
+        "trace" | "loader" | "journal" | "npx" | "play" | "selftest"
+    ) {
+        return Err("kernel mode must be trace, loader, journal, npx, play or selftest".into());
     }
     let _lease = crate::capacity::writer(root, 1)?;
-    let source = if mode == "journal" {
+    let source = if mode == "npx" {
+        root.join(format!(".local/src/oxos-{OXOS}-npx-owner-v2"))
+    } else if mode == "journal" {
         root.join(format!(".local/src/oxos-{OXOS}-api-journal-v2"))
     } else if mode == "loader" {
         root.join(format!(".local/src/oxos-{OXOS}-loader-complete-v1"))
     } else {
         source(root)
     };
-    let trace = matches!(mode, "trace" | "loader" | "journal");
+    let journal = matches!(mode, "journal" | "npx");
+    let trace = matches!(mode, "trace" | "loader" | "journal" | "npx");
     let play = mode == "play" || trace;
-    let patch_path = root.join(if mode == "journal" {
+    let patch_path = root.join(if mode == "npx" {
+        "patches/oxos-npx-owner.patch"
+    } else if mode == "journal" {
         "patches/oxos-api-journal.patch"
     } else if mode == "loader" {
         "patches/oxos-loader-complete.patch"
     } else {
         "patches/oxos-launch-trace.patch"
     });
-    let lock_path = root.join(if mode == "journal" {
+    let lock_path = root.join(if mode == "npx" {
+        "kernel-npx.lock.json"
+    } else if mode == "journal" {
         "kernel-journal.lock.json"
     } else if mode == "loader" {
         "kernel-loader.lock.json"
@@ -113,7 +123,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
         {
             return Err("trace patch differs from recorded identity".into());
         }
-        if matches!(mode, "loader" | "journal") {
+        if matches!(mode, "loader" | "journal" | "npx") {
             let base = Command::new("sha256sum")
                 .arg(root.join("patches/oxos-launch-trace.patch"))
                 .output()?;
@@ -127,7 +137,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
             {
                 return Err("loader candidate base trace identity changed".into());
             }
-            if mode == "journal" {
+            if journal {
                 let base = Command::new("sha256sum")
                     .arg(root.join("patches/oxos-loader-complete.patch"))
                     .output()?;
@@ -140,6 +150,21 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
                     || !lock.contains(&format!("\"base_loader_patch_sha256\": \"{hash}\""))
                 {
                     return Err("API journal base loader identity changed".into());
+                }
+            }
+            if mode == "npx" {
+                let out = Command::new("sha256sum")
+                    .arg(root.join("patches/oxos-api-journal.patch"))
+                    .output()?;
+                let output = String::from_utf8(out.stdout)?;
+                let hash = output
+                    .split_whitespace()
+                    .next()
+                    .ok_or("missing journal digest")?;
+                if !out.status.success()
+                    || !lock.contains(&format!("\"base_journal_patch_sha256\": \"{hash}\""))
+                {
+                    return Err("NPX correction base journal identity changed".into());
                 }
             }
         }
@@ -171,7 +196,7 @@ pub fn build(root: &Path, mode: &str) -> Result<(), Box<dyn std::error::Error>> 
             "MCPX_ROM=",
             "STOCK_MCPX=",
         ])
-        .arg(if mode == "journal" {
+        .arg(if journal {
             "TRACE_IMPORTS=1"
         } else {
             "TRACE_IMPORTS=0"

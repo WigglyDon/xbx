@@ -6,6 +6,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() == 3 && args[1] == "check-journal-fixture" {
         return xbx::api_journal::validate_fixture(Path::new(&args[2]));
     }
+    #[cfg(not(target_os = "android"))]
+    if args.len() == 3 && args[1] == "check-thread-fixture" {
+        return xbx::api_journal::validate_thread_fixture(Path::new(&args[2]));
+    }
+    #[cfg(not(target_os = "android"))]
+    if args.len() == 4 && args[1] == "check-npx-fixture" {
+        let corrected = match args[3].to_str() {
+            Some("preserved") => true,
+            Some("displaced-owner") => false,
+            _ => return Err("expected preserved or displaced-owner".into()),
+        };
+        return xbx::api_journal::validate_npx_fixture(Path::new(&args[2]), corrected);
+    }
     if args.len() == 3 && args[1] == "summarize-runtime" {
         if std::fs::metadata(&args[2])?.len() > 1024 * 1024 {
             return Err("runtime log exceeds bound".into());

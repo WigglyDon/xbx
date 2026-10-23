@@ -43,6 +43,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "journal.iso",
         );
     }
+    if args.first().map(String::as_str) == Some("thread-fixture-build") {
+        return kernel::abi_title(
+            root,
+            "thread-startup.S",
+            "build-thread-startup-fixture-v1",
+            "xbx thread startup contract",
+            "0x58425805",
+            "thread.iso",
+        );
+    }
+    if args.first().map(String::as_str) == Some("npx-fixture-build") {
+        return kernel::abi_title(
+            root,
+            "npx-ownership.S",
+            "build-npx-ownership-fixture-v1",
+            "xbx floating point ownership",
+            "0x58425806",
+            "npx.iso",
+        );
+    }
     if args.first().map(String::as_str) == Some("loader-fixture-build") {
         return loader_fixture::build(root);
     }

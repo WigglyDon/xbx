@@ -1,5 +1,13 @@
 # Source provenance
 
+`native/fixtures/thread-startup.S` and `npx-ownership.S` are original MIT
+synthetic guest ABI/register-state checks using pinned public interface facts.
+The targeted retained OXOS FPU ownership correction in
+`patches/oxos-npx-owner.patch` retains GPL/per-file terms; its full composition
+and unchanged bases are bound by `kernel-npx.lock.json`. Original Rust owns
+build/acceptance policy. [THREAD_FPU.md](docs/THREAD_FPU.md) records the actual
+before/after proof and unsuccessful ordinary-game result, without game code.
+
 The separate upstream desktop comparison retains public xemu at
 03b988c9d76553b33ed712ba00822ffdf49f0e7d. Its complete targeted integration diff
 is `patches/xemu-reference-desktop.patch`, bound by `reference-core.lock.json`.

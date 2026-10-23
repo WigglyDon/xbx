@@ -1,5 +1,12 @@
 # Qualification builds
 
+The original loaded-title thread/TLS check and demonstrated displaced-FPU-owner
+repair use existing machinery: `cargo xtask thread-fixture-build`,
+`cargo xtask npx-fixture-build`, `cargo xtask kernel-build npx`.
+[THREAD_FPU.md](THREAD_FPU.md) binds their source/build identities, original
+guest before/after results, normal native shutdown and unchanged-game limit.
+The new firmware is isolated; Android selectors and used profiles stay intact.
+
 The separately pinned upstream desktop comparison is reproduced by
 `cargo xtask reference-configure v3` and `cargo xtask reference-build v3`.
 [REFERENCE_CORE.md](REFERENCE_CORE.md) records its full source/patch/core/DSP
