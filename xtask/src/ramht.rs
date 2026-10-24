@@ -222,6 +222,49 @@ fn configure_environment(repo: &Path, cmd: &mut Command) -> Result<(), Error> {
     Ok(())
 }
 
+fn wrap_overlays(repo: &Path, src: &Path) -> Result<(), Error> {
+    let mut receipt = format!("source={PIN}\n");
+    for name in ["berkeley-softfloat-3", "berkeley-testfloat-3"] {
+        for file in ["meson.build", "meson_options.txt"] {
+            let public_path = format!("subprojects/packagefiles/{name}/{file}");
+            let bytes = git(&source(repo), &["show", &format!("{PIN}:{public_path}")])?;
+            if fs::read(src.join(&public_path))? != bytes.as_bytes() {
+                return Err("pinned Meson wrapper source differs".into());
+            }
+            let destination = src.join("subprojects").join(name).join(file);
+            if destination.exists() {
+                if fs::read(&destination)? != bytes.as_bytes() {
+                    return Err("preserve differing dependency wrapper; no overwrite".into());
+                }
+            } else {
+                save(&destination, &bytes)?;
+            }
+            receipt.push_str(&format!(
+                "subprojects/{name}/{file}={}\n",
+                hash(&destination)?
+            ));
+        }
+    }
+    let path = src.join("xbx-wrap-overlays.identity");
+    if path.exists() {
+        if fs::read_to_string(path)? != receipt {
+            return Err("wrapper receipt differs".into());
+        }
+    } else {
+        save(&path, &receipt)?;
+    }
+    Ok(())
+}
+
+fn prepared_identity(repo: &Path, src: &Path) -> Result<String, Error> {
+    Ok(format!(
+        "{}pfifo_sha256={}\nwrap_overlays_sha256={}\n",
+        identity(repo)?,
+        hash(&src.join(PFIFO))?,
+        hash(&src.join("xbx-wrap-overlays.identity"))?
+    ))
+}
+
 fn configure(repo: &Path, w: &Workspace, attempt: &str) -> Result<(), Error> {
     let inputs = identity(repo)?;
     let fixture = fs::read_to_string(w.root.join(format!("fixture-{attempt}/result.identity")))?;
@@ -319,8 +362,10 @@ fn configure_prepared(
     source_label: &str,
     src: &Path,
     build: &Path,
-    inputs: &str,
+    _inputs: &str,
 ) -> Result<(), Error> {
+    wrap_overlays(repo, src)?;
+    let inputs = prepared_identity(repo, src)?;
     save(&build.join("source.label"), source_label)?;
     let mut cmd = Command::new(src.join("configure"));
     cmd.current_dir(build)
@@ -340,7 +385,7 @@ fn configure_prepared(
         ]);
     configure_environment(repo, &mut cmd)?;
     checked(w, &mut cmd, &build.join("configure.log"), 900)?;
-    save(&build.join("configured.identity"), inputs)?;
+    save(&build.join("configured.identity"), &inputs)?;
     println!(
         "Configured separate RAMHT candidate, one compiler, retained dependencies, downloads disabled."
     );
@@ -361,33 +406,36 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
         "ramht-check" => fixture(repo, &w, attempt),
         "ramht-configure" => configure(repo, &w, attempt),
         "ramht-reconfigure" => {
-            let old = w.root.join(format!("build-{attempt}"));
-            let src = w.root.join(format!("source-{attempt}"));
+            let (source_label, build_label) = if let Some((base, _)) = attempt.split_once("-retry")
+            {
+                (base, attempt.to_owned())
+            } else {
+                (attempt, format!("{attempt}-retry1"))
+            };
+            if source_label.is_empty() {
+                return Err("missing retained source label".into());
+            }
+            let old = w.root.join(format!("build-{source_label}"));
+            let src = w.root.join(format!("source-{source_label}"));
             let inputs = identity(repo)?;
             if fs::read_to_string(old.join("build.inputs"))? != inputs
                 || old.join("configured.identity").exists()
                 || hash(&src.join(PFIFO))?
-                    != hash(&w.root.join(format!("fixture-{attempt}/after/{PFIFO}")))?
+                    != hash(&w.root.join(format!("fixture-{source_label}/after/{PFIFO}")))?
             {
                 return Err("retained incomplete configuration/source binding differs".into());
             }
-            let build = w.root.join(format!("build-{attempt}-retry1"));
+            let build = w.root.join(format!("build-{build_label}"));
             directory(&build)?;
             save(&build.join("build.inputs"), &inputs)?;
             save(
                 &build.join("dependencies.identity"),
                 &fs::read_to_string(old.join("dependencies.identity"))?,
             )?;
-            configure_prepared(repo, &w, attempt, &src, &build, &inputs)
+            configure_prepared(repo, &w, source_label, &src, &build, &inputs)
         }
         "ramht-build" => {
             let build = w.root.join(format!("build-{attempt}"));
-            let inputs = identity(repo)?;
-            if fs::read_to_string(build.join("configured.identity"))? != inputs
-                || build.join("build.identity").exists()
-            {
-                return Err("candidate differs or is already complete".into());
-            }
             let label = fs::read_to_string(build.join("source.label"))?;
             if !label
                 .bytes()
@@ -396,6 +444,12 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                     != hash(&w.root.join(format!("fixture-{label}/after/{PFIFO}")))?
             {
                 return Err("native PFIFO source differs from the tested candidate".into());
+            }
+            let inputs = prepared_identity(repo, &w.root.join(format!("source-{label}")))?;
+            if fs::read_to_string(build.join("configured.identity"))? != inputs
+                || build.join("build.identity").exists()
+            {
+                return Err("candidate differs or is already complete".into());
             }
             let mut cmd = Command::new("ninja");
             cmd.arg("-C").arg(&build).args(["-j1", "qemu-system-i386"]);

@@ -72,6 +72,17 @@ source exports in a fresh `LABEL-retry1` build directory and uses a finite
 fifteen-minute configuration allowance. Storage guards, package pins, source
 flags and one-compiler policy are unchanged; the sources are not exported again.
 
+That configuration subsequently reached a concrete layout error: clean Git
+dependency exports omit the Meson wrapper files that xemu normally overlays from
+its own `subprojects/packagefiles`. The ordinary exporter now supplies exactly
+`meson.build` and `meson_options.txt` for Berkeley SoftFloat and TestFloat from
+the same pinned xemu commit. It verifies the source bytes, preserves matching
+files and refuses to overwrite a differing destination. A wrapper receipt and
+the tested PFIFO hash are bound into configured/native identities. The next
+explicit retry uses the existing source export and another fresh build directory;
+both earlier configuration directories remain. This is build integration, not
+a new core/firmware failure or a change to the RAMHT candidate.
+
 Native qualification remains separate: one fresh64MiB offline no-disc profile,
 the same private flash/MCPX, retained pristine open-dashboard and EEPROM seeds,
 keyboard ControllerS, native FP, OpenGL/llvmpipe and dummy audio. Observe the
