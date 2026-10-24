@@ -94,6 +94,15 @@ binding requirement, not a claim that the current candidate achieves it.
 No copied console startup art, dashboards or proprietary images bundled under
 an open-source label.
 
+Master's [ownership amendment](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6386463128)
+makes demonstrated compatibility of that distributable boot/kernel environment
+an xbx deliverable. A missing compatible service is engineering work for xbx,
+not another private firmware prerequisite for the owner. Keep traceable inputs,
+reproducible specified builds and repeatable game compatibility as distinct
+obligations. A successful source build or dashboard does not satisfy the first
+game milestone: Fable reaching play with controls, then sound and an ordinary
+save/cold-reload check. Later titles need independent qualification.
+
 Open-kernel compatibility is unverified until tested. A default that removes a
 setup prompt but breaks saving or the selected game is not an improvement. Read
 [DISTRIBUTION.md](DISTRIBUTION.md) before selecting or building firmware.

@@ -295,8 +295,13 @@ fn run_environment(
                 });
             if terminal {
                 reason = "guest_terminal_startup_failure";
+            } else if root.join("observation.complete").exists() {
+                // Operator completion is a stop request, not a guest/menu pass.
+                // Keep the same acknowledged stop/quit, reap and sync below.
+                reason = "operator_completed_observation_requires_visual_review";
             }
-            if terminal || Instant::now() >= deadline {
+            if terminal || root.join("observation.complete").exists() || Instant::now() >= deadline
+            {
                 break;
             }
             if owned.0.try_wait()?.is_some() {

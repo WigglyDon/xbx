@@ -200,7 +200,13 @@ fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
     let dir = scratch("ordinary-title-existing-profile");
     let media = dir.join("synthetic-disc");
     fixture(&media, 0);
-    for name in ["flash.bin", "hdd.qcow2", "eeprom.bin", "generation"] {
+    for name in [
+        "flash.bin",
+        "hdd.qcow2",
+        "eeprom.bin",
+        "generation",
+        "observation.complete",
+    ] {
         fs::write(dir.join(name), b"preserve predecessor").unwrap();
     }
     let _lease = ProfileLease::acquire(&dir).unwrap();
@@ -228,7 +234,13 @@ fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
         .is_err()
     );
     assert!(!dir.join("native.log").exists());
-    for name in ["flash.bin", "hdd.qcow2", "eeprom.bin", "generation"] {
+    for name in [
+        "flash.bin",
+        "hdd.qcow2",
+        "eeprom.bin",
+        "generation",
+        "observation.complete",
+    ] {
         assert_eq!(fs::read(dir.join(name)).unwrap(), b"preserve predecessor");
     }
 }

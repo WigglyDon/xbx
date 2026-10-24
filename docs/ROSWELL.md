@@ -1,5 +1,12 @@
 # Roswell release and desktop qualification
 
+This is the accepted 128 MiB slice at `8712333`. Master's
+[64 MiB amendment](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6386375869)
+later superseded its conditional 64 MiB gate and expressly authorized ordinary
+controller input with unchanged read-only game media. See
+[the separate 64 MiB result](ROSWELL64.md); the historical observations and
+earlier approval denial below remain unchanged.
+
 Master [6380776059](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6380776059)
 authorizes one separate Roswell candidate. Existing checkout was
 `a323404c768723bef0dca55a39ad903ae3a803d2`; the completed OXOS/reference and
@@ -215,7 +222,7 @@ The successful build is retained. Ordinary observations use new labels:
 cargo xtask roswell-observe /absolute/xbx v1 dash128-v1 128
 # Only after actual dashboard/input acceptance and clean native termination:
 cargo xtask roswell-observe /absolute/xbx v1 fable128-v1 128 "$AUTHORIZED_MEDIA"
-# Only if Fable progresses and responds to input at 128 MiB:
+# Original slice's condition; superseded by Master6386375869 (see ROSWELL64.md):
 cargo xtask roswell-observe /absolute/xbx v1 fable64-v1 64 "$AUTHORIZED_MEDIA"
 ```
 

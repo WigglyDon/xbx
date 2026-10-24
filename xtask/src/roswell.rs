@@ -318,7 +318,16 @@ pub fn observe(
     if profile.exists() {
         return Err("Roswell profile already exists; preserve it".into());
     }
-    let host = base.join("host-target/debug/xbx-host");
+    // An explicitly selected ordinary-supervisor revision must not overwrite a
+    // previously accepted executable. Bind the selected artifact in the receipt.
+    let host = std::env::var_os("XBX_ROSWELL_OBSERVATION_HOST")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| base.join("host-target/debug/xbx-host"));
+    let host = if host.is_absolute() {
+        host
+    } else {
+        root.join(host)
+    };
     let observation = base.join(format!("observe-{label}"));
     fs::create_dir(&observation)?;
     let inputs = format!(

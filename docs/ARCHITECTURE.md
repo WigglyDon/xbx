@@ -26,6 +26,17 @@ Potential responsibilities, not mandatory crates: `xbx-player`,
 needed by a demonstrated executable slice. Reuse upstream CMake/Meson/NDK tools;
 Rust-first does not mean rewriting compilers or third-party build systems.
 
+The distributable boot/kernel compatibility boundary is also xbx-owned, per
+Master's [ownership amendment](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6386463128).
+An evidence-selected retained foundation may receive maintained fork changes or
+bounded first-party Rust services while preserving upstream lineage and actual
+license obligations. A substantive new service requires a concrete behavioral
+boundary, legitimate public references, an original regression or observable
+acceptance test, and an integration plan under Master's scoped decision. The
+ordinary finite configuration checks do not authorize a whole-kernel rewrite
+or renewed donor search. Neither a source build nor its language establishes
+independent provenance, reproducibility across clean builds, or game compatibility.
+
 ## Identity
 
 - `GameId`: opaque local entry identity, stable through display-name edits and
