@@ -64,6 +64,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
     #[cfg(not(target_os = "android"))]
+    if args.len() == 8 && args[1] == "run-dashboard" {
+        return xbx::desktop_title::run_dashboard(
+            Path::new(&args[2]),
+            Path::new(&args[3]),
+            Path::new(&args[4]),
+            Path::new(&args[5]),
+            Path::new(&args[6]),
+            args[7].to_str().ok_or("invalid time budget")?.parse()?,
+        );
+    }
+    #[cfg(not(target_os = "android"))]
     if ((args.len() == 9 || args.len() == 10) && args[1] == "run-title")
         || (args.len() == 10 && args[1] == "run-title-journal")
     {
@@ -153,5 +164,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         return Ok(());
     }
-    Err("usage: xbx-host inspect-disc IMAGE | run-title ENGINE NEW_SCRATCH FLASH HDD EEPROM MEDIA SECONDS [MCPX] | boot-probe ENGINE NEW_SCRATCH".into())
+    Err("usage: xbx-host inspect-disc IMAGE | run-dashboard ENGINE NEW_SCRATCH FLASH HDD EEPROM SECONDS | run-title ENGINE NEW_SCRATCH FLASH HDD EEPROM MEDIA SECONDS [MCPX] | boot-probe ENGINE NEW_SCRATCH".into())
 }

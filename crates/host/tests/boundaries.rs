@@ -139,6 +139,17 @@ fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
         None,
     );
     assert!(result.is_err());
+    assert!(
+        xbx::desktop_title::run_dashboard(
+            Path::new("/bin/true"),
+            &dir,
+            &dir.join("flash.bin"),
+            &dir.join("hdd.qcow2"),
+            &dir.join("eeprom.bin"),
+            15,
+        )
+        .is_err()
+    );
     assert!(!dir.join("native.log").exists());
     for name in ["flash.bin", "hdd.qcow2", "eeprom.bin", "generation"] {
         assert_eq!(fs::read(dir.join(name)).unwrap(), b"preserve predecessor");

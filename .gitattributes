@@ -1,2 +1,4 @@
 # Unified diff context lines retain their required leading space.
 patches/*.patch whitespace=-blank-at-eol
+# Preserve the exact upstream bundled notice, including mixed line endings.
+LICENSES/xemu-dashboard-v20260516-0955/LICENSE -text whitespace=-blank-at-eol

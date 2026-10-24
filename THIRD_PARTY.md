@@ -171,6 +171,19 @@ beneath an existing profile. Roswell's 128 MiB configuration is unqualified here
 
 ## Before incorporation
 
+The internal dashboard control uses the exact public
+[xemu-dashboard v20260516-0955 release](https://github.com/xemu-project/xemu-dashboard/releases/tag/v20260516-0955),
+source tag `8cb5e525a8d2c980a4daa6b2c2106b53661b5b20`.
+Disk SHA-256 `00d7df7a2bc235f8801764f00b7f40e194d1e392f7a9619d6b2396c89770f6dd`;
+complete bundled license SHA-256
+`3c4d8c95fdcd47f61e106f1e597d8c9db37a57193d0239346edcbc9f4f2334f6`.
+The [complete component/font notices](LICENSES/xemu-dashboard-v20260516-0955/LICENSE)
+are retained verbatim. Root MIT does not replace the combined artifact's
+component terms. Only the notices are committed; the exact disk remains private
+qualification input. Its workflow's floating nxdk container tag means this is
+artifact qualification, not a reproducible-build or shipping-default claim.
+See [dashboard qualification](docs/DASHBOARD.md).
+
 Record upstream URL, exact commit, recursive dependency pins, original notices,
 file-level license exceptions, local modifications, generated binaries and
 reproduction commands. Maintain a patch series or deliberate fork with a known

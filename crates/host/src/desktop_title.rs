@@ -5,7 +5,10 @@ use crate::storage::ProfileLease;
 use std::fs::{self, File};
 use std::io::{BufReader, Read, Write};
 use std::os::fd::AsRawFd;
-use std::os::unix::{fs::DirBuilderExt, net::UnixStream};
+use std::os::unix::{
+    fs::{DirBuilderExt, PermissionsExt},
+    net::UnixStream,
+};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
@@ -18,6 +21,45 @@ pub fn run(
     disk: &Path,
     eeprom: &Path,
     media: &Path,
+    seconds: u64,
+    bootrom: Option<&Path>,
+    journal_map: Option<&Path>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_environment(
+        engine,
+        new_root,
+        flash,
+        disk,
+        eeprom,
+        Some(media),
+        seconds,
+        bootrom,
+        journal_map,
+    )
+}
+
+/// Ordinary no-disc boot of an independent console profile.
+pub fn run_dashboard(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    eeprom: &Path,
+    seconds: u64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    run_environment(
+        engine, new_root, flash, disk, eeprom, None, seconds, None, None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_environment(
+    engine: &Path,
+    new_root: &Path,
+    flash: &Path,
+    disk: &Path,
+    eeprom: &Path,
+    media: Option<&Path>,
     seconds: u64,
     bootrom: Option<&Path>,
     journal_map: Option<&Path>,
@@ -44,9 +86,9 @@ pub fn run(
         return Err("desktop floating-point path must be native or software".into());
     }
     let engine = engine.canonicalize()?;
-    let mut media = File::open(media)?;
-    let disc = crate::disc::inspect_open(&mut media)?;
-    let incoming = crate::disc::qemu_media_fd(&media)?;
+    let mut media = media.map(File::open).transpose()?;
+    let disc = media.as_mut().map(crate::disc::inspect_open).transpose()?;
+    let incoming = media.as_ref().map(crate::disc::qemu_media_fd).transpose()?;
     fs::DirBuilder::new().mode(0o700).create(new_root)?;
     let root = new_root.canonicalize()?;
     let lease = ProfileLease::acquire(&root)?;
@@ -56,6 +98,9 @@ pub fn run(
         (eeprom, "eeprom.bin"),
     ] {
         fs::copy(source, root.join(name))?;
+        // The pristine seeds may be read-only; only these private copies are
+        // writable by the machine, never the seed or a predecessor profile.
+        fs::set_permissions(root.join(name), fs::Permissions::from_mode(0o600))?;
     }
     let boot = if let Some(path) = bootrom {
         fs::copy(path, root.join("bootrom.bin"))?;
@@ -65,10 +110,10 @@ pub fn run(
     };
     // QEMU's existing raw block view on the retained read-only FD; no media copy,
     // pathname reopen, extraction, conversion or guest-code inspection.
-    let view = format!(
+    let view = disc.as_ref().map(|disc| format!(
         r#"json:{{"driver":"raw","offset":{},"read-only":true,"file":{{"driver":"file","filename":"/dev/fdset/1"}}}}"#,
         disc.partition_offset
-    );
+    )).unwrap_or_default();
     let mut config = format!(
         "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[sys.files]\nflashrom_path={}\nbootrom_path={}\nhdd_path={}\ndvd_path={}\neeprom_path={}\n",
         quote(&root.join("flash.bin"))?,
@@ -85,18 +130,20 @@ pub fn run(
         config.push_str("[perf]\nfp_jit=false\n");
     }
     fs::write(root.join("xemu.toml"), config)?;
-    fs::write(
-        root.join("media-metadata.txt"),
-        format!(
-            "bytes={}\npartition_offset={}\ntitle={:?}\ntitle_id={:08x}\nregion={:08x}\nversion={}\n",
-            disc.bytes,
-            disc.partition_offset,
-            disc.title.name,
-            disc.title.id,
-            disc.title.region,
-            disc.title.version
-        ),
-    )?;
+    if let Some(disc) = disc {
+        fs::write(
+            root.join("media-metadata.txt"),
+            format!(
+                "bytes={}\npartition_offset={}\ntitle={:?}\ntitle_id={:08x}\nregion={:08x}\nversion={}\n",
+                disc.bytes,
+                disc.partition_offset,
+                disc.title.name,
+                disc.title.id,
+                disc.title.region,
+                disc.title.version
+            ),
+        )?;
+    }
     let qmp = root.join("qmp.sock");
     if qmp.as_os_str().len() > 100 {
         return Err("use a shorter new scratch path".into());
@@ -125,11 +172,19 @@ pub fn run(
     command
         .arg("-config_path")
         .arg(root.join("xemu.toml"))
-        .args(["-accel", "tcg", "-add-fd"])
-        .arg(format!(
+        .args(["-accel", "tcg"]);
+    if let Some(incoming) = &incoming {
+        command.arg("-add-fd").arg(format!(
             "fd={},set=1,opaque=xbx-readonly-disc",
             incoming.as_raw_fd()
-        ))
+        ));
+    }
+    // Dashboard qualification is offline; title observations retain the settled
+    // core default so their other inputs remain matched to prior observations.
+    if media.is_none() {
+        command.args(["-nic", "none"]);
+    }
+    command
         .arg("-qmp")
         .arg(format!("unix:{},server=on,wait=off", qmp.display()))
         .args(["-device", "lpc47m157", "-serial"])
@@ -293,8 +348,14 @@ pub fn run(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
-            start.elapsed().as_secs_f64()
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\ndisc_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            start.elapsed().as_secs_f64(),
+            media.is_some(),
+            if media.is_some() {
+                "core_default"
+            } else {
+                "none"
+            }
         ),
     )?;
     let serial = fs::read_to_string(root.join("kernel.log"))?;
