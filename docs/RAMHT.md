@@ -135,3 +135,21 @@ did not run. No media read/transfer, app access, USB-mode change or Fold query
 was performed. Earlier failed MTP restoration and later verified custodian
 returns remain preserved; no stale undo was applied. No game or matched
 open-firmware comparison ran, and no game-compatibility conclusion follows.
+
+After the existing custodian recorded a new verified return, a second admission
+acquired the ordinary Pixel4 transaction. The qualified stock identity and exact
+retained Fable size of7,825,162,240bytes matched. Current USB mode was ADB only;
+host interface metadata independently confirmed no MTP interface. No USB mode
+change or transfer was attempted. The current screen-off/nonsecure return was
+verified, the transaction released, and its new receipt retained alongside the
+historical failed return. No phone application or deployment was involved.
+
+An exact owner amendment is pending for one verified copy to the shared external
+workspace: an additional8GiB media envelope, one stock transfer capped at ten
+minutes, unchanged phone copies and the existing shared12GiB reserve. This
+exceeds the routine device output/command ceilings. The prior6GiB candidate-build
+scope does not silently become a game-staging grant. Partial transfers would be
+preserved; no overwrite, permanent internal-host copy, new streaming framework,
+USB-mode workaround or emulator launch from unverified media is assigned.
+The concrete next prerequisite is that bounded staging amendment or an already
+supported read-only media view with qualified custody/return.
