@@ -171,6 +171,17 @@ beneath an existing profile. Roswell's 128 MiB configuration is unqualified here
 
 ## Before incorporation
 
+The separately source-built Roswell candidate is pinned to
+`XboxDev/roswell` `1569e2e89fb47cc72b9c704a8884f98200432bd4`; exact source,
+tools, release mode and artifact binding are in `roswell.lock.json` and
+[ROSWELL.md](docs/ROSWELL.md). It is ReactOS-derived, GPL-2.0 as a combined
+kernel, with per-file terms including GPL-2.0-only video drivers and the
+0BSD XZ Embedded decoder. Its complete original source/notices stay retained;
+root GPL does not replace those component notices. Original xbx Rust build and
+qualification policy remains MIT. No kernel implementation was copied or
+translated into Rust, no proprietary boot route was selected, and no Roswell
+binary is published by this source milestone.
+
 The separate ordinary reference experiment uses the official unmodified
 [OXOS v0.3.3 open release](https://github.com/kooscode/oxos/releases/tag/v0.3.3),
 BIOS SHA-256 `8bf516fcb453f18925ad0aad75ff923bd5f225420be6b0175d0fe818f0653314`.

@@ -1,0 +1,99 @@
+{
+  "source": "https://github.com/XboxDev/roswell",
+  "commit": "1569e2e89fb47cc72b9c704a8884f98200432bd4",
+  "mode": "Release",
+  "dbg": 0,
+  "target": "flash",
+  "compiler_jobs": 1,
+  "max_additional_bytes": 8589934592,
+  "host_free_floor_bytes": 12884901888,
+  "estimated_additional_peak_bytes": 4294967296,
+  "dependencies_sha256": "425ce1e1c832d12fa0ba06fa18f79596a8a9ff017ad81e38c57302b3cde65588",
+  "package_signature_verification": "Fedora RPM digests/signatures OK",
+  "packages": [
+    {
+      "file": "bison-3.8.2-15.fc44.x86_64.rpm",
+      "sha256": "2ad7321bdc69f56041c7362babf904a83c5bb887461a7785fd806a15f48ae3e0",
+      "nevra": "bison-3.8.2-15.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND GPL-3.0-or-later WITH Autoconf-exception-generic-3.0 AND GPL-3.0-or-later WITH Bison-exception-2.2 AND GPL-2.0-or-later AND GPL-2.0-or-later WITH Autoconf-exception-generic AND LGPL-3.0-or-later AND LGPL-2.1-or-later AND LGPL-2.0-or-later AND FSFULLR AND GFDL-1.3-or-later AND X11"
+    },
+    {
+      "file": "flex-2.6.4-24.fc44.x86_64.rpm",
+      "sha256": "4d20c60324e06ec79b384a0eca98291a47201b2692187f4c358c65695610e9ce",
+      "nevra": "flex-2.6.4-24.fc44.x86_64",
+      "license": "BSD-3-Clause-flex AND GPL-3.0-or-later WITH Autoconf-exception-generic-3.0 AND GPL-3.0-or-later WITH Bison-exception-2.2 AND GPL-3.0-or-later WITH Texinfo-exception AND FSFAP AND FSFUL AND FSFULLR AND FSFULLRWD AND GPL-2.0-or-later AND X11"
+    },
+    {
+      "file": "m4-1.4.21-1.fc44.x86_64.rpm",
+      "sha256": "5b30ee589ca1fbbc7a588b2a1610e6a788ba909e7d44418840c72f6516608179",
+      "nevra": "m4-1.4.21-1.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND GFDL-1.3-or-later AND FSFULLR AND GPL-3.0-or-later WITH Autoconf-exception-generic-3.0 AND GPL-3.0-or-later WITH Texinfo-exception AND GPL-2.0-or-later WITH Autoconf-exception-generic AND GPL-3.0-or-later WITH Autoconf-exception-generic-3.0 AND MIT"
+    },
+    {
+      "file": "mingw32-binutils-2.46.0-1.fc44.x86_64.rpm",
+      "sha256": "51302a0a25bcbe6c8f819af5d3f9c3b800e3b123b59bf832f03765f369cee2f3",
+      "nevra": "mingw32-binutils-2.46.0-1.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND (GPL-3.0-or-later WITH Bison-exception-2.2) AND (LGPL-2.0-or-later WITH GCC-exception-2.0) AND BSD-3-Clause AND GFDL-1.3-or-later AND GPL-2.0-or-later AND LGPL-2.1-or-later AND LGPL-2.0-or-later"
+    },
+    {
+      "file": "mingw32-cpp-16.2.1-1.fc44.x86_64.rpm",
+      "sha256": "4c2fc48097fecb904ff050845a94477cdd6a5e177eefe45b563b9c3c731468f5",
+      "nevra": "mingw32-cpp-16.2.1-1.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel"
+    },
+    {
+      "file": "mingw32-gcc-16.2.1-1.fc44.x86_64.rpm",
+      "sha256": "962a4622875f1c73ad0538614885206b478f640862eb296627da077150c35568",
+      "nevra": "mingw32-gcc-16.2.1-1.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel"
+    },
+    {
+      "file": "mingw32-gcc-c++-16.2.1-1.fc44.x86_64.rpm",
+      "sha256": "7f2e77aca9dd0478da36eaa4bef3643228ca21b510c7eeb447cac41cd8746106",
+      "nevra": "mingw32-gcc-c++-16.2.1-1.fc44.x86_64",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel"
+    },
+    {
+      "file": "mingw32-headers-13.0.0-3.fc44.noarch.rpm",
+      "sha256": "6d2703033f6be765f26679988e644b28814e0a1229657adb2a05b842a946afdb",
+      "nevra": "mingw32-headers-13.0.0-3.fc44.noarch",
+      "license": "BSD-3-Clause AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND GPL-2.0-or-later AND ZPL-2.1 AND MIT-Khronos-old AND LicenseRef-Fedora-Public-Domain"
+    },
+    {
+      "file": "mingw32-winpthreads-static-13.0.0-3.fc44.noarch.rpm",
+      "sha256": "5a0e904cfd3521d6b28cbc1ca604ff4f1bc7c4ab8a45055e361fca434b0a2bf4",
+      "nevra": "mingw32-winpthreads-static-13.0.0-3.fc44.noarch",
+      "license": "BSD-3-Clause AND MIT AND LicenseRef-Fedora-Public-Domain"
+    }
+  ],
+  "tool_versions": {
+    "i686-w64-mingw32-gcc": "i686-w64-mingw32-gcc (GCC) 16.2.1 20260819 (Fedora MinGW 16.2.1-1.fc44)",
+    "i686-w64-mingw32-g++": "i686-w64-mingw32-g++ (GCC) 16.2.1 20260819 (Fedora MinGW 16.2.1-1.fc44)",
+    "i686-w64-mingw32-ld": "GNU ld version 2.46.0.20260210",
+    "i686-w64-mingw32-objcopy": "GNU objcopy version 2.46.0.20260210",
+    "i686-w64-mingw32-windmc": "GNU windmc version 2.46.0.20260210",
+    "i686-w64-mingw32-windres": "GNU windres version 2.46.0.20260210",
+    "i686-w64-mingw32-dlltool": "GNU .local/roswell-v1/sysroot/usr/bin/i686-w64-mingw32-dlltool version 2.46.0.20260210",
+    "bison": "bison (GNU Bison) 3.8.2",
+    "flex": "flex 2.6.4",
+    "m4": "m4 (GNU M4) 1.4.21",
+    "gcc": "gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)",
+    "g++": "g++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)",
+    "ld": "GNU ld version 2.46.1-1.fc44",
+    "objcopy": "GNU objcopy version 2.46.1-1.fc44",
+    "cmake": "cmake version 4.3.0",
+    "ninja": "1.13.2",
+    "python3": "Python 3.14.8",
+    "xz": "xz (XZ Utils) 5.8.2",
+    "nm": "GNU nm version 2.46.1-1.fc44"
+  },
+  "qualification_build": {
+    "attempt": "v1",
+    "flash_bytes": 262144,
+    "flash_sha256": "f18517d1d06c50bf29bd1e47796c7092e0b8e170a99b0985e1af92a0a2ad422e",
+    "source_patch": "none",
+    "builder_sha256": "31aa1d684b407678ec5b638f49a191cbac0b3b1df8e1c0329e1d54c53ec119dc",
+    "build_identity_sha256": "49a75875ca01e685a80ccbdf925df1e865ffc1ed6e3ae4d96aaf9366b7283e43"
+  },
+  "dependencies_sha256_file": "roswell-dependencies.sha256"
+}

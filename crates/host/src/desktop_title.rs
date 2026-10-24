@@ -13,6 +13,15 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
+fn guest_memory(value: Option<&std::ffi::OsStr>) -> Result<u16, &'static str> {
+    match value.and_then(std::ffi::OsStr::to_str) {
+        None if value.is_none() => Ok(64),
+        Some("64") => Ok(64),
+        Some("128") => Ok(128),
+        _ => Err("desktop guest memory must be 64 or 128 MiB"),
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn run(
     engine: &Path,
@@ -67,6 +76,7 @@ fn run_environment(
     if !(15..=300).contains(&seconds) {
         return Err("ordinary title observation budget must be 15..300 seconds".into());
     }
+    let memory_mib = guest_memory(std::env::var_os("XBX_DESKTOP_MEMORY_MIB").as_deref())?;
     let journal_format = journal_map
         .map(|map| crate::api_journal::verify_binding(map, flash))
         .transpose()?;
@@ -115,7 +125,7 @@ fn run_environment(
         disc.partition_offset
     )).unwrap_or_default();
     let mut config = format!(
-        "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[sys.files]\nflashrom_path={}\nbootrom_path={}\nhdd_path={}\ndvd_path={}\neeprom_path={}\n",
+        "[general]\nshow_welcome=false\nskip_boot_anim=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"{memory_mib}\"\n[sys.files]\nflashrom_path={}\nbootrom_path={}\nhdd_path={}\ndvd_path={}\neeprom_path={}\n",
         quote(&root.join("flash.bin"))?,
         quote(&boot)?,
         quote(&root.join("hdd.qcow2"))?,
@@ -348,7 +358,7 @@ fn run_environment(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\ndisc_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
             start.elapsed().as_secs_f64(),
             media.is_some(),
             if media.is_some() {

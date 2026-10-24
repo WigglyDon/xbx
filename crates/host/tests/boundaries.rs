@@ -119,6 +119,83 @@ fn fixture(path: &Path, partition: u64) {
 
 #[cfg(not(target_os = "android"))]
 #[test]
+fn unsupported_guest_memory_refuses_before_creating_profile_or_native_entry() {
+    let dir = scratch("unsupported-guest-memory");
+    for memory in ["", "32", "256", "128 extra"] {
+        let profile = dir.join("must-not-create");
+        let output = Command::new(env!("CARGO_BIN_EXE_xbx-host"))
+            .env("XBX_DESKTOP_MEMORY_MIB", memory)
+            .args(["run-dashboard", "/bin/true"])
+            .arg(&profile)
+            .args(["missing-flash", "missing-disk", "missing-eeprom", "15"])
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(String::from_utf8_lossy(&output.stderr).contains("memory must be 64 or 128"));
+        assert!(!profile.exists());
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
+fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
+    // The profile's QMP socket must fit Unix's bounded address field even when
+    // this test is compiled from a deeply nested isolated source checkout.
+    let dir = Path::new("/tmp").join(format!(
+        "xbx-memory-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir(&dir).unwrap();
+    for name in ["flash", "disk", "eeprom"] {
+        fs::write(dir.join(name), b"synthetic immutable seed").unwrap();
+    }
+    for (choice, expected) in [(None, 64), (Some("64"), 64), (Some("128"), 128)] {
+        let profile = dir.join(format!("profile-{expected}-{}", choice.is_some()));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_xbx-host"));
+        command.env_remove("XBX_DESKTOP_MEMORY_MIB");
+        if let Some(choice) = choice {
+            command.env("XBX_DESKTOP_MEMORY_MIB", choice);
+        }
+        // A harmless child exits before QMP: inspect the actual prepared profile,
+        // without requiring a native engine or touching any owner storage.
+        let output = command
+            .args(["run-dashboard", "/bin/true"])
+            .arg(&profile)
+            .arg(dir.join("flash"))
+            .arg(dir.join("disk"))
+            .arg(dir.join("eeprom"))
+            .arg("15")
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(
+            fs::read_to_string(profile.join("xemu.toml"))
+                .unwrap()
+                .contains(&format!("mem_limit=\"{expected}\""))
+        );
+        assert!(
+            fs::read_to_string(profile.join("observation.txt"))
+                .unwrap()
+                .contains(&format!("memory_mib={expected}"))
+        );
+        assert_eq!(
+            fs::read(profile.join("flash.bin")).unwrap(),
+            b"synthetic immutable seed"
+        );
+        assert_eq!(
+            fs::read(dir.join("disk")).unwrap(),
+            b"synthetic immutable seed"
+        );
+        assert!(ProfileLease::acquire(&profile).is_ok());
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
 fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
     let dir = scratch("ordinary-title-existing-profile");
     let media = dir.join("synthetic-disc");

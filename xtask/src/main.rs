@@ -8,6 +8,7 @@ mod kernel;
 mod loader_fixture;
 mod profile;
 mod reference;
+mod roswell;
 mod source;
 
 fn run(command: &mut Command) -> Result<(), Box<dyn std::error::Error>> {
@@ -24,6 +25,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("roswell-observe") && matches!(args.len(), 5 | 6) {
+        return roswell::observe(
+            Path::new(&args[1]),
+            &args[2],
+            &args[3],
+            args[4].parse()?,
+            args.get(5).map(Path::new),
+        );
+    }
+    if let Some(action @ ("roswell-configure" | "roswell-build")) = args.first().map(String::as_str)
+    {
+        return roswell::command(
+            args.get(2).map(Path::new).unwrap_or(root),
+            action,
+            args.get(1).map(String::as_str).unwrap_or("v1"),
+        );
+    }
     if args.first().map(String::as_str) == Some("startup-totals-fixture-build") {
         return kernel::abi_title(
             root,
