@@ -1,0 +1,14 @@
+diff --git a/hw/xbox/nv2a/pfifo.c b/hw/xbox/nv2a/pfifo.c
+--- a/hw/xbox/nv2a/pfifo.c
++++ b/hw/xbox/nv2a/pfifo.c
+@@ -496,8 +496,8 @@
+     unsigned int ramht_size =
+         1 << (GET_MASK(d->pfifo.regs[NV_PFIFO_RAMHT], NV_PFIFO_RAMHT_SIZE)+12);
+ 
+-    /* XXX: Think this is different to what nouveau calculates... */
+-    unsigned int bits = ctz32(ramht_size)-1;
++    /* RAMHT entries occupy eight bytes: hash the entry index, not bytes. */
++    unsigned int bits = ctz32(ramht_size) - 3;
+ 
+     uint32_t hash = 0;
+     while (handle) {

@@ -26,6 +26,14 @@ pins and notices remain. Original Rust build policy is MIT. See
 [the exact build/result receipt](docs/REFERENCE_CORE.md); this comparison does
 not select a new Android core or authorize a public binary release.
 
+The separate RAMHT candidate adds `patches/xemu-reference-ramht.patch`, bound by
+`ramht-core.lock.json`. Its PFIFO arithmetic correction retains that source's
+LGPL-2.0-or-later terms and upstream copyrights. The exact retained function and
+register header are used only through a mechanical test ABI; original Rust
+contract fixtures and build/admission policy are MIT. The public Nouveau driver
+is a cited behavioral reference, not an imported runtime dependency. See
+[the bounded contract and qualification](docs/RAMHT.md).
+
 ## Seed inventory
 
 The initial foundation at `59fbcfa` contained documentation/bootstrap only.

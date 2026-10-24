@@ -7,6 +7,8 @@ mod desktop;
 mod kernel;
 mod loader_fixture;
 mod profile;
+mod ramht;
+mod ramht_workspace;
 mod reference;
 mod roswell;
 mod source;
@@ -25,6 +27,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if let Some(
+        action @ ("ramht-check" | "ramht-configure" | "ramht-reconfigure" | "ramht-build"
+        | "ramht-observe"),
+    ) = args.first().map(String::as_str)
+    {
+        return ramht::command(
+            args.get(1).map(Path::new).unwrap_or(root),
+            action,
+            args.get(2).map(String::as_str).unwrap_or("v1"),
+        );
+    }
     if args.first().map(String::as_str) == Some("roswell-observe") && matches!(args.len(), 5 | 6) {
         return roswell::observe(
             Path::new(&args[1]),

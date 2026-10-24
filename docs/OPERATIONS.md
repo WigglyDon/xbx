@@ -54,6 +54,12 @@ internal Btrfs guards or certify the internal allocation problem. Stop/reap owne
 runtimes, sync storage and release all writer handles before shared safe removal.
 New durable profiles require the same volume and lineage to return.
 
+The owner-directed [RAMHT candidate](RAMHT.md) has a separate cumulative6GiB
+growth budget beyond its recorded initial xbx allocation. Its Rust task applies
+the same identity, ownership, shared/project lease, reserve and inode checks to
+that concrete source/build/profile phase. This is not a standing increase for
+unrelated work or a relaxation of internal-host admission.
+
 Owner-authorized xbx retention work may retire identified rebuildable objects,
 successful packaging stages and verified duplicates after recording their exact
 scope and retained recovery source. Keep canonical source/pins, unfinished edits,

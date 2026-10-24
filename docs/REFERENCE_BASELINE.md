@@ -264,3 +264,10 @@ inventory encountered a disappearing synthetic temporary. The finite rescan
 handles only that exact vanished-path case and still refuses other errors or
 three unsuccessful readings; capacity bounds were unchanged. The final successful
 run and both preceding attempts remain independently preserved.
+
+The owner's subsequent continuation begins the bounded public RAMHT task in
+[RAMHT.md](RAMHT.md). Its original synthetic regression demonstrates the entry
+geometry problem without proprietary input, and a separately retained candidate
+is being prepared. This does not change the historical private-reference crash
+or qualify a new native/dashboard/game result. The ordinary preparation envelope
+remains distinct from that candidate's measured, serialized build admission.

@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 const PIN: &str = "03b988c9d76553b33ed712ba00822ffdf49f0e7d";
-fn hash(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) fn hash(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
     let out = Command::new("sha256sum").arg(path).output()?;
     if !out.status.success() {
         return Err("reference identity hash failed".into());
@@ -16,7 +16,7 @@ fn hash(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
         .ok_or("missing digest")?
         .to_owned())
 }
-fn git(path: &Path, args: &[&str]) -> Result<String, Box<dyn std::error::Error>> {
+pub(crate) fn git(path: &Path, args: &[&str]) -> Result<String, Box<dyn std::error::Error>> {
     let out = Command::new("git")
         .arg("-C")
         .arg(path)

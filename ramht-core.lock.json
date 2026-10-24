@@ -1,0 +1,20 @@
+{
+  "source": "https://github.com/xemu-project/xemu",
+  "commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "base_patch": "patches/xemu-reference-desktop.patch",
+  "base_patch_sha256": "4e317283ddb368c1c80243804aa7fcfdc1e5228ac6d7ddec9ca84cb5cdd138e1",
+  "compatibility_patch": "patches/xemu-reference-ramht.patch",
+  "compatibility_patch_sha256": "55c6d34d60f6468134272ee57c4f0ac447177de12c7bb590e882022816b73ee7",
+  "retained_baseline_core_sha256": "31e1c0f5f3c165d25e9c6315ecaf3191b972f57ae22616d03de6ee8d6243be3d",
+  "contract_references": [
+    "https://github.com/torvalds/linux/blob/v6.18/drivers/gpu/drm/nouveau/nvkm/core/ramht.c",
+    "https://github.com/torvalds/linux/blob/v6.18/drivers/gpu/drm/nouveau/nvkm/engine/fifo/nv04.c"
+  ],
+  "scope": "one RAMHT entry-index width correction, assertions retained; original fixture before separate native qualification",
+  "new_allocation_bound_bytes": 6442450944,
+  "shared_reserve_bytes": 12884901888,
+  "compiler_jobs": 1,
+  "downloads": false,
+  "patch_license": "LGPL-2.0-or-later",
+  "private_firmware_or_game_bytes_in_source": false
+}
