@@ -24,13 +24,23 @@ retail dashboard, game, owner EEPROM/key dump or game-derived save belongs in
 public source or release artifacts without the relevant rights.
 
 Conventional low-level boot has proprietary input requirements; it is not the
-ordinary product's setup contract. The unavailable private BIOS/MCPX comparison
-is closed. Complete and qualify the distributable public boot/kernel environment;
-do not ask the user to acquire proprietary firmware as the next action. Existing
-public-source corrections and bounded original Rust replacements remain available
-under the architecture/scope rules. Do not remove safety checks or counterfeit a
-known firmware identity to make an unqualified replacement load. See
-[feasibility](XBOX_FEASIBILITY.md).
+ordinary product's setup contract. Master's
+[private reference assignment](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6386851912)
+supersedes the earlier closure of BIOS/MCPX comparison for the owner-supplied
+candidate. Such an input requires resource admission, actual variant/MCPX
+identification and observed compatibility before it can be a working reference.
+It remains private, unverified until qualified, and separate from shipping assets
+and clean implementation inputs. GitHub availability or a computed hash does
+not establish redistribution rights or original authenticity. No proprietary
+implementation copying, BIOS patching or disassembly is assigned.
+
+Complete and qualify the distributable public boot/kernel environment rather
+than making proprietary firmware acquisition an ordinary user prerequisite.
+Existing public-source corrections and bounded original Rust replacements remain
+available under the architecture/scope rules. Do not remove safety checks or
+counterfeit a known firmware identity to make an unqualified replacement load.
+See [feasibility](XBOX_FEASIBILITY.md) and the
+[reference-baseline inventory](REFERENCE_BASELINE.md).
 
 Do not promise "all you need is the game" until the selected default demonstrates
 that claim for its supported scope. Report limitations without turning the
