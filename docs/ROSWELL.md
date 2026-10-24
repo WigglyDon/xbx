@@ -48,6 +48,12 @@ tool versions and dependency-manifest identity are in
 [roswell-dependencies.sha256](../roswell-dependencies.sha256) restores the exact
 `dependencies.identity` input; all entries name public tool/package files.
 
+The later owner-directed [retention pass](RETENTION.md) condensed the extracted
+task-local tool sysroot after proving its entries against those retained RPMs.
+Restore and verify that tool extraction under fresh growth admission before any
+future source rebuild. The nine pinned archives and original dependency/build
+identities remain; the accepted flash was not rebuilt or modified by cleanup.
+
 Main tools: MinGW GCC/G++ 16.2.1, target binutils 2.46.0, host GCC 16.2.1,
 CMake 4.3.0, Ninja 1.13.2, Bison 3.8.2, Flex 2.6.4, M4 1.4.21; existing host Python/xz
 and upstream packaging scripts are retained. Bison data/M4 paths select only

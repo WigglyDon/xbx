@@ -107,6 +107,33 @@ intermediates under fresh admission.
 
 ## Preventing new packaging accumulation
 
+A further owner-requested clutter pass retired 173 generated DSP Rust
+object/library-metadata cache files and 3,376 exact unmodified entries from the
+task-local Roswell build-tool extraction. All nine original RPMs remain and
+match `roswell.lock.json`; their package/header/payload digests were verified.
+Regular-file hashes, modes and symlink targets independently matched the retained
+packages before removal. Unmatched entries and all final DSP static archives
+were preserved and reverified. No system package was uninstalled.
+
+Those three task-local directory block totals decreased by 666,910,720 bytes
+(about 636 MiB). This is not exclusive physical reclaim: the net shared free-space
+change during the pass was smaller. The retained reference core, dashboard seed
+and Roswell flash still match their pins, and the core's dynamic libraries still
+resolve. No emulator, firmware build, phone operation or other-project cleanup
+was used to verify the pass. The host growth guard remained unchanged and still
+refused admission at the final reading.
+
+The extracted Roswell compiler/tool sysroot must be rehydrated from those exact
+retained RPMs before any future source rebuild. Budget the extraction under fresh
+admission, use a new empty private destination, verify the original payload
+identities, and preserve unmatched original entries before adopting tool paths.
+The dependency/build identities are historical bindings and were not rewritten.
+The accepted flash and ordinary retained-reference observations do not require
+that compiler expansion. A no-extraction payload recovery check reproduced the
+original M4 bytes; synthetic deletion checks covered changed files, final static
+archives, symlinks and parent traversal. Exact manifests and recovery mappings
+remain private with the earlier retention receipts.
+
 Rust now exclusively creates a marked APK staging directory and retires only
 that owned stage after signing, signature verification and package inspection
 all succeed. The final signed APK and signing keys are outside staging. A
