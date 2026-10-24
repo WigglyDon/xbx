@@ -55,9 +55,10 @@ pub fn run_dashboard(
     disk: &Path,
     eeprom: &Path,
     seconds: u64,
+    bootrom: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     run_environment(
-        engine, new_root, flash, disk, eeprom, None, seconds, None, None,
+        engine, new_root, flash, disk, eeprom, None, seconds, bootrom, None,
     )
 }
 
@@ -363,9 +364,10 @@ fn run_environment(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nbootrom_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
             start.elapsed().as_secs_f64(),
             media.is_some(),
+            bootrom.is_some(),
             if media.is_some() {
                 "core_default"
             } else {

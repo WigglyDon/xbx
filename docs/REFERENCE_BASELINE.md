@@ -123,3 +123,35 @@ are retained under `.local/evidence/reference-baseline-v1`; earlier evidence
 roots and the 16 unfinished paths remain intact. The immediate blocker is host
 admission, followed by unresolved archive/image and firmware-input qualification,
 not a demonstrated game/kernel failure.
+
+## October 24 continuation: dashboard boot-ROM input prepared
+
+The ordinary `run-dashboard` launcher now accepts an optional MCPX input,
+matching `run-title`. It copies that input into the new independent profile;
+omitting it retains the existing open-firmware route. The observation receipt
+records boot-ROM presence. The no-disc path remains offline, and existing
+profile refusal, writer ownership and native retirement are unchanged.
+
+An isolated source snapshot excluded all sixteen paused paths. Its synthetic
+boundary suite passed 15 tests, with 3 native tests still gated; Clippy with
+warnings denied, formatting and diff checks passed. The extended boundary test
+checks optional boot-ROM configuration/copying, immutable seed preservation,
+the default route and profile-lease release after harmless child exit. This is
+launcher preparation, not native firmware or visible dashboard acceptance.
+Compilation used about 9 MiB of RAM-backed temporary outputs, with no bulk
+allocation on the constrained development filesystem.
+
+The current custodian handback reports an allocation-workspace ENOSPC and no
+qualified xbx growth window. The existing reduced private request was updated
+in place for a bounded firmware-inventory/dashboard phase; no grant is inferred.
+No firmware asset was downloaded or extracted, and no reference/native game or
+matched open-firmware observation ran. The archive's flash variant and MCPX
+identity remain unverified. Both phones remain outside xbx custody, so their
+retained media are unavailable until a new operating window is reconciled.
+
+The next dependent action is the admitted archive inventory, followed by input
+identification and a fresh no-disc dashboard/navigation observation. Normal
+game checks follow only after that gate and actual media access. Earlier builds,
+profiles, source edits and evidence remain preserved; no Roswell64 retry or
+paused investigation was resumed. This continuation changes no shipping
+firmware dependency and performs no operation on PSX or phones.

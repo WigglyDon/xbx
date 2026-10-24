@@ -139,6 +139,8 @@ fn unsupported_guest_memory_refuses_before_creating_profile_or_native_entry() {
 #[cfg(not(target_os = "android"))]
 #[test]
 fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
+    use std::os::unix::fs::PermissionsExt;
+
     // The profile's QMP socket must fit Unix's bounded address field even when
     // this test is compiled from a deeply nested isolated source checkout.
     let dir = Path::new("/tmp").join(format!(
@@ -150,11 +152,17 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
             .as_nanos()
     ));
     fs::create_dir(&dir).unwrap();
-    for name in ["flash", "disk", "eeprom"] {
+    for name in ["flash", "disk", "eeprom", "bootrom"] {
         fs::write(dir.join(name), b"synthetic immutable seed").unwrap();
     }
-    for (choice, expected) in [(None, 64), (Some("64"), 64), (Some("128"), 128)] {
-        let profile = dir.join(format!("profile-{expected}-{}", choice.is_some()));
+    fs::set_permissions(dir.join("bootrom"), fs::Permissions::from_mode(0o400)).unwrap();
+    for (choice, expected, mcpx) in [
+        (None, 64, false),
+        (Some("64"), 64, false),
+        (Some("128"), 128, false),
+        (Some("64"), 64, true),
+    ] {
+        let profile = dir.join(format!("profile-{expected}-{}-{mcpx}", choice.is_some()));
         let mut command = Command::new(env!("CARGO_BIN_EXE_xbx-host"));
         command.env_remove("XBX_DESKTOP_MEMORY_MIB");
         if let Some(choice) = choice {
@@ -162,25 +170,57 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         }
         // A harmless child exits before QMP: inspect the actual prepared profile,
         // without requiring a native engine or touching any owner storage.
-        let output = command
+        command
             .args(["run-dashboard", "/bin/true"])
             .arg(&profile)
             .arg(dir.join("flash"))
             .arg(dir.join("disk"))
             .arg(dir.join("eeprom"))
-            .arg("15")
-            .output()
-            .unwrap();
+            .arg("15");
+        if mcpx {
+            command.arg(dir.join("bootrom"));
+        }
+        let output = command.output().unwrap();
         assert!(!output.status.success());
-        assert!(
-            fs::read_to_string(profile.join("xemu.toml"))
-                .unwrap()
-                .contains(&format!("mem_limit=\"{expected}\""))
+        let config = fs::read_to_string(profile.join("xemu.toml")).unwrap();
+        assert!(config.contains(&format!("mem_limit=\"{expected}\"")));
+        let observation = fs::read_to_string(profile.join("observation.txt")).unwrap();
+        assert!(observation.contains(&format!("memory_mib={expected}")));
+        assert!(observation.contains(&format!("bootrom_present={mcpx}")));
+        assert!(observation.contains("disc_present=false\n"));
+        assert!(observation.contains("network=none\n"));
+        if mcpx {
+            assert!(config.contains(&format!(
+                "bootrom_path=\"{}\"",
+                profile.join("bootrom.bin").display()
+            )));
+            assert_eq!(
+                fs::read(profile.join("bootrom.bin")).unwrap(),
+                b"synthetic immutable seed"
+            );
+            assert_eq!(
+                fs::metadata(profile.join("bootrom.bin"))
+                    .unwrap()
+                    .permissions()
+                    .mode()
+                    & 0o777,
+                0o400
+            );
+        } else {
+            assert!(config.contains("bootrom_path=\"\"\n"));
+            assert!(!profile.join("bootrom.bin").exists());
+        }
+        assert_eq!(
+            fs::read(dir.join("bootrom")).unwrap(),
+            b"synthetic immutable seed"
         );
-        assert!(
-            fs::read_to_string(profile.join("observation.txt"))
+        assert_eq!(
+            fs::metadata(dir.join("bootrom"))
                 .unwrap()
-                .contains(&format!("memory_mib={expected}"))
+                .permissions()
+                .mode()
+                & 0o777,
+            0o400
         );
         assert_eq!(
             fs::read(profile.join("flash.bin")).unwrap(),
@@ -230,6 +270,7 @@ fn ordinary_title_cannot_reuse_or_modify_an_existing_profile() {
             &dir.join("hdd.qcow2"),
             &dir.join("eeprom.bin"),
             15,
+            None,
         )
         .is_err()
     );

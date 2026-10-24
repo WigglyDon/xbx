@@ -27,7 +27,10 @@ source tag `8cb5e525a8d2c980a4daa6b2c2106b53661b5b20`:
   generated EEPROM template, port1 keyboard-bound Controller S.
 
 Original Rust runner now exposes
-`run-dashboard ENGINE NEW_SCRATCH FLASH HDD EEPROM SECONDS`. No disc is opened,
+`run-dashboard ENGINE NEW_SCRATCH FLASH HDD EEPROM SECONDS [MCPX]`. The optional
+MCPX uses the same isolated profile-copy path as `run-title`; omitting it retains
+the open-firmware boot route. It does not select or supply a firmware default.
+The observation receipt records whether a boot ROM was supplied. No disc is opened,
 inspected or passed as an FD; dvd_path is empty. No-disc qualification has
 `-nic none` and automatic update checks disabled. Title observations retain
 the settled core network default to match the preceding classification run.
