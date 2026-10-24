@@ -73,6 +73,32 @@ restored data/file-count peak and restore it:
 git -C .local/roswell-v1/source-v1 sparse-checkout disable
 ```
 
+The later host follow-through applied the same source-representation principle
+to the two xbx-owned xemu checkouts. Complete, independently verified Git object
+databases remain at Android pin `4967efd3ee594cc236869a45ee4cb396e25af1ac`
+and reference pin `03b988c9d76553b33ed712ba00822ffdf49f0e7d`. Git cone sparse
+checkout removed 22,283 hash-verified clean working files while retaining every
+modified file, ignored dependency tree, Git submodule path, runtime/resource
+directory and root file. Full object inventories, all five reference edits and
+all fifteen Android edits match their pre-operation identities. No object was
+pruned. A synthetic fixture checked clean-source removal, dirty/ignored-file
+preservation and exact offline restoration.
+
+The two checkout block totals decreased by 343,289,856 bytes (about 327 MiB).
+This is a directory accounting difference, not a claim of exclusive physical
+reclaim on the shared filesystem or a qualified capacity window. The retained
+reference executable, dashboard seed and Roswell flash still match their pins;
+no core/firmware rebuild or native observation ran. Final builds, profiles,
+media locations, evidence and the sixteen paused paths remain preserved.
+
+Restore a full source expansion only after budgeting the recorded file/data
+peak under fresh host admission:
+
+```sh
+git -C .local/src/xemu-android sparse-checkout disable
+git -C .local/src/xemu-reference-03b988c9d76553b33ed712ba00822ffdf49f0e7d sparse-checkout disable
+```
+
 The flash was not rebuilt or changed. The retained xemu executable and Android
 library still provide hardware emulation beneath the open boot/kernel work.
 Retiring their rebuildable intermediates does not replace that hardware core
