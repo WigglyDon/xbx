@@ -36,6 +36,16 @@ It refuses unrelated existing destination contents and does not delete work.
 `.local/` remains private/protected. It contains receipts and later owner data,
 not an automatically disposable cache.
 
+Owner-authorized xbx retention work may retire identified rebuildable objects,
+successful packaging stages and verified duplicates after recording their exact
+scope and retained recovery source. Keep canonical source/pins, unfinished edits,
+final qualified/rollback artifacts, unique failure evidence and all saved data.
+Do not retain multiple expanded copies merely to preserve a source identity:
+complete verified Git objects or pinned package archives can retain clean source
+offline. Restore an expansion only after budgeting its data and metadata peak.
+Record logical/allocated estimates separately from measured shared-filesystem
+changes. [RETENTION.md](RETENTION.md) records the owner-directed October 24 pass.
+
 ## Device operation
 
 The owner's personal Fold is available only in a fresh authorized operating

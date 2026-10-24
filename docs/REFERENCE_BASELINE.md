@@ -1,5 +1,10 @@
 # Private reference baseline: admission and input inventory
 
+This records the inventory at `579ca7f`. Later owner-directed relocation and
+retention are recorded in [RETENTION.md](RETENTION.md): the named laptop game
+sources are no longer present, the reduced coordination request was subsequently
+posted and updated, and earlier receipts remain historical evidence.
+
 Master's [assignment6386851912](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6386851912)
 accepts the `ea713cba19e8603de8f07845efafa063479b486b` handback as completed
 source/tests and resource-interrupted observations. The existing sole worker

@@ -71,6 +71,13 @@ protected `.local/signing`; preserve that directory and password file. The build
 does not access PSX signing/data. It does not install an app, access a phone or
 publish an APK. Verify a fresh device operating window before any phone action.
 
+Each APK build exclusively creates its own marked staging directory. Only after
+signing, signature verification and package inspection succeed does Rust retire
+that build's intermediates. Missing/empty output, an ownership mismatch or a
+symlink refuses retirement; failed builds retain their stage for review. The
+final signed APK and signing directory are outside staging and remain intact.
+Earlier stage duplicates were reconciled in [RETENTION.md](RETENTION.md).
+
 The current APK is a bounded one-game player. It seeds a new private
 `xbx-qualification` profile from the separately built normal-play OXOS image
 (`SELFTEST=0 SERIAL=1`) and a generated 8 GiB FATX disk. C/E/X/Y/Z are formatted;

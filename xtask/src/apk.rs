@@ -6,6 +6,28 @@ use std::process::Command;
 
 use crate::run;
 
+fn retire_stage(root: &Path, stage: &Path, signed: &Path) -> std::io::Result<()> {
+    let local = root.join(".local");
+    let name = stage.file_name().and_then(|s| s.to_str()).unwrap_or("");
+    let id = name.strip_prefix("apk-player-").unwrap_or("");
+    let refused =
+        || std::io::Error::other("APK staging ownership/output not verified; preserve it");
+    if stage.parent() != Some(local.as_path())
+        || id.is_empty()
+        || !id.bytes().all(|b| b.is_ascii_digit())
+        || signed != local.join("xbx-qualification.apk")
+        || !fs::symlink_metadata(stage)?.file_type().is_dir()
+        || !fs::symlink_metadata(signed)?.file_type().is_file()
+        || fs::metadata(signed)?.len() == 0
+        || fs::read_to_string(stage.join(".xbx-stage-owner"))? != id
+    {
+        return Err(refused());
+    }
+    // Called only after signing, signature verification and package inspection.
+    // Failed builds never reach this point and retain their complete staging.
+    fs::remove_dir_all(stage)
+}
+
 fn java_sources(directory: &Path, output: &mut Vec<std::path::PathBuf>) -> std::io::Result<()> {
     for entry in fs::read_dir(directory)? {
         let path = entry?.path();
@@ -25,6 +47,9 @@ pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> 
         .duration_since(std::time::UNIX_EPOCH)?
         .as_nanos();
     let stage = root.join(format!(".local/apk-player-{build_id}"));
+    // Exclusive creation prevents reusing another build's failed/retained stage.
+    fs::create_dir(&stage)?;
+    fs::write(stage.join(".xbx-stage-owner"), build_id.to_string())?;
     let classes = stage.join("classes");
     let dex = stage.join("dex");
     let libs = stage.join("lib/arm64-v8a");
@@ -181,9 +206,85 @@ pub fn build(root: &Path, sdk: &Path) -> Result<(), Box<dyn std::error::Error>> 
     run(Command::new(tools.join("aapt"))
         .args(["dump", "badging"])
         .arg(&signed))?;
+    retire_stage(root, &stage, &signed)?;
     println!(
         "Local qualification artifact: {} (no installation or public binary release)",
         signed.display()
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn fixture() -> (std::path::PathBuf, std::path::PathBuf, std::path::PathBuf) {
+        let root = std::env::temp_dir().join(format!(
+            "xbx-apk-retention-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let stage = root.join(".local/apk-player-123");
+        let signed = root.join(".local/xbx-qualification.apk");
+        fs::create_dir_all(&stage).unwrap();
+        fs::write(stage.join(".xbx-stage-owner"), "123").unwrap();
+        fs::write(stage.join("intermediate"), b"synthetic rebuildable bytes").unwrap();
+        (root, stage, signed)
+    }
+
+    #[test]
+    fn completed_owned_stage_retires_without_touching_output_or_other_data() {
+        let (root, stage, signed) = fixture();
+        fs::write(&signed, b"synthetic verified-output boundary").unwrap();
+        let failed = root.join(".local/apk-player-456");
+        fs::create_dir(&failed).unwrap();
+        fs::write(failed.join("evidence"), b"preserve failure").unwrap();
+        retire_stage(&root, &stage, &signed).unwrap();
+        assert!(!stage.exists());
+        assert_eq!(
+            fs::read(signed).unwrap(),
+            b"synthetic verified-output boundary"
+        );
+        assert_eq!(
+            fs::read(failed.join("evidence")).unwrap(),
+            b"preserve failure"
+        );
+    }
+
+    #[test]
+    fn missing_output_or_stage_owner_preserves_all_intermediates() {
+        let (root, stage, signed) = fixture();
+        assert!(retire_stage(&root, &stage, &signed).is_err());
+        fs::write(&signed, []).unwrap();
+        assert!(retire_stage(&root, &stage, &signed).is_err());
+        fs::write(&signed, b"synthetic output").unwrap();
+        fs::remove_file(stage.join(".xbx-stage-owner")).unwrap();
+        assert!(retire_stage(&root, &stage, &signed).is_err());
+        assert_eq!(
+            fs::read(stage.join("intermediate")).unwrap(),
+            b"synthetic rebuildable bytes"
+        );
+    }
+
+    #[test]
+    fn symlink_stage_or_output_never_authorizes_retirement() {
+        use std::os::unix::fs::symlink;
+        let (root, stage, signed) = fixture();
+        let original = root.join("retained-original");
+        fs::write(&original, b"keep original").unwrap();
+        symlink(&original, &signed).unwrap();
+        assert!(retire_stage(&root, &stage, &signed).is_err());
+        fs::remove_file(&signed).unwrap();
+        fs::write(&signed, b"synthetic output").unwrap();
+        let outside = root.join("retained-stage");
+        fs::rename(&stage, &outside).unwrap();
+        symlink(&outside, &stage).unwrap();
+        assert!(retire_stage(&root, &stage, &signed).is_err());
+        assert_eq!(fs::read(original).unwrap(), b"keep original");
+        assert!(outside.join("intermediate").exists());
+    }
 }

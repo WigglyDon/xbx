@@ -7,6 +7,11 @@ controller input with unchanged read-only game media. See
 [the separate 64 MiB result](ROSWELL64.md); the historical observations and
 earlier approval denial below remain unchanged.
 
+The later [owner-directed retention pass](RETENTION.md) condensed the clean
+Roswell checkout while preserving its complete pinned source in offline Git
+objects and retaining the frozen flash/build. Restore the checkout under fresh
+capacity admission before another source build; no firmware was rebuilt.
+
 Master [6380776059](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6380776059)
 authorizes one separate Roswell candidate. Existing checkout was
 `a323404c768723bef0dca55a39ad903ae3a803d2`; the completed OXOS/reference and
