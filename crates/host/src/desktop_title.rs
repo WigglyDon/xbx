@@ -225,7 +225,7 @@ fn run_environment(
     });
     let start = Instant::now();
     let deadline = start + Duration::from_secs(seconds);
-    let mut reason = "observation_budget_expired_requires_visual_review";
+    let mut reason = "monitor_observation_failed";
     let mut monitor_keepalive = None;
     let mut capture_failure = None;
     let observation = (|| -> Result<(), Box<dyn std::error::Error>> {
@@ -234,6 +234,7 @@ fn run_environment(
         fs::write(root.join("native.pid"), owned.0.id().to_string())?;
         while !qmp.exists() && Instant::now() < deadline {
             if owned.0.try_wait()?.is_some() {
+                reason = "native_exited_before_monitor_readiness";
                 return Err("native exited before monitor readiness".into());
             }
             std::thread::sleep(Duration::from_millis(20));
@@ -271,6 +272,7 @@ fn run_environment(
             ),
         )?;
         if controller == "keyboard" && !controller_attached {
+            reason = "requested_controller_not_attached";
             socket.write_all(b"{\"execute\":\"quit\"}\n")?;
             response(&mut reader)?;
             monitor_keepalive = Some((socket, reader));
@@ -300,13 +302,18 @@ fn run_environment(
                 // Operator completion is a stop request, not a guest/menu pass.
                 // Keep the same acknowledged stop/quit, reap and sync below.
                 reason = "operator_completed_observation_requires_visual_review";
+            } else if Instant::now() >= deadline {
+                reason = "observation_budget_expired_requires_visual_review";
+            }
+            if owned.0.try_wait()?.is_some() {
+                if !terminal {
+                    reason = "native_exited_during_observation";
+                }
+                return Err("native exited during observation".into());
             }
             if terminal || root.join("observation.complete").exists() || Instant::now() >= deadline
             {
                 break;
-            }
-            if owned.0.try_wait()?.is_some() {
-                return Err("native exited during observation".into());
             }
             std::thread::sleep(Duration::from_millis(100));
         }

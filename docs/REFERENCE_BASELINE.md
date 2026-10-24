@@ -1,5 +1,9 @@
 # Private reference baseline: admission and input inventory
 
+The October 24 shared-workspace continuation below supersedes the earlier host
+admission refusal for its bounded external destination. Historical observations
+and internal-storage limitations remain attributable to their original phases.
+
 This records the inventory at `579ca7f`. Later owner-directed relocation and
 retention are recorded in [RETENTION.md](RETENTION.md): the named laptop game
 sources are no longer present, the reduced coordination request was subsequently
@@ -155,3 +159,108 @@ game checks follow only after that gate and actual media access. Earlier builds,
 profiles, source edits and evidence remain preserved; no Roswell64 retry or
 paused investigation was resumed. This continuation changes no shipping
 firmware dependency and performs no operation on PSX or phones.
+
+## October 24: identified inputs and actual reference startup failure
+
+The owner-nominated independent shared workspace was physically qualified and
+published through the existing resource-discovery route. XBX acquired its real
+shared capacity and project leases, revalidated the mounted filesystem/owner and
+actual allocation, and kept its cumulative new outputs within the admitted
+2 GiB envelope above the single shared 12 GiB floor. All new archive, profile,
+cache, temporary and observation writes used its own directory there. Existing
+internal inputs were read in place; internal Btrfs guards were not relaxed.
+The preceding xbx phase released its lease and a requested ten-minute peer quiet
+interval elapsed before selective extraction and native qualification resumed.
+This is serialization evidence, not a claim that another project completed.
+
+The exact pinned release and asset IDs above were rechecked. Its original
+794,899,676-byte ZIP was downloaded, hashed and flushed, then listed before any
+member selection. It contains six entries, including directories, with
+1,034,158,592 expanded bytes. Only the 1,048,576-byte flash and 512-byte MCPX
+members were selected and CRC/hash checked. The bundled 1,033,109,504-byte disk
+was neither expanded nor imported; no bundled host program was executed.
+The original archive, complete private hashes and all acquisition receipts remain.
+
+The actual flash is **COMPLEX 4627 Retail 1.0**, identified against the original
+[XBMC SVN r10613 BIOS catalog](https://sourceforge.net/p/xbmc/svn/10613/tree/trunk/XBMC/system/SystemInfo/BiosIDs.ini).
+Its complete and repeated-bank hashes match that entry. It differs from the
+Retail 1.02 checksum initially encountered in another catalog; this distinction
+was resolved before filesystem extraction or execution. The MCPX matches
+[xemu's documented 1.0 identity](https://xemu.app/docs/required-files/).
+These identify a modified-retail candidate suitable for the assigned experiment;
+they do not establish original authenticity, redistribution permission or game
+compatibility. No proprietary code, keys or game instructions were inspected.
+No new firmware source was sought and nothing became a shipping dependency.
+
+One fresh **64 MiB, no-disc, offline** reference profile used the retained
+`03b988c9` xemu build, executable SHA-256
+`31e1c0f5f3c165d25e9c6315ecaf3191b972f57ae22616d03de6ee8d6243be3d`,
+the accepted optional-MCPX Rust launcher, the pinned open-dashboard seed, and
+independent writable copies of disk/EEPROM/flash. OpenGL/llvmpipe, native floating
+point, configured keyboard Controller S and dummy audio matched the established
+ordinary path. QMP confirmed controller attachment; audio remains unqualified.
+The maximum observation budget was 300 seconds.
+
+Actual owned-window captures showed the green boot animation and Xbox logo.
+**No dashboard or navigation was observed.** Before navigation could be tried,
+the native process aborted after **78.907 seconds**, with SIGABRT and
+`hw/xbox/nv2a/pfifo.c:522: ramht_lookup: Assertion 'hash * 8 < ramht_size' failed`.
+This is an observed native GPU failure, not an expired observation budget or
+host-capacity interruption. There was no controller input attempt, game launch,
+Fable/second-title result or justified matched OXOS comparison.
+
+The child was reaped without a supervisor-forced kill and storage was synced.
+The native abort is **not clean native shutdown**: QMP stop/quit did not complete,
+and the dirty profile is preserved without checkpoint/resume acceptance.
+All immutable input hashes matched again afterward. No runtime remains from this
+attempt. A later capture correctly refused the exited PID before capturing
+anything else. Raw captures/logs and private profile/input identities stay local.
+
+### Architectural decision packet
+
+The private reference is **not operationally qualified**. Preserve the retained
+xemu lineage and distributable open-environment requirement; this result does
+not identify a fault in either open kernel or in either game. The current
+concrete blocker is the retained core's RAMHT assertion during reference startup,
+before the dashboard prerequisite. Phone/media custody is a separate later gate;
+no phone was queried or changed in this continuation.
+
+A bounded public-source review confirmed the assertion in the exact pinned
+[upstream PFIFO source](https://github.com/xemu-project/xemu/blob/03b988c9d76553b33ed712ba00822ffdf49f0e7d/hw/xbox/nv2a/pfifo.c#L522).
+No confirmed ordinary configuration correction or upstream remedy emerged.
+An assertion location alone does not establish the right hash algorithm, a
+safe mask, valid table contents or a particular guest cause. No assertion was
+removed, GPU command skipped, proprietary image patched or speculative retry run.
+
+The next proposed scope is one retained-core NV2A/RAMHT compatibility boundary:
+establish its legitimate public register/handle contract, reproduce the failure
+with an original public fixture, then implement and qualify the smallest
+evidenced correction in a separate build while retaining this executable and
+crash profile. Only a fresh dashboard/navigation pass on that candidate would
+reopen unchanged-game reference checks. This needs a bounded core-build/output
+admission beyond the current input/profile preparation envelope; no native-core
+rebuild or broader GPU/kernel campaign has been started under that envelope.
+Actual memory/media inputs and writable profiles must remain matched and private.
+
+The ordinary launcher also exposed a receipt bug: early native exit inherited
+the default timeout label. Its small Rust correction now assigns distinct
+monitor failure, pre-monitor exit, in-observation exit and missing-controller
+reasons, while preserving native status, forced-retirement and storage receipts.
+The historical crash receipt is preserved as written and interpreted using its
+actual elapsed time, QMP error and SIGABRT. No native rerun is needed merely to
+change that label. All sixteen paused paths, prior investigations, builds,
+profiles, game locations and earlier evidence remain preserved.
+
+The corrected launcher was built from an isolated snapshot excluding all paused
+source, with all compiler/test outputs on the admitted volume. **16 boundary
+tests passed; 3 native/tool-dependent tests remained gated.** The new original
+Rust monitor fixture exercises actual post-readiness child exit, nonzero status,
+unchanged seeds, durable retirement and released profile ownership; the existing
+pre-readiness test checks the distinct reason too. Clippy with warnings denied,
+formatting and whitespace checks passed. No native engine or firmware was rebuilt.
+The first new fixture's deadline incorrectly included profile preparation and
+failed; its source/build/log remain. A second check was retired when allocation
+inventory encountered a disappearing synthetic temporary. The finite rescan
+handles only that exact vanished-path case and still refuses other errors or
+three unsuccessful readings; capacity bounds were unchanged. The final successful
+run and both preceding attempts remain independently preserved.

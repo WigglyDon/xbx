@@ -143,8 +143,8 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
 
     // The profile's QMP socket must fit Unix's bounded address field even when
     // this test is compiled from a deeply nested isolated source checkout.
-    let dir = Path::new("/tmp").join(format!(
-        "xbx-memory-{}-{}",
+    let dir = std::env::temp_dir().join(format!(
+        "xm-{}-{:x}",
         std::process::id(),
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -162,7 +162,7 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         (Some("128"), 128, false),
         (Some("64"), 64, true),
     ] {
-        let profile = dir.join(format!("profile-{expected}-{}-{mcpx}", choice.is_some()));
+        let profile = dir.join(format!("p{expected}-{}-{mcpx}", choice.is_some()));
         let mut command = Command::new(env!("CARGO_BIN_EXE_xbx-host"));
         command.env_remove("XBX_DESKTOP_MEMORY_MIB");
         if let Some(choice) = choice {
@@ -189,6 +189,7 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         assert!(observation.contains(&format!("bootrom_present={mcpx}")));
         assert!(observation.contains("disc_present=false\n"));
         assert!(observation.contains("network=none\n"));
+        assert!(observation.contains("reason=native_exited_before_monitor_readiness\n"));
         if mcpx {
             assert!(config.contains(&format!(
                 "bootrom_path=\"{}\"",
@@ -232,6 +233,94 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         );
         assert!(ProfileLease::acquire(&profile).is_ok());
     }
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
+fn ordinary_native_exit_after_monitor_readiness_is_not_a_timeout() {
+    use std::io::{BufRead, BufReader};
+    use std::os::unix::{fs::PermissionsExt, net::UnixListener};
+
+    let dir = std::env::temp_dir().join(format!("xe-{}", std::process::id()));
+    fs::create_dir(&dir).unwrap();
+    let profile = dir.join("p");
+    let engine = dir.join("engine");
+    // The child only waits for the original Rust monitor fixture's release.
+    // Its nonzero exit exercises real child ownership and durable retirement.
+    fs::write(
+        &engine,
+        b"#!/bin/sh\ni=0\nwhile [ ! -f fixture.exit ] && [ $i -lt 200 ]; do i=$((i+1)); sleep 0.05; done\nexit 7\n",
+    )
+    .unwrap();
+    fs::set_permissions(&engine, fs::Permissions::from_mode(0o700)).unwrap();
+    for name in ["flash", "disk", "eeprom"] {
+        fs::write(dir.join(name), b"original immutable fixture").unwrap();
+    }
+    let server_root = profile.clone();
+    let server = std::thread::spawn(move || {
+        let preparation_deadline = Instant::now() + Duration::from_secs(60);
+        while !server_root.join("native.pid").exists() {
+            assert!(
+                Instant::now() < preparation_deadline,
+                "native fixture was not started"
+            );
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        let deadline = Instant::now() + Duration::from_secs(5);
+        fs::write(server_root.join("kernel.log"), b"").unwrap();
+        let listener = UnixListener::bind(server_root.join("qmp.sock")).unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let mut socket = loop {
+            match listener.accept() {
+                Ok((socket, _)) => break socket,
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    assert!(Instant::now() < deadline, "monitor did not connect");
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                Err(e) => panic!("monitor fixture accept: {e}"),
+            }
+        };
+        socket
+            .set_read_timeout(Some(Duration::from_secs(5)))
+            .unwrap();
+        let mut reader = BufReader::new(socket.try_clone().unwrap());
+        let mut line = String::new();
+        reader.read_line(&mut line).unwrap();
+        assert!(line.contains("qmp_capabilities"));
+        socket.write_all(b"{\"return\":{}}\n").unwrap();
+        line.clear();
+        reader.read_line(&mut line).unwrap();
+        assert!(line.contains("info usb"));
+        socket
+            .write_all(b"{\"return\":\"Xbox Controller\"}\n")
+            .unwrap();
+        fs::write(server_root.join("fixture.exit"), b"exit fixture now").unwrap();
+    });
+    let output = Command::new(env!("CARGO_BIN_EXE_xbx-host"))
+        .env("XBX_DESKTOP_CONTROLLER", "keyboard")
+        .env("XBX_DESKTOP_MEMORY_MIB", "64")
+        .args(["run-dashboard"])
+        .arg(&engine)
+        .arg(&profile)
+        .arg(dir.join("flash"))
+        .arg(dir.join("disk"))
+        .arg(dir.join("eeprom"))
+        .arg("15")
+        .output()
+        .unwrap();
+    server.join().unwrap();
+    assert!(!output.status.success());
+    let observation = fs::read_to_string(profile.join("observation.txt")).unwrap();
+    assert!(observation.contains("reason=native_exited_during_observation\n"));
+    let termination = fs::read_to_string(profile.join("termination.txt")).unwrap();
+    assert!(termination.contains("status=exit status: 7\n"));
+    assert!(termination.contains("forced=false\n"));
+    assert!(termination.contains("storage_synced=true\n"));
+    assert_eq!(
+        fs::read(dir.join("disk")).unwrap(),
+        b"original immutable fixture"
+    );
+    assert!(ProfileLease::acquire(&profile).is_ok());
 }
 
 #[cfg(not(target_os = "android"))]

@@ -36,6 +36,24 @@ It refuses unrelated existing destination contents and does not delete work.
 `.local/` remains private/protected. It contains receipts and later owner data,
 not an automatically disposable cache.
 
+An owner-qualified independent shared workspace may admit a bounded phase even
+while internal Btrfs growth remains refused. Resolve its current private binding
+through `resource-discovery`; never copy a remembered mount path into product
+defaults. Acquire the existing whole-volume capacity lease and the xbx project
+lease, then verify the exact mounted UUID, filesystem, target and private owner
+permissions before writing. Refuse a missing or wrong volume without creating
+anything under the uncovered mountpoint. Initially serialize heavy phases and
+retain the one shared 12 GiB free-space floor plus outstanding growth.
+
+The current xbx reference-preparation envelope is 2 GiB of total new input,
+profile, cache, temporary and evidence allocation on that volume. Read retained
+internal artifacts in place; do not migrate old profiles or recreate full game
+copies. All new writable runtime paths belong in the admitted xbx directory.
+Ext4 admission uses its own available blocks and inodes; it does not relax the
+internal Btrfs guards or certify the internal allocation problem. Stop/reap owned
+runtimes, sync storage and release all writer handles before shared safe removal.
+New durable profiles require the same volume and lineage to return.
+
 Owner-authorized xbx retention work may retire identified rebuildable objects,
 successful packaging stages and verified duplicates after recording their exact
 scope and retained recovery source. Keep canonical source/pins, unfinished edits,
