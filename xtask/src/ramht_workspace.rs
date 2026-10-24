@@ -261,6 +261,7 @@ impl Workspace {
             .env("PIP_DISABLE_PIP_VERSION_CHECK", "1")
             .process_group(0);
         let fds = [self.shared.as_raw_fd(), self.project_lock.as_raw_fd()];
+        command.env("XBX_TASK_LEASE_FDS", format!("{},{}", fds[0], fds[1]));
         unsafe extern "C" {
             fn fcntl(fd: i32, cmd: i32, ...) -> i32;
             fn setrlimit(resource: i32, limits: *const [u64; 2]) -> i32;

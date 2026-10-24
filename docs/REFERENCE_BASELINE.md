@@ -267,7 +267,9 @@ run and both preceding attempts remain independently preserved.
 
 The owner's subsequent continuation begins the bounded public RAMHT task in
 [RAMHT.md](RAMHT.md). Its original synthetic regression demonstrates the entry
-geometry problem without proprietary input, and a separately retained candidate
-is being prepared. This does not change the historical private-reference crash
-or qualify a new native/dashboard/game result. The ordinary preparation envelope
+geometry problem without proprietary input. The separately retained candidate
+has now built and demonstrated the64MiB dashboard and A/B navigation. Its normal
+QMP retirement timed out; forced termination and storage sync are recorded
+separately from that visible success. No reference game has run. This does not
+change the historical private-reference crash. The ordinary preparation envelope
 remains distinct from that candidate's measured, serialized build admission.

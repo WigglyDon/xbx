@@ -467,7 +467,7 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             );
             Ok(())
         }
-        "ramht-observe" => {
+        "ramht-observe" | "ramht-title" => {
             let build = w.root.join(format!("build-{attempt}"));
             let core = build.join("qemu-system-i386");
             if !fs::read_to_string(build.join("build.identity"))?
@@ -476,20 +476,36 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                 return Err("candidate executable differs".into());
             }
             let supervisor = PathBuf::from(std::env::var("XBX_DESKTOP_SUPERVISOR")?);
-            let profile = w
-                .root
-                .parent()
-                .ok_or("missing project root")?
-                .join(format!("rh-dash64-{attempt}"));
+            let profile = w.root.parent().ok_or("missing project root")?.join(format!(
+                "rh-{}64-{attempt}",
+                if action == "ramht-title" {
+                    "title"
+                } else {
+                    "dash"
+                }
+            ));
             let private = w.root.parent().unwrap().join("reference-input-v1");
-            let mut cmd = Command::new(&supervisor);
-            cmd.arg("run-dashboard")
-                .arg(&core)
-                .arg(&profile)
-                .arg(private.join("flash.bin"))
-                .arg(repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2"))
-                .arg(repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin"))
-                .arg("300")
+            let mut cmd = if let Some(driver) = std::env::var_os("XBX_OBSERVATION_DRIVER") {
+                let mut command = Command::new(driver);
+                command.arg(&supervisor);
+                command
+            } else {
+                Command::new(&supervisor)
+            };
+            cmd.arg(if action == "ramht-title" {
+                "run-title"
+            } else {
+                "run-dashboard"
+            })
+            .arg(&core)
+            .arg(&profile)
+            .arg(private.join("flash.bin"))
+            .arg(repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2"))
+            .arg(repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin"));
+            if action == "ramht-title" {
+                cmd.arg(PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?));
+            }
+            cmd.arg("300")
                 .arg(private.join("mcpx.bin"))
                 .env("XBX_DESKTOP_MEMORY_MIB", "64")
                 .env("XBX_DESKTOP_VIDEO_DRIVER", "x11")
@@ -498,7 +514,14 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             checked(
                 &w,
                 &mut cmd,
-                &w.root.join(format!("observe-{attempt}.log")),
+                &w.root.join(format!(
+                    "{}-{attempt}.log",
+                    if action == "ramht-title" {
+                        "title"
+                    } else {
+                        "observe"
+                    }
+                )),
                 390,
             )
         }

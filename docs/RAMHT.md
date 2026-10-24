@@ -90,3 +90,48 @@ owned window and actual navigation, preserve exact build/profile identities,
 and distinguish abort from acknowledged shutdown and storage synchronization.
 Only a dashboard/navigation pass reopens the assigned unchanged-game checks.
 Dummy audio and successful host exit alone do not establish game acceptance.
+
+## Native build and visible dashboard result
+
+The final separate retry built successfully with `ninja -j1` and downloads
+disabled. The executable SHA-256 is
+`eaefdb4f61d01133557374585383e531438e0341d11579c11e8575283a5ccb9b`.
+Its PFIFO source SHA-256 is
+`d328116c30bbc211c803471044440dd2caf7898aeb8c5b9fbdb8bf0f2aeb2307`.
+All13 retained dependency commits and the DSP library matched their accepted
+identities. The four pinned Meson wrapper files are recorded separately. A full
+comparison of Meson build options found only `wrap_mode=nodownload` differing
+from the original build; assertions remain active. The two earlier incomplete
+configuration directories and original reference executable are retained.
+
+One fresh64MiB offline no-disc observation used this executable with the same
+private flash/MCPX, pristine dashboard/EEPROM seeds, keyboard ControllerS,
+OpenGL/llvmpipe, native FP and dummy audio. Controller attachment was observed.
+Six owned-window frames were retained at approximately26,76,116,146,181 and241
+seconds. Reviewed frames show the dashboard Main Menu before input, System
+Information after normal A, and Main Menu again after B. A was delivered at135.333
+seconds and B at170.122seconds. This establishes visible dashboard operation and
+the observed navigation sequence. The former RAMHT assertion did not recur.
+
+The300-second observation ended after307.443seconds with a QMP `WouldBlock`
+timeout and supervisor-forced SIGKILL. The native child was reaped and storage
+synced. **Clean native shutdown and a coherent checkpoint are unqualified.**
+The dirty profile is retained without reuse. Immutable executable, private inputs
+and pristine seeds matched again. The shared, project and profile writer leases
+were subsequently verified released, and the recorded native PID was absent.
+No extra native run was made merely to change a receipt or review a capture.
+
+The ordinary Rust task now also supports `ramht-title`, using a different fresh
+profile and the same unchanged settings. An optional operator driver receives
+the real shared/project lease descriptors, keeping its captures and normal input
+under the owning operation's custody. The exact isolated tool snapshot passed
+Clippy with warnings denied and formatting; paused source was excluded.
+
+The next reference Fable check requires access to the retained phone-backed
+media. Its first admission attempt found the existing Pixel4 transaction
+occupied and refused without acquiring custody. The helper's exact-target
+identity/profile selection precedes that lock; the task's media/state script
+did not run. No media read/transfer, app access, USB-mode change or Fold query
+was performed. Earlier failed MTP restoration and later verified custodian
+returns remain preserved; no stale undo was applied. No game or matched
+open-firmware comparison ran, and no game-compatibility conclusion follows.
