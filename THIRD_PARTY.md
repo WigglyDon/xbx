@@ -171,6 +171,17 @@ beneath an existing profile. Roswell's 128 MiB configuration is unqualified here
 
 ## Before incorporation
 
+The separate ordinary reference experiment uses the official unmodified
+[OXOS v0.3.3 open release](https://github.com/kooscode/oxos/releases/tag/v0.3.3),
+BIOS SHA-256 `8bf516fcb453f18925ad0aad75ff923bd5f225420be6b0175d0fe818f0653314`.
+Its annotated source tag resolves to
+`9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96`; upstream identifies GPL-2.0 and
+Cromwell `86f547387184d1001d377cce97d3756c8acf91cc` lineage. The asset and its
+downloaded GPL license remain private experimental inputs. No release binary
+is committed or shipped, and no source-build reproducibility or license
+clearance is inferred from the release claim. See the
+[reference result and decision packet](docs/OPEN_FIRMWARE_DECISION.md).
+
 The internal dashboard control uses the exact public
 [xemu-dashboard v20260516-0955 release](https://github.com/xemu-project/xemu-dashboard/releases/tag/v20260516-0955),
 source tag `8cb5e525a8d2c980a4daa6b2c2106b53661b5b20`.
