@@ -53,7 +53,7 @@ on each distinct logging image before its dependent observation.
 | Basic upstream logging | `ed905fa328b146a148b09ba67dbfb196b6f79c955dc69f1ffee5e26b93be4bfd` | Fixture2.486s; Fable load success then terminal bugcheck1e/access violation,5.766s |
 | Fixed phase messages | `1b25ea00ab3ad71a3d771fd02fc0e13f3ee35e94f8ea1c8031812259d0b11639` | Fixture2.459s; Fable selection complete, entry call attempted and returned, then bugcheck1e/access violation,14.898s |
 | Required-read correction, logging | `8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e` | Retained fixture qualified,2.245s |
-| Required-read correction, serial off | `c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8` | Focused600s Fable observation in progress; result pending |
+| Required-read correction, serial off | `c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8` | 604.365s actual; splash only, no visible input response; forced retirement after QMP timeout |
 
 The first two Fable observations ended on confirmed terminal output rather than
 waiting600seconds. Native/operator exit0, forced=false, QMP stop/quit acknowledged
@@ -63,6 +63,24 @@ are the explicitly authorized three kernel-owned selection/handoff/return
 strings in public loader source, not an import observer. The return message
 proves control returned from the entry call; it does not prove Fable's main
 function completed or identify a faulty thread/service. Raw addresses stay local.
+
+The corrected serial-off candidate uses SERIAL=0 in a separate fresh build and
+fresh writable profile. The retained core, read-only game, pristine disk/EEPROM
+seeds,64MiB, actual Intel OpenGL4.6, native FP, offline networking, ControllerS
+and dummy audio are otherwise matched. All18 scheduled captures completed.
+Decoded pixels in17 captures from10.695s through585.641s are identical and show
+the open-kernel splash; the initial3.481s capture differs. Start, Down, Up, A and
+later Start were delivered at320.058/350.059/380.154/410.125/500.114s. Reviewed
+frames and pixel equality show no visible response, menu or gameplay. Ordinary
+input delivery alone is not acceptance. Serial output is empty as expected;
+it cannot establish that the earlier exception recurred after the correction.
+
+Retirement was **not clean**: QMP stop/quit timed out, native SIGKILL was required,
+the native process was reaped and storage was synced; supervisor/operator exit1.
+The dirty profile is retained without reuse, not accepted as a coherent checkpoint.
+At13:55:35UTC the native process was absent and shared/project/profile locks were
+reacquirable; the phase receipt records stopped, no held lease and zero outstanding
+growth commitment. No other project was asked to stop or reserve a slot.
 
 ## Independently supported required-read correction
 
@@ -99,6 +117,19 @@ raw digests, exception work and diagnostics. Fable causality remains unattribute
 The separate serial-off build follows the independent regression and retained
 fixture qualification; its result must be judged from actual visible responses.
 
+## Remaining implementation boundary
+
+The logging baseline completes selection and returns from its entry call before
+the existing terminal access-violation report. It identifies no responsible
+thread/service or independently demonstrated cause of Fable's failure. The
+independent required-read correction passes its focused regression but earns no
+Fable progression. No corrected logging Fable run was made: the next game check
+was the separately identified serial-off release above. Further speculative
+call/exception/allocator/FPU work is not supported by this evidence and remains
+paused under the assignment. The next scoped decision needs a public contract
+or original reproducer for the post-handoff failure; phone availability is not
+the missing dependency. No shipping firmware default is changed.
+
 ## Validation and preservation
 
 The focused serial-cap/early-exit, fixture-completion and exact-budget tests,
@@ -108,6 +139,13 @@ logs are preserved; the corrected checks have now actually completed. The actual
 C++ function regression compiles with warnings denied and the original Rust tests
 run serially. Supervisor SHA-256 remains
 `f0e8ce3d8f4d292b9b2e5cecc96e32260f38e8ad90d64781a9da3cf101c76736`.
+
+Final measured external project allocation is11,514,675,200bytes, an increase of
+229,388,288bytes over the unchanged baseline, within the1GiB envelope. Available
+space is96,134,737,920bytes, above the shared12GiB floor. Detailed commands,
+identities, ordinary logs, captures and termination/storage receipts remain in
+the private local `open-startup-v1` evidence and external workspace. This records
+filesystem sync and process retirement, not power-loss recovery certification.
 
 Every source export, tool/build generation, profile, media and evidence is
 retained. All16 paused paths remain outside this slice. No phone operation,
