@@ -138,6 +138,26 @@ fn unsupported_guest_memory_refuses_before_creating_profile_or_native_entry() {
 
 #[cfg(not(target_os = "android"))]
 #[test]
+fn unsupported_desktop_graphics_refuses_before_profile_creation() {
+    let dir = scratch("unsupported-graphics");
+    for (graphics, video) in [("", "x11"), ("automatic", "x11"), ("host", "offscreen")] {
+        let profile = dir.join("must-not-create");
+        let output = Command::new(env!("CARGO_BIN_EXE_xbx-host"))
+            .env("XBX_DESKTOP_GRAPHICS", graphics)
+            .env("XBX_DESKTOP_VIDEO_DRIVER", video)
+            .args(["run-dashboard", "/bin/true"])
+            .arg(&profile)
+            .args(["missing-flash", "missing-disk", "missing-eeprom", "15"])
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(String::from_utf8_lossy(&output.stderr).contains("graphics"));
+        assert!(!profile.exists());
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
 fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
     use std::os::unix::fs::PermissionsExt;
 
@@ -156,22 +176,36 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         fs::write(dir.join(name), b"synthetic immutable seed").unwrap();
     }
     fs::set_permissions(dir.join("bootrom"), fs::Permissions::from_mode(0o400)).unwrap();
-    for (choice, expected, mcpx) in [
-        (None, 64, false),
-        (Some("64"), 64, false),
-        (Some("128"), 128, false),
-        (Some("64"), 64, true),
-    ] {
-        let profile = dir.join(format!("p{expected}-{}-{mcpx}", choice.is_some()));
+    let engine = dir.join("fixture-engine");
+    fs::write(&engine, b"#!/bin/sh\nprintf '%s\\n' \"$LIBGL_ALWAYS_SOFTWARE\" > fixture.graphics\nprintf '%s\\n' \"$@\" > fixture.args\n").unwrap();
+    fs::set_permissions(&engine, fs::Permissions::from_mode(0o700)).unwrap();
+    for (index, (choice, expected, mcpx, graphics)) in [
+        (None, 64, false, None),
+        (Some("64"), 64, false, None),
+        (Some("128"), 128, false, None),
+        (Some("64"), 64, true, None),
+        (Some("64"), 64, false, Some("host")),
+        (Some("64"), 64, false, Some("software")),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let profile = dir.join(format!("p{index}"));
         let mut command = Command::new(env!("CARGO_BIN_EXE_xbx-host"));
         command.env_remove("XBX_DESKTOP_MEMORY_MIB");
+        command.env_remove("XBX_DESKTOP_GRAPHICS");
+        command.env("XBX_DESKTOP_VIDEO_DRIVER", "x11");
+        if let Some(graphics) = graphics {
+            command.env("XBX_DESKTOP_GRAPHICS", graphics);
+        }
         if let Some(choice) = choice {
             command.env("XBX_DESKTOP_MEMORY_MIB", choice);
         }
         // A harmless child exits before QMP: inspect the actual prepared profile,
         // without requiring a native engine or touching any owner storage.
         command
-            .args(["run-dashboard", "/bin/true"])
+            .arg("run-dashboard")
+            .arg(&engine)
             .arg(&profile)
             .arg(dir.join("flash"))
             .arg(dir.join("disk"))
@@ -189,6 +223,22 @@ fn desktop_memory_selection_is_bound_to_its_fresh_profile() {
         assert!(observation.contains(&format!("bootrom_present={mcpx}")));
         assert!(observation.contains("disc_present=false\n"));
         assert!(observation.contains("network=none\n"));
+        assert!(config.contains("[net]\nenable=false\n"));
+        assert!(
+            fs::read_to_string(profile.join("fixture.args"))
+                .unwrap()
+                .contains("-nic\nnone\n")
+        );
+        assert_eq!(
+            fs::read_to_string(profile.join("fixture.graphics"))
+                .unwrap()
+                .trim(),
+            if graphics == Some("host") { "0" } else { "1" }
+        );
+        assert!(observation.contains(&format!(
+            "graphics_request={}\n",
+            graphics.unwrap_or("software")
+        )));
         assert!(observation.contains("reason=native_exited_before_monitor_readiness\n"));
         if mcpx {
             assert!(config.contains(&format!(

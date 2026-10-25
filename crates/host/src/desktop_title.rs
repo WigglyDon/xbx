@@ -85,6 +85,15 @@ fn run_environment(
     if !matches!(video.as_str(), "offscreen" | "x11") {
         return Err("desktop video driver must be offscreen or x11".into());
     }
+    let graphics = match std::env::var_os("XBX_DESKTOP_GRAPHICS") {
+        None => "software",
+        Some(value) if value == "software" => "software",
+        Some(value) if value == "host" => "host",
+        _ => return Err("desktop graphics must be software or host".into()),
+    };
+    if graphics == "host" && video != "x11" {
+        return Err("qualified host graphics requires x11".into());
+    }
     // An ordinary playable machine needs its first controller connected. The
     // retained frontend always creates the keyboard source, but binds it only
     // when this exact configuration entry is present.
@@ -137,6 +146,7 @@ fn run_environment(
     if controller == "keyboard" {
         config.push_str("port1=\"keyboard\"\nport1_driver=\"usb-xbox-gamepad-s\"\n");
     }
+    config.push_str("[net]\nenable=false\n");
     if floating_point == "software" {
         config.push_str("[perf]\nfp_jit=false\n");
     }
@@ -167,7 +177,10 @@ fn run_environment(
         .env("SDL_VIDEO_DRIVER", &video)
         .env("SDL_AUDIO_DRIVER", "dummy")
         .env("XBX_ISOLATED_PROCESS_EXIT", "1")
-        .env("LIBGL_ALWAYS_SOFTWARE", "1");
+        .env(
+            "LIBGL_ALWAYS_SOFTWARE",
+            if graphics == "host" { "0" } else { "1" },
+        );
     if floating_point == "software" {
         command.env("XEMU_TCG_DEFER_FIP", "0");
     }
@@ -190,11 +203,8 @@ fn run_environment(
             incoming.as_raw_fd()
         ));
     }
-    // Dashboard qualification is offline; title observations retain the settled
-    // core default so their other inputs remain matched to prior observations.
-    if media.is_none() {
-        command.args(["-nic", "none"]);
-    }
+    // Both ordinary qualification routes are explicitly offline.
+    command.args(["-nic", "none"]);
     command
         .arg("-qmp")
         .arg(format!("unix:{},server=on,wait=off", qmp.display()))
@@ -371,15 +381,10 @@ fn run_environment(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nbootrom_present={}\nnetwork={}\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ngraphics_request={graphics}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nbootrom_present={}\nnetwork=none\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
             start.elapsed().as_secs_f64(),
             media.is_some(),
             bootrom.is_some(),
-            if media.is_some() {
-                "core_default"
-            } else {
-                "none"
-            }
         ),
     )?;
     let serial = fs::read_to_string(root.join("kernel.log"))?;

@@ -28,8 +28,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
     if let Some(
-        action @ ("ramht-check" | "ramht-configure" | "ramht-reconfigure" | "ramht-build"
-        | "ramht-observe" | "ramht-title" | "ramht-media-copy" | "ramht-media-resume"),
+        action @ ("ramht-check"
+        | "ramht-configure"
+        | "ramht-reconfigure"
+        | "ramht-build"
+        | "ramht-observe"
+        | "ramht-title"
+        | "ramht-title-host"
+        | "ramht-open-title-host"
+        | "ramht-media-copy"
+        | "ramht-media-resume"),
     ) = args.first().map(String::as_str)
     {
         return ramht::command(

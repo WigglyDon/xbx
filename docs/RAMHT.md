@@ -246,3 +246,31 @@ explicitly offline, defer capture durability to retirement under retained custod
 and keep an optional capture timeout from ending the native observation. The
 original executable and interrupted profile will remain unchanged. No matched
 open-firmware comparison, second-title observation or phone game trial has run.
+
+The ordinary Rust correction is now built and checked in an isolated snapshot.
+`XBX_DESKTOP_GRAPHICS=host` explicitly requests the existing X11 hardware OpenGL
+path; software remains the default, and unsupported selections refuse before
+profile creation. The ordinary console profile and native arguments now disable
+networking explicitly for both dashboard and title observations. Receipts record
+the requested graphics path; the native GL renderer log remains the actual
+backend evidence. A separate fresh host-graphics title profile preserves the
+software trial. No core or firmware was rebuilt for this correction.
+
+The focused supervisor suite passed17tests with3native/tool-dependent tests
+still gated; Clippy with warnings denied and formatting passed. The real
+synthetic child records its inherited graphics environment and offline NIC
+arguments, alongside the profile configuration. Earlier validation attempts
+exposed an overlong synthetic Unix socket path and cross-fixture inherited-FD
+contention. Short fixture names plus a shorter private temporary directory on
+the same admitted volume resolve the path bound; serial execution isolates the
+process-lease checks. Both failed attempts and their outputs remain. No runtime
+ownership or socket guard was weakened.
+
+The capture operator now measures its interval after input hashing, defers image
+durability to retained-custody retirement and records an optional capture timeout
+without ending the native observation. The conditional matched-open route uses
+the retained exact official OXOSv0.3.3 image in separate fresh storage with no
+MCPX. It requires the operator's actual reviewed reference-menu/control success;
+setting its attestation is not itself evidence or automatic compatibility
+acceptance. The new hardware reference and any conditional open result remain
+separate native qualifications.

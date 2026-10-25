@@ -574,7 +574,14 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             );
             Ok(())
         }
-        "ramht-observe" | "ramht-title" => {
+        "ramht-observe" | "ramht-title" | "ramht-title-host" | "ramht-open-title-host" => {
+            let open = action == "ramht-open-title-host";
+            if open
+                && std::env::var("XBX_REFERENCE_POSITIVE_CONTROL").as_deref()
+                    != Ok("menu-and-controls-reviewed")
+            {
+                return Err("matched open comparison requires actual reviewed reference menu and control success".into());
+            }
             let build = w.root.join(format!("build-{attempt}"));
             let core = build.join("qemu-system-i386");
             if !fs::read_to_string(build.join("build.identity"))?
@@ -585,13 +592,30 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             let supervisor = PathBuf::from(std::env::var("XBX_DESKTOP_SUPERVISOR")?);
             let profile = w.root.parent().ok_or("missing project root")?.join(format!(
                 "rh-{}64-{attempt}",
-                if action == "ramht-title" {
+                if open {
+                    "open-title-host"
+                } else if action == "ramht-title-host" {
+                    "title-host"
+                } else if action == "ramht-title" {
                     "title"
                 } else {
                     "dash"
                 }
             ));
             let private = w.root.parent().unwrap().join("reference-input-v1");
+            let flash = if open {
+                let path = repo.join(".local/official-oxos-v0.3.3/bios_v0.3.3.bin");
+                if hash(&path)?
+                    != "8bf516fcb453f18925ad0aad75ff923bd5f225420be6b0175d0fe818f0653314"
+                {
+                    return Err(
+                        "retained official open release differs; preserve without launch".into(),
+                    );
+                }
+                path
+            } else {
+                private.join("flash.bin")
+            };
             let mut cmd = if let Some(driver) = std::env::var_os("XBX_OBSERVATION_DRIVER") {
                 let mut command = Command::new(driver);
                 command.arg(&supervisor);
@@ -599,31 +623,40 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             } else {
                 Command::new(&supervisor)
             };
-            cmd.arg(if action == "ramht-title" {
+            cmd.arg(if action != "ramht-observe" {
                 "run-title"
             } else {
                 "run-dashboard"
             })
             .arg(&core)
             .arg(&profile)
-            .arg(private.join("flash.bin"))
+            .arg(flash)
             .arg(repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2"))
             .arg(repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin"));
-            if action == "ramht-title" {
+            if action != "ramht-observe" {
                 cmd.arg(PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?));
             }
+            if action == "ramht-title-host" || open {
+                cmd.env("XBX_DESKTOP_GRAPHICS", "host");
+            }
             cmd.arg("300")
-                .arg(private.join("mcpx.bin"))
                 .env("XBX_DESKTOP_MEMORY_MIB", "64")
                 .env("XBX_DESKTOP_VIDEO_DRIVER", "x11")
                 .env("XBX_DESKTOP_CONTROLLER", "keyboard")
                 .env("XBX_DESKTOP_FP", "native");
+            if !open {
+                cmd.arg(private.join("mcpx.bin"));
+            }
             checked(
                 &w,
                 &mut cmd,
                 &w.root.join(format!(
                     "{}-{attempt}.log",
-                    if action == "ramht-title" {
+                    if open {
+                        "title-open-host"
+                    } else if action == "ramht-title-host" {
+                        "title-host"
+                    } else if action == "ramht-title" {
                         "title"
                     } else {
                         "observe"
