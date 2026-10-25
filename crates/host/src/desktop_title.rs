@@ -74,8 +74,17 @@ fn run_environment(
     bootrom: Option<&Path>,
     journal_map: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if !(15..=300).contains(&seconds) {
-        return Err("ordinary title observation budget must be 15..300 seconds".into());
+    let ceiling =
+        match std::env::var_os("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS") {
+            None => 300,
+            Some(value) if value == "600" && media.is_some() => 600,
+            _ => return Err(
+                "extended reference interval requires a selected title and exact 600-second scope"
+                    .into(),
+            ),
+        };
+    if !(15..=ceiling).contains(&seconds) {
+        return Err(format!("ordinary observation budget must be 15..{ceiling} seconds").into());
     }
     let memory_mib = guest_memory(std::env::var_os("XBX_DESKTOP_MEMORY_MIB").as_deref())?;
     let journal_format = journal_map
@@ -381,7 +390,7 @@ fn run_environment(
     fs::write(
         root.join("observation.txt"),
         format!(
-            "reason={reason}\nelapsed_seconds={:.3}\nvideo_driver={video}\ngraphics_request={graphics}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nbootrom_present={}\nnetwork=none\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
+            "reason={reason}\nelapsed_seconds={:.3}\nbudget_seconds={seconds}\nvideo_driver={video}\ngraphics_request={graphics}\ncontroller={controller}\nfloating_point={floating_point}\nmemory_mib={memory_mib}\ndisc_present={}\nbootrom_present={}\nnetwork=none\nvisible_progress_requires_own_window_review=true\naudio=dummy_not_qualified\ngameplay_unqualified=true\n",
             start.elapsed().as_secs_f64(),
             media.is_some(),
             bootrom.is_some(),

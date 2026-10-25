@@ -138,6 +138,70 @@ fn unsupported_guest_memory_refuses_before_creating_profile_or_native_entry() {
 
 #[cfg(not(target_os = "android"))]
 #[test]
+fn extended_reference_interval_is_explicit_finite_and_bound_to_title() {
+    let dir = std::env::temp_dir().join(format!(
+        "b{:x}",
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir(&dir).unwrap();
+    for name in ["flash", "disk", "eeprom"] {
+        fs::write(dir.join(name), b"immutable synthetic seed").unwrap();
+    }
+    let media = dir.join("media");
+    fixture(&media, 0);
+    for (index, (scope, seconds, accepted)) in [
+        (None, "600", false),
+        (Some("1200"), "600", false),
+        (Some("600"), "601", false),
+        (Some("600"), "600", true),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let profile = dir.join(format!("p{index}"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_xbx-host"));
+        command.env_remove("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS");
+        if let Some(scope) = scope {
+            command.env("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS", scope);
+        }
+        let output = command
+            .args(["run-title", "/bin/true"])
+            .arg(&profile)
+            .arg(dir.join("flash"))
+            .arg(dir.join("disk"))
+            .arg(dir.join("eeprom"))
+            .arg(&media)
+            .arg(seconds)
+            .output()
+            .unwrap();
+        assert!(!output.status.success()); // harmless child cannot offer QMP
+        assert_eq!(profile.exists(), accepted);
+        if accepted {
+            let receipt = fs::read_to_string(profile.join("observation.txt")).unwrap();
+            assert!(receipt.contains("budget_seconds=600\n"));
+            assert!(receipt.contains("native_exited_before_monitor_readiness"));
+        }
+    }
+    let dashboard = dir.join("d");
+    let output = Command::new(env!("CARGO_BIN_EXE_xbx-host"))
+        .env("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS", "600")
+        .args(["run-dashboard", "/bin/true"])
+        .arg(&dashboard)
+        .arg(dir.join("flash"))
+        .arg(dir.join("disk"))
+        .arg(dir.join("eeprom"))
+        .arg("600")
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(!dashboard.exists());
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
 fn unsupported_desktop_graphics_refuses_before_profile_creation() {
     let dir = scratch("unsupported-graphics");
     for (graphics, video) in [("", "x11"), ("automatic", "x11"), ("host", "offscreen")] {

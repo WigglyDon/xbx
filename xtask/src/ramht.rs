@@ -574,8 +574,23 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             );
             Ok(())
         }
-        "ramht-observe" | "ramht-title" | "ramht-title-host" | "ramht-open-title-host" => {
+        "ramht-observe"
+        | "ramht-title"
+        | "ramht-title-host"
+        | "ramht-title-host-extended"
+        | "ramht-open-title-host" => {
             let open = action == "ramht-open-title-host";
+            let extended = action == "ramht-title-host-extended";
+            let interval = match (
+                extended,
+                open,
+                std::env::var_os("XBX_REFERENCE_CONTROL_INTERVAL_SECONDS"),
+            ) {
+                (true, _, _) => 600,
+                (_, true, Some(value)) if value == "600" => 600,
+                (_, true, Some(_)) => return Err("unsupported matched reference interval".into()),
+                _ => 300,
+            };
             if open
                 && std::env::var("XBX_REFERENCE_POSITIVE_CONTROL").as_deref()
                     != Ok("menu-and-controls-reviewed")
@@ -594,6 +609,8 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                 "rh-{}64-{attempt}",
                 if open {
                     "open-title-host"
+                } else if extended {
+                    "extended-title-host"
                 } else if action == "ramht-title-host" {
                     "title-host"
                 } else if action == "ramht-title" {
@@ -636,10 +653,13 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             if action != "ramht-observe" {
                 cmd.arg(PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?));
             }
-            if action == "ramht-title-host" || open {
+            if action == "ramht-title-host" || open || extended {
                 cmd.env("XBX_DESKTOP_GRAPHICS", "host");
             }
-            cmd.arg("300")
+            if interval == 600 {
+                cmd.env("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS", "600");
+            }
+            cmd.arg(interval.to_string())
                 .env("XBX_DESKTOP_MEMORY_MIB", "64")
                 .env("XBX_DESKTOP_VIDEO_DRIVER", "x11")
                 .env("XBX_DESKTOP_CONTROLLER", "keyboard")
@@ -654,6 +674,8 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                     "{}-{attempt}.log",
                     if open {
                         "title-open-host"
+                    } else if extended {
+                        "title-extended-host"
                     } else if action == "ramht-title-host" {
                         "title-host"
                     } else if action == "ramht-title" {
@@ -662,7 +684,7 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                         "observe"
                     }
                 )),
-                390,
+                interval + 90,
             )
         }
         _ => Err("unknown RAMHT action".into()),

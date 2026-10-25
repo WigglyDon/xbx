@@ -332,3 +332,36 @@ make the assigned single normal reference check. Only actual menu/control succes
 opens its corresponding matched open-environment comparison. If that control
 also remains unqualified, return the common input/configuration/host uncertainty
 for a scoped decision; no private-game/kernel diagnostic campaign follows here.
+
+
+## Extended ordinary reference interval
+
+Don deferred Fold access and directed continued desktop work. The completed
+hardware observation showed advancing introductions, but its final captured
+frame preceded one late Start. One separate fresh reference profile now permits
+an exact600-second ordinary title interval, with the same retained core, verified
+read-only image,64MiB, private flash/MCPX, pristine storage seeds, Intel graphics,
+native FP, offline networking and dummy audio. This changes observation time and
+the timing of ordinary controller input; it does not open another guest probe.
+The first300seconds are passive. Start and navigation follow the studio phase,
+with captures before and after input. Actual visible responses decide acceptance.
+
+The supervisor keeps its ordinary15..300second default. Only the explicit
+`XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS=600` title scope allows up to600seconds;
+missing/malformed scope,601seconds and a dashboard extension refuse before
+profile creation. The receipt records the requested budget. The synthetic CLI
+boundary test uses an original disc fixture and harmless child, never private
+media. The corresponding open comparison retains its reviewed menu/control gate;
+only a qualified600-second reference can select the matching exact600-second
+open interval. Both have finite outer retirement bounds and fresh storage.
+
+Fold remains untouched until a later owner window. Pixel4 is an available
+alternative only if free and needed under custody; no device operation is needed
+for this desktop interval. Owner-reported Morrowind is a future, unverified input.
+The extra second-title staging allowance has not been consumed. All earlier
+profiles, builds, media, failed attempts and paused work remain preserved.
+
+The isolated ordinary-source snapshot passed18boundary tests with3native/storage
+tests still gated, Clippy with warnings denied and formatting. Paused source was
+excluded. The full boundary run took96.63seconds on the admitted USB workspace.
+The prior default and retained working supervisor remain available separately.
