@@ -486,3 +486,61 @@ successful changed-state cleanup before this run; neither a free lock nor that
 prior timeout was treated as a health/capacity grant. No repair, reset, forced
 unmount or weakened guard was attempted. XBX retains no runtime, writer lease,
 device custody or outstanding growth commitment from these completed checks.
+
+
+## Ordinary official-release dashboard baseline
+
+Don clarified that completing the open firmware remains the primary goal and
+that a free phone is not the current prerequisite. The accepted dashboard at
+198dd34 used the classification OXOS build and Android-fork desktop core; the
+later RAMHT dashboard used private reference flash/MCPX. Neither established
+no-disc startup of exact official OXOSv0.3.3 on the corrected reference core.
+One ordinary fresh-storage baseline closes that gap without repeating Fable or
+resuming any paused investigation.
+
+The small Rust route `ramht-open-dashboard-host` uses the same exact official
+image and retained RAMHT core, pristine disk/EEPROM seeds,64MiB, actual Intel
+OpenGL4.6, native FP, keyboard ControllerS, offline mode and dummy audio. It passes
+no game or MCPX. The isolated ordinary-source snapshot passed18boundary tests
+with3native/storage tests gated, Clippy with warnings denied and formatting.
+The existing supervisor binary remains byte-identical:
+`584f40446ebf3ccebaf5bcaa88bc31beb23c8ff2267e5be65556dc98a2f4218b`.
+Source route is committed at `1b17e49`; no emulator or firmware was rebuilt.
+
+Reviewed frames show **Main Menu**, then **System Information after A**, then
+**Main Menu after B**. A completed at135.204seconds; B at170.036seconds, followed
+by a180.431second capture. This qualifies ordinary visible dashboard startup
+and that navigation sequence for this exact official-image/core combination.
+The observation was completed by the operator after the planned A/B captures
+at **183.740seconds**, ending XBX's phase promptly after the owner's coordination
+correction. It did not run the full requested300seconds and is not a completed
+300-second compatibility failure or endurance qualification.
+
+Native and observer exit0, `forced=false`, QMP stop/quit acknowledged, storage
+and retained capture/input/control directories synced. Immutable core/image/
+seed hashes matched again. The native PID was absent; actual shared/project/
+profile locks were verified released. No phone query/deployment, game replay,
+new media copy, core/firmware build, profile reuse or paused probe occurred.
+All prior source, profiles, builds, media and evidence remain. The13 unchanged
+paused paths still match their original bytes; the other3 retain local additions.
+
+This narrows the remaining ordinary compatibility problem: the exact release
+can start and operate the dashboard, while the unchanged Fable observation
+remains splash-only. It does not identify a particular missing title service or
+justify repeating old probes. Open firmware is still the product deliverable;
+private-reference menu success is a control, not a shipping substitute. The
+current blocker is the open title path, not waiting for Pixel4.
+
+Don also rejected the product worker's cross-agent slot scheduling and notices,
+which disrupted other projects. Those product-created wait requests and routine
+broadcasts are discontinued. XBX uses the existing resource locks/guards and
+normal device custody, without creating a scheduler or project-wide hold.
+One reply to a pending handoff question withdrew any expectation of waiting for
+further XBX notices; no routine acknowledgment was requested. No studio policy,
+other-project checkout or task state was changed.
+
+Separately, an old XBX media task's canonical pending-return flags were
+reconciled against XBX's later same-unit verified return. The complete original
+failed receipt is preserved with its hash and the later attribution; no stale
+USB undo, phone query, new custody or claim that the historical return succeeded
+was made. XBX retains no current device hold, reservation or active writer.

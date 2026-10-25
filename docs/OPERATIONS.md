@@ -45,6 +45,13 @@ permissions before writing. Refuse a missing or wrong volume without creating
 anything under the uncovered mountpoint. Initially serialize heavy phases and
 retain the one shared 12 GiB free-space floor plus outstanding growth.
 
+Use those existing locks and the established custodian procedure directly.
+The owner rejected xbx's cross-agent slot scheduling and status broadcasts:
+do not create a second scheduler, ask other projects to pause, queue their work,
+or require them to await an xbx notice. A busy lock refuses the dependent xbx
+phase; continue independent work without broadcasting a project-wide hold.
+Normal physical-device custody remains separate and unchanged.
+
 The current xbx reference-preparation envelope is 2 GiB of total new input,
 profile, cache, temporary and evidence allocation on that volume. Read retained
 internal artifacts in place; do not migrate old profiles or recreate full game
