@@ -201,4 +201,19 @@ impl<E: Engine> Player<E> {
         let p = store::Profile::open(&self.app, &e, &self.resources)?;
         checkpoint::restart(&p)
     }
+    /// Explicit Stop discards automatic RAM return, not ordinary saves. The UI
+    /// owns the warning; this operation keeps the rejected checkpoint evidence.
+    pub fn stop(&mut self) -> io::Result<()> {
+        self.pause(false)?;
+        if let Some(mut l) = self.live.take() {
+            if !l.native.retire()? {
+                return Err(io::Error::other(
+                    "Stop could not retire normally; current saves and checkpoint retained",
+                ));
+            }
+            store::sync_files(&l.profile.current()?)?;
+            checkpoint::restart(&l.profile)?;
+        }
+        Ok(())
+    }
 }

@@ -11,6 +11,11 @@ use std::{
 #[serde(deny_unknown_fields)]
 pub struct Current {
     pub directory: String,
+    #[serde(default)]
+    pub previous: Option<String>,
+    /// Legacy/frozen evidence is never made eligible for automatic retirement.
+    #[serde(default)]
+    pub managed: bool,
 }
 pub struct Profile {
     pub root: PathBuf,
@@ -53,7 +58,11 @@ impl Profile {
             sync_files(&dir)?;
             atomic(
                 &p.root.join("storage.json"),
-                &json(&Current { directory: id })?,
+                &json(&Current {
+                    directory: id,
+                    previous: None,
+                    managed: true,
+                })?,
             )?;
         }
         Ok(p)
@@ -77,13 +86,35 @@ impl Profile {
         if !valid_id(id) || dir.parent() != Some(self.root.join("storage").as_path()) {
             return Err(io::Error::other("storage path escaped"));
         }
+        let old: Current = read_json(&self.root.join("storage.json"))?;
         sync_files(dir)?;
         atomic(
             &self.root.join("storage.json"),
             &json(&Current {
                 directory: id.into(),
+                previous: old.managed.then_some(old.directory),
+                managed: true,
             })?,
         )
+    }
+    /// Retire only our known preceding successful ordinary generation after a
+    /// replacement checkpoint/reference has been verified and published. Failed
+    /// attempts, legacy profiles and diagnostic evidence stay retained.
+    pub fn retire_previous(&self) -> io::Result<()> {
+        let mut current: Current = read_json(&self.root.join("storage.json"))?;
+        if let Some(old) = current.previous.take() {
+            if !valid_id(&old) || old == current.directory {
+                return Err(io::Error::other("invalid previous storage identity"));
+            }
+            let old_path = self.root.join("storage").join(old);
+            if fs::symlink_metadata(&old_path)?.file_type().is_symlink() {
+                return Err(io::Error::other("previous storage symlink retained"));
+            }
+            atomic(&self.root.join("storage.json"), &json(&current)?)?;
+            fs::remove_dir_all(old_path)?;
+            File::open(self.root.join("storage"))?.sync_all()?;
+        }
+        Ok(())
     }
     pub fn attempt(&self) -> io::Result<PathBuf> {
         let p = self.root.join("storage").join(new_id()?);

@@ -277,3 +277,13 @@ synthetic code. LPC47M157/16550 and ATA register constants are public interface
 facts, cross-checked against pinned public device implementations. Terminal input
 and a reserved sector marker qualify only these disposable original programs,
 not controller input, commercial saves or Fable.
+
+The prepared `xemu-paused-savevm.patch` changes public xemu `03b988c9`
+`migration/migration-hmp-cmds.c` under its GPL lineage, reusing the retained
+Android wrapper's paused-capture transition. `fixtures/paused_capture_contract.rs`
+is original MIT policy regression code; `paused_capture_shim.c` is mechanical
+host C-ABI glue. Its generated `subject.inc` is the actual GPL-derived public HMP
+function, retained privately with the build; the shim does not relicense it.
+The test controls owner-preparation and error dependencies, not emulated i386 ABI,
+serializer completeness or native-thread concurrency. Current execution status
+is recorded in CARTRIDGE.md rather than inferred from the test's presence.

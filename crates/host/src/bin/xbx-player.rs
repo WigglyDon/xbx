@@ -53,6 +53,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     player.restart(string("game")?)?;
                     json!({})
                 }
+                "stop" => {
+                    player.stop()?;
+                    json!({})
+                }
                 "fixture-input" => {
                     if !xbx::cartridge::resources::ORIGINAL_FIXTURES.contains(
                         &player

@@ -111,10 +111,42 @@ The isolated tools-v11 shared-policy refactor compiled. Six focused original
 storage-policy tests passed, then Clippy with warnings denied and formatting
 passed. They cover newer-write epoch refusal, metadata-only snapshot changes,
 interrupted reference publication, damaged/incompatible state, failed load-copy
-containment and pause intent. The actual native partial-deserialization failure
-test and shared-policy execution follow-up remain pending; these host tests do
-not stand in for those results. Later unfinished source changes are not covered
-by the tools-v11 receipt.
+containment and pause intent. The native partial-load test subsequently passed
+against a private copy of the qualified original checkpoint: QEMU rejected the
+missing saved UART section after beginning restoration. Current disk, EEPROM,
+accepted checkpoint, pointer and generation were unchanged afterward. Native
+retirement was clean. This was an intentionally incompatible original-only
+topology; no game/platform defect is attributed to that induced failure.
+
+The later tools-v14 candidate compiles, including explicit Stop, protected
+retirement of known successful storage generations, and focused follow-up
+drivers. The seven-case retention/safety checks and actual shared-policy
+Pause/newer-ordinary-save follow-up have not run on that source. The older six
+passing tests remain attributed to tools-v11. Later automatic-return edits
+remain unfinished separately.
+
+## Paused capture preparation gap and pending correction
+
+Further public-source audit found a preparation gap in the prototype's HMP
+route: `save_snapshot` calls `vm_stop(SAVE_VM)` while already paused, but
+`do_vm_stop` notifies device owners only from RUNNING/SUSPENDED. NV2A's SAVE_VM
+preparation can therefore be skipped even though serialization and its post-save
+callbacks run. The earned original RAM/disk restoration does not establish
+complete GPU/APU preparation or sound-state correctness.
+
+`xemu-paused-savevm.patch` prepares a narrow correction using the retained Android
+wrapper's run/pause transition under BQL, restoring explicit Pause after success
+or error. The original Rust/C host fixture links the exact public HMP function
+with controlled preparation/error dependencies. Its first host link failed for
+missing PIC; the corrected `-fPIC` build task compiles, but the fixture itself
+has not executed. No before/after test success or corrected native image is
+claimed. The native follow-through reuses the headless object and recompiles
+only the HMP unit; it is gated on the original regression.
+
+Next admitted work is the prepared paused-capture regression, its single-unit
+native repair, fresh integrated original continuity/retention checks, and the
+actual shared-policy Pause/newer-save check. Clean and failed profiles remain
+preserved; no checkpoint is silently migrated to another core identity.
 
 ## Boundaries and preservation
 
@@ -123,6 +155,13 @@ The fixed assignment baseline is11,514,675,200 external allocated bytes, maximum
 attempt resets that baseline or spends an earlier allowance. Exact private
 commands/source snapshots/build identities, output and failure receipts remain
 in the owned `cartridge-v1` workspace/evidence. No game media was duplicated.
+
+At18:58:46UTC, the actual capacity lease was busy, with the xbx project lease and
+all three qualified app/profile leases reacquirable. No owned runtime/build job
+remained. Read-only accounting measured12,287,623,168 allocated bytes, an increase
+of772,947,968bytes;93,440,376,832 bytes and7,504,252 inodes were available. Those
+readings do not grant capacity. Repeated admission refusals started no dependent
+test/build and created no reservation, peer pause or replacement scheduler.
 
 Fable's accepted open result remains splash-only; no new Fable result is claimed
 here. The corrected-logging observation and scoped startup-lifetime comparison

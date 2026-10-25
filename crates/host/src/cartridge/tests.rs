@@ -37,7 +37,12 @@ impl Fixture {
         write_new(&dir.join("eeprom.bin"), &[0x47; 256]).unwrap();
         atomic(
             &profile.join("storage.json"),
-            &json(&store::Current { directory: id }).unwrap(),
+            &json(&store::Current {
+                directory: id,
+                previous: None,
+                managed: true,
+            })
+            .unwrap(),
         )
         .unwrap();
         let p = store::Profile {
@@ -176,4 +181,24 @@ fn interruption_and_explicit_pause_have_distinct_return_intent() {
     i.user_paused = false;
     i.surface = false;
     assert!(!i.may_run());
+}
+
+#[test]
+fn only_known_managed_storage_retires_after_replacement_is_durable() {
+    for managed in [false, true] {
+        let f = Fixture::new();
+        let mut current: store::Current = read_json(&f.p.root.join("storage.json")).unwrap();
+        current.managed = managed;
+        atomic(&f.p.root.join("storage.json"), &json(&current).unwrap()).unwrap();
+        f.publish();
+        let v = checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap();
+        let old = f.p.current().unwrap();
+        let next = checkpoint::restore_copy(&v, &f.p).unwrap();
+        f.p.select(&next).unwrap();
+        assert!(old.exists());
+        let id = f.publish();
+        assert_eq!(old.exists(), !managed);
+        assert_eq!(checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap().id, id);
+        assert_eq!(f.p.current().unwrap(), next);
+    }
 }

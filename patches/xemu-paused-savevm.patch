@@ -1,0 +1,21 @@
+--- a/migration/migration-hmp-cmds.c
++++ b/migration/migration-hmp-cmds.c
+@@ -477,7 +477,18 @@
+ {
+     Error *err = NULL;
++    RunState prior = runstate_get();
++
++    /* vm_stop(SAVE_VM) only notifies device owners from a live state.
++     * QMP/HMP dispatch holds BQL, so no vCPU can run between this start and
++     * save_snapshot's immediate stop. Keep explicit Pause after completion. */
++    if (!runstate_is_running()) {
++        vm_start();
++    }
+ 
+     save_snapshot(qdict_get_try_str(qdict, "name"),
+                   true, NULL, false, NULL, &err);
++    if (prior != RUN_STATE_RUNNING) {
++        vm_stop(prior);
++    }
+     hmp_handle_error(mon, err);
+ }

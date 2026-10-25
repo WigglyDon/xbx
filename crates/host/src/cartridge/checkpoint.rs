@@ -120,6 +120,7 @@ pub fn publish(
             checkpoint: id.clone(),
         })?,
     )?;
+    p.retire_previous()?;
     // Only retire an earlier accepted successful generation, after the new
     // reference is durable. Rejected/damaged/interrupted candidates are retained.
     if let Ok(old) = old
