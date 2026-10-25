@@ -192,3 +192,19 @@ Full expected SHA-256, exact complete size, storage sync and read-only sealing
 remain mandatory before native use. The approved continuation has not yet run;
 the latest phone custodian's return must first be reconciled. The deadline is
 not extended silently, and a free lock alone does not prove a verified return.
+
+The subsequent custodian recovery/return was verified before a fresh Pixel4
+transaction. The approved continuation appended only the remaining bytes with
+stock `tail`; the original prefix was retained. It completed after461.059seconds,
+including flush and full-image verification. Final length is7,825,162,240bytes;
+the full SHA-256 matches the original private media manifest. The file and
+directory were synced and the image sealed mode0400. No full internal-host copy
+was recreated. Neither phone copy was deleted or written.
+
+Source size/mtime and unchanged USB configuration were checked after this
+successful transfer. Screen-off/nonsecure return was observed, the device
+transaction exited0, and its lease was released. The new attributable receipt
+does not overwrite the historical failed MTP return. Shared/project leases were
+also verified released. The next existing peer received the requested bounded
+shared-workspace slot before the prepared Fable observation; this coordination
+does not claim that peer's execution, capacity or acceptance.

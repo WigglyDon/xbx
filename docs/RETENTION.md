@@ -200,3 +200,22 @@ is claimed by this retention/input work.
 Exact commands, mappings, failures, source identities and disposal manifests stay
 private under `.local/evidence/media-relocation-v1` and
 `.local/evidence/project-retention-v1`. Historical receipts remain intact.
+
+## Verified external Fable input
+
+Don subsequently authorized one full image copy from Pixel4 to the admitted
+shared external workspace, preserving both phone copies and avoiding a permanent
+internal-host copy. The initial bounded transfer and its retained partial are
+documented in [RAMHT.md](RAMHT.md). After an explicit continuation amendment and
+the current custodian's verified return, stock tools appended the remaining
+bytes. The final7,825,162,240-byte image matches the complete SHA-256 in the
+original private relocation manifest, was synced and is sealed read-only.
+
+Pixel4 source size/mtime and USB configuration were unchanged. Physical
+screen-off/nonsecure return and released ownership were verified in a new
+attributable receipt; historical failed MTP return evidence was preserved.
+No phone game/app launch, Fold access, media deletion or proprietary input
+publication accompanied this copy. The external volume is now the retained
+desktop input dependency; disappearance or wrong identity still refuses launch
+without falling back onto the constrained internal filesystem. This establishes
+media identity and availability, not reference gameplay or open-firmware success.
