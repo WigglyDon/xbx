@@ -274,3 +274,61 @@ MCPX. It requires the operator's actual reviewed reference-menu/control success;
 setting its attestation is not itself evidence or automatic compatibility
 acceptance. The new hardware reference and any conditional open result remain
 separate native qualifications.
+
+## Corrected hardware observation and decision packet
+
+The corrected ordinary supervisor SHA-256 is
+`8d76f7c7077bc54ec4f6b290906ea3540dde27362dd389afc4bb16c65e2c683b`,
+from the isolated source matching `48d9b09`. It reused the same retained native
+core and unchanged verified game, in another fresh64MiB profile. Actual native
+logs identify Intel UHD620 OpenGL4.6; the receipt records explicit offline
+networking, native FP, keyboard ControllerS, private MCPX present and dummy audio.
+A separately observed peer compiler means this is functional qualification,
+not an idle-host performance measurement.
+
+All nine retained frames were reviewed. They show Xbox/Microsoft boot, the
+armored-character introduction, Big Blue Box studio animation/logo, a later
+cinematic/scene transition, dim colored imagery and a black final frame.
+Start, Down, Up and A were recorded through the owned window. One extra ordinary
+Start was delivered near the deadline; it occurred after the last capture, so
+there is no follow-up image proving its response. **No visible menu, responsive
+game controls, gameplay, audio or save/reload is qualified.** The late imagery
+does not establish a guest crash or a cause shared with either open kernel.
+
+This observation completed its full bounded interval:302.537seconds, native
+exit0, `forced=false`, QMP stop/quit acknowledged and storage synced. The
+operator exited0, retained images/input/control directories were synced, the
+core/firmware/seed hashes matched and the verified read-only media metadata was
+unchanged. No optional capture timed out in this corrected run. The native PID
+was absent and shared/project/profile leases were verified released. Actual
+handoff notification was delayed during visual review; the delay was not an
+active runtime or writer. The next peer received the verified return. Both
+reference profiles remain without reuse and no machine checkpoint was published.
+
+| Boundary | Actual achieved stage | Remaining qualification |
+| --- | --- | --- |
+| Retained public RAMHT correction | Original regression, separate native build, dashboard navigation and game introduction | Full hardware conformance is not claimed |
+| Unchanged Fable/private reference | Advancing title content; corrected hardware run completed with normal retirement | Menu/control progression and then actual play/audio/save |
+| Selected second-title candidate | Retained archive identified by label; earlier container inventory preserved | Fresh authorized access, full input verification, Xbox certificate and ordinary reference run |
+| Matched open firmware | Exact retained OXOS release and guarded ordinary route prepared | A demonstrated successful corresponding reference control |
+
+Keep the current xemu lineage, working public correction and Rust supervision.
+Do not select private firmware for shipping, blame an open-kernel service from
+these observations, resume paused investigations or start another speculative
+diagnostic matrix. The required positive reference is still missing; the matched
+open route was never entered and its success attestation was not set. Historical
+OXOS/Roswell results and the resource-interrupted Roswell64 attempts are unchanged.
+
+The concrete next input is the assigned second-title archive, whose only retained
+copy is on the owner's Fold. A fresh safe personal-device window is required;
+no Fold query or transfer has begun. The archive is2,288,825,769bytes and its
+inventory reports a4,112,318,464-byte ISO, about6.40GB combined before small
+profile/evidence overhead. An additional8GiB external staging envelope has been
+requested separately, retaining the shared12GiB reserve and every original.
+No duplicate download, phone expansion, app/save access or phone game trial is
+part of that request. After actual admission, verify the existing archive, expand
+only its selected image off-device, identify the Xbox structure/certificate and
+make the assigned single normal reference check. Only actual menu/control success
+opens its corresponding matched open-environment comparison. If that control
+also remains unqualified, return the common input/configuration/host uncertainty
+for a scoped decision; no private-game/kernel diagnostic campaign follows here.
