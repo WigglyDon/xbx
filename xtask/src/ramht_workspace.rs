@@ -64,6 +64,10 @@ impl Workspace {
         Self::acquire_scoped(repo, phase, "open-startup-v1", GIB)
     }
 
+    pub fn acquire_cartridge(repo: &Path, phase: &str) -> Result<Self, Error> {
+        Self::acquire_scoped(repo, phase, "cartridge-v1", 6 * GIB)
+    }
+
     fn acquire_scoped(repo: &Path, phase: &str, label: &str, growth: u64) -> Result<Self, Error> {
         let shared = OpenOptions::new()
             .read(true)

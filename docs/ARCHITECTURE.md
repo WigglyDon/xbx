@@ -41,8 +41,10 @@ independent provenance, reproducibility across clean builds, or game compatibili
 
 - `GameId`: opaque local entry identity, stable through display-name edits and
   verified file relinking. Content fingerprints validate media, not replace IDs.
-- `VirtualConsoleProfileId`: durable identity for firmware choice, EEPROM and
-  associated persistent virtual storage. Default to game-isolated writable
+- `VirtualConsoleProfileId`: durable identity for EEPROM and associated persistent
+  virtual storage. The integrated runtime selects its open system code internally;
+  there is no ordinary firmware chooser or separate firmware snapshot. Legacy
+  diagnostic profile identities remain retained. Default to game-isolated writable
   profiles; intentional shared-console behavior requires a separate decision.
 - `SavedSession`: GameId + profile + selected media + compatible checkpoint,
   durable storage generation and explicit pause intent.
@@ -78,6 +80,13 @@ A coherent checkpoint identifies, at minimum:
 3. The corresponding writable-disk snapshot/generation and applicable EEPROM,
    virtual-console identity and persistent peripheral state.
 4. Complete CPU/device state, pause intent and validated bounded payload metadata.
+
+These are internal compatibility bindings for one saved game session. Mutable
+kernel state is included in machine state. A frontend-only revision does not
+change the state ABI by itself; cross-version native-state compatibility needs
+evidence. The cartridge path uses retained native whole-machine snapshot owners,
+with Rust validation/publication and isolated restore attempts. It does not
+introduce a second machine serializer. The active issue records earned results.
 
 Quiesce through the engine's actual synchronization mechanism. Complete guest
 block writes, capture a matching machine/disk boundary, durably store all required

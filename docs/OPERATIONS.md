@@ -67,6 +67,13 @@ the same identity, ownership, shared/project lease, reserve and inode checks to
 that concrete source/build/profile phase. This is not a standing increase for
 unrelated work or a relaxation of internal-host admission.
 
+[XBX-CARTRIDGE-1](CARTRIDGE.md) has its own fixed additional6GiB allowance above
+its recorded11,514,675,200byte start allocation. It uses the same existing locks
+and shared12GiB reserve, not a fresh baseline for each attempt. It retains native
+objects and recompiles only a demonstrated missing boundary. Failed profiles,
+private inputs and paused edits remain protected. This does not qualify internal
+Btrfs growth or authorize a public binary release.
+
 Owner-authorized xbx retention work may retire identified rebuildable objects,
 successful packaging stages and verified duplicates after recording their exact
 scope and retained recovery source. Keep canonical source/pins, unfinished edits,

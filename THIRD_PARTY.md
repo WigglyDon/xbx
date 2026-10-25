@@ -252,3 +252,28 @@ is a mechanical host ABI adapter. Extracted upstream function bodies and their
 linked fixture keep actual upstream obligations. No binary is published. See
 [OPEN_STARTUP.md](docs/OPEN_STARTUP.md) and `open-startup.lock.json` for pins,
 qualification limits and actual artifact identities.
+
+## Cartridge session policy and headless native transport
+
+GCX at `ac9693c5c3aee9d9407cb8abfa42632414f73020` supplies reviewed MIT policy
+ideas: `crates/gcx/src/checkpoint.rs` (blob
+`450d68071db78d5aa475feb3b5c54e547807752b`), `crates/gcx/src/storage.rs`
+(`5841f97982d7e213f395df27713c84a107559dcf`), `native/bridge.cpp`
+(`85746e3a320ea007175ca3180e15acfb0bf21548`) and checkpoint/storage sections of
+`docs/ARCHITECTURE.md` (`c21acf2b7d21f20f61cd447e59912357ae6c51e3`).
+Copyright (c) 2026 gcx contributors; xbx contributors (bootstrap foundation);
+Machine Rhythm contributors (PSX layout and icon adaptations). Its MIT notice
+is retained in `licenses/GCX-MIT.txt`. The new Rust cartridge modules adapt
+validation before mutation, generation tracking before writes, durable reference
+publication and failed-load isolation to Xbox HDD/EEPROM and qcow2 whole-machine
+state. They do not copy the GameCube card representation or modify GCX.
+
+`patches/xemu-headless-session.patch` modifies retained xemu `03b988c9` frontend
+`ui/xemu.c`, preserving its GPL-2.0-or-later lineage. It adds the missing
+no-presentation init/retirement handshake; native snapshot/device owners remain
+upstream. The accepted base and RAMHT modifications remain in the linked core.
+`native/fixtures/cartridge.S` and its Rust XBE/XISO builder are original MIT
+synthetic code. LPC47M157/16550 and ATA register constants are public interface
+facts, cross-checked against pinned public device implementations. Terminal input
+and a reserved sector marker qualify only these disposable original programs,
+not controller input, commercial saves or Fable.

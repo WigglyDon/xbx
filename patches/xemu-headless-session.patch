@@ -1,0 +1,47 @@
+--- a/ui/xemu.c
++++ b/ui/xemu.c
+@@ -123,6 +123,8 @@
+ static QemuThread vblank_thread;
+ static bool qemu_exiting;
+ static int exit_status;
++/* -display none has no frontend init/finalize callbacks. */
++static bool xbx_no_presentation;
+ 
+ void tcg_register_init_ctx(void); // tcg.c
+ 
+@@ -1261,6 +1263,9 @@
+ static void *qemu_main(void *opaque)
+ {
+     qemu_init(gArgc, gArgv);
++    if (xbx_no_presentation) {
++        qemu_sem_post(&display_init_sem);
++    }
+     exit_status = qemu_main_loop();
+     qatomic_set(&qemu_exiting, true);
+     bql_unlock();
+@@ -1334,6 +1339,11 @@
+ int main(int argc, char **argv)
+ {
+     QemuThread thread;
++    for (int i = 1; i + 1 < argc; i++) {
++        if (!strcmp(argv[i], "-display") && !strcmp(argv[i + 1], "none")) {
++            xbx_no_presentation = true;
++        }
++    }
+ 
+     setlocale(LC_NUMERIC, "C");
+ 
+@@ -1405,6 +1415,13 @@
+     qemu_thread_create(&thread, "qemu_main", qemu_main,
+                        NULL, QEMU_THREAD_JOINABLE);
+     qemu_sem_wait(&display_init_sem);
++    if (xbx_no_presentation) {
++        /* The native machine/GPU owners service state without a displayed
++         * frame. There is no display owner to await or finalize here. */
++        qemu_sem_post(&display_shutdown_sem);
++        qemu_thread_join(&thread);
++        return exit_status;
++    }
+ 
+     gui_grab = 0;
+     if (gui_fullscreen) {

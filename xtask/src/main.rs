@@ -3,6 +3,7 @@ use std::process::Command;
 
 mod apk;
 mod capacity;
+mod cartridge;
 mod desktop;
 mod kernel;
 mod loader_fixture;
@@ -28,6 +29,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let source = root.join(".local/src/xemu-android");
     let build = root.join(".local/build-android");
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args.first().is_some_and(|a| a.starts_with("cartridge-")) {
+        return cartridge::command(
+            args.get(1).map(Path::new).unwrap_or(root),
+            args.first().unwrap(),
+            args.get(2).map(String::as_str).unwrap_or("v1"),
+        );
+    }
     if args.first().is_some_and(|a| a.starts_with("open-startup-")) {
         return open_startup::command(
             args.get(1).map(Path::new).unwrap_or(root),

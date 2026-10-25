@@ -15,6 +15,9 @@ Package original Rust software, correctly licensed engine/runtime components,
 necessary notices, and independently distributable boot/kernel and generated
 storage components that have passed qualification. Users should not assemble a
 developer toolchain, download native cores separately or select obscure modes.
+The boot/kernel is an immutable internal runtime resource selected by xbx, not
+a user-managed input or separately saved firmware session. Private reference
+inputs are excluded from the ordinary resource manifest and launch path.
 
 An open firmware candidate's license is not an audit of every source and binary.
 Reproduce from pinned source, inspect build-time downloads, distinguish open

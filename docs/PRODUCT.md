@@ -7,7 +7,13 @@ successful PS1 experience is the model: a game can be left, another opened, the
 phone folded or the process restarted, and the right game resumes safely. Xbox
 needs its own implementation, not a rebrand of PSX or a merger of console cores.
 
-The product is **choose a local game -> play -> leave -> return**. A Home Screen
+The product is **choose a local game -> play -> leave -> return**. Master's
+[cartridge assignment](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6400021880)
+defines game images as cartridges conceptually: import once, without mandatory
+repackaging or duplication. The integrated runtime supplies its own pinned open
+system implementation and generates game-isolated writable storage. Firmware
+selection and separate firmware snapshots are not ordinary product concepts.
+A Home Screen
 shortcut is an entrance to an identified game, not a menu of emulation cores.
 The ordinary player should not choose JIT modes, graphics backends, BIOS regions
 or obscure compatibility switches. Use safe technical defaults with compact,
@@ -60,7 +66,10 @@ and reveals usable touch controls. This is not a reason to require a controller
 for the first touch-player milestone.
 
 Pause feedback is immediate. User pause survives focus, display and lifecycle
-changes. Background behavior defaults to paused, silent and checkpointed. Audio
+changes. An interruption preserves explicit user Pause separately; healthy return
+automatically resumes unless the user chose Pause. Explicit Stop/Restart uses
+current ordinary saves. An incompatible checkpoint requires recovery, never an
+unannounced cold boot. Background behavior defaults to paused, silent and checkpointed. Audio
 focus belongs to the platform. No silent-audio keepalive service or background
 emulation assumption. Audio queues and input must not replay stale activity when
 returning. Adopt reported cadence rather than manufacturing a 60-FPS requirement

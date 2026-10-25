@@ -33,6 +33,15 @@ underclocking, skipped work or a misleading FPS counter.
 
 ## Durable progress and resume
 
+XBX-CARTRIDGE-1 requires an original unsaved RAM state to survive two genuinely
+fresh runtimes through the same shared session policy, then A -> B -> A with
+isolated storage. A terminal fixture is mechanism evidence, not controller or
+Fable acceptance. Record actual native quiesce/capture/load/retire acknowledgments,
+latency, allocated/apparent bytes and observed memory. Saving while already paused
+with no presentation surface must not depend on a later displayed frame. Exercise
+newer ordinary saves, interrupted publication, incompatible/damaged state and
+partial native load against synthetic profiles before claiming safe automatic return.
+
 Complete an ordinary in-game HDD save; fully restart the app and load it through
 the game's own menu. Independently prove complete checkpoint resume to a known
 scene. Test game A -> game B -> game A after both acquired meaningful progress.

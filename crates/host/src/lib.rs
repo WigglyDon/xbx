@@ -3,6 +3,7 @@
 pub mod api_journal;
 pub mod branch;
 pub mod callsite;
+pub mod cartridge;
 #[cfg(not(target_os = "android"))]
 pub mod contract;
 #[cfg(not(target_os = "android"))]
