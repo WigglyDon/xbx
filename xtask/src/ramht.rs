@@ -1,9 +1,9 @@
 //! One retained-core RAMHT boundary repair, original fixture and qualification.
 use crate::ramht_workspace::Workspace;
 use crate::reference::{git, hash};
-use std::fs::{self, OpenOptions};
+use std::fs::{self, File, OpenOptions};
 use std::io::Write;
-use std::os::unix::fs::DirBuilderExt;
+use std::os::unix::fs::{DirBuilderExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -34,6 +34,110 @@ fn checked(w: &Workspace, cmd: &mut Command, log: &Path, seconds: u64) -> Result
 
 fn source(repo: &Path) -> PathBuf {
     repo.join(format!(".local/src/xemu-reference-{PIN}"))
+}
+
+fn tail_command(source: &str, remaining: u64) -> String {
+    format!("tail -c {remaining} '{}'", source.replace('\'', "'\\''"))
+}
+
+fn media_copy(w: &Workspace, attempt: &str, resume: bool) -> Result<(), Error> {
+    if std::env::var("XBX_REFERENCE_MEDIA_GROWTH_BYTES")?.as_str() != "8589934592" {
+        return Err("media copy requires the separately approved 8 GiB envelope".into());
+    }
+    let _lease = std::env::var("CODEX_ANDROID_LEASE_FD")?.parse::<i32>()?;
+    let source = std::env::var("XBX_REFERENCE_MEDIA_SOURCE")?;
+    let expected = std::env::var("XBX_REFERENCE_MEDIA_EXPECTED_SHA256")?;
+    if !source.starts_with("/sdcard/Download/")
+        || expected.len() != 64
+        || !expected.bytes().all(|b| b.is_ascii_hexdigit())
+    {
+        return Err("missing exact private input identity".into());
+    }
+    let root = w
+        .root
+        .parent()
+        .ok_or("missing project root")?
+        .join("reference-media-v1");
+    let partial = root.join("selected-disc.iso.partial");
+    let final_path = root.join("selected-disc.iso");
+    let transfer = if resume {
+        if std::env::var("XBX_REFERENCE_MEDIA_CONTINUE_SECONDS")? != "1200" {
+            return Err("continuation requires its separately approved time amendment".into());
+        }
+        let retained = fs::symlink_metadata(&partial)?;
+        let expected_partial =
+            std::env::var("XBX_REFERENCE_MEDIA_PARTIAL_BYTES")?.parse::<u64>()?;
+        if !retained.is_file()
+            || retained.len() != expected_partial
+            || retained.len() >= 7_825_162_240
+            || final_path.exists()
+            || root.join("verified.identity").exists()
+        {
+            return Err("preserve unexpected partial or completed media; no append".into());
+        }
+        let remaining = 7_825_162_240 - retained.len();
+        // Stock tail seeks to the final bytes of the unchanged source. Append
+        // preserves the retained prefix; final size/hash must verify before use.
+        let output = OpenOptions::new().append(true).open(&partial)?;
+        let status = w.run_to(
+            Command::new("android-device")
+                .args(["adb", "pixel4-lab", "--", "exec-out"])
+                .arg(tail_command(&source, remaining)),
+            &w.root.join(format!("media-resume-{attempt}.log")),
+            1200,
+            Some(output),
+        );
+        match status {
+            Ok(status) if status.success() => Ok(()),
+            Ok(_) => Err("stock continuation failed; preserve the partial and log".into()),
+            Err(error) => Err(error),
+        }
+    } else {
+        directory(&root)?; // Refuse an existing complete or partial attempt.
+        checked(
+            w,
+            Command::new("android-device")
+                .args(["adb", "pixel4-lab", "--", "pull"])
+                .arg(&source)
+                .arg(&partial),
+            &w.root.join(format!("media-copy-{attempt}.log")),
+            600,
+        )
+    };
+    // Failed, short and invalid buffered writes are retained too. Keep the real
+    // capacity/project leases through durability, before status/hash acceptance.
+    if partial.try_exists()? {
+        w.presence()?;
+        File::open(&partial)?.sync_all()?;
+        File::open(&root)?.sync_all()?;
+    }
+    transfer?;
+    let metadata = fs::symlink_metadata(&partial)?;
+    if !metadata.is_file()
+        || metadata.len() != 7_825_162_240
+        || hash(&partial)? != expected.to_ascii_lowercase()
+    {
+        return Err("transferred media identity differs; preserve partial without launch".into());
+    }
+    fs::set_permissions(&partial, fs::Permissions::from_mode(0o400))?;
+    File::open(&partial)?.sync_all()?;
+    if final_path.exists() {
+        return Err("preserve existing media destination; no overwrite".into());
+    }
+    fs::rename(&partial, &final_path)?;
+    save(
+        &root.join("verified.identity"),
+        &format!(
+            "size=7825162240\nsha256={}\nphone_copy_unchanged=true\n",
+            expected.to_ascii_lowercase()
+        ),
+    )?;
+    File::open(&root)?.sync_all()?;
+    w.check()?;
+    println!(
+        "Exact retained media copied to external storage, full hash verified and synced; phone copies preserved."
+    );
+    Ok(())
 }
 
 fn function(text: &str) -> Result<&str, Error> {
@@ -403,6 +507,9 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
     }
     let w = Workspace::acquire(repo, action)?;
     let result = match action {
+        "ramht-media-copy" | "ramht-media-resume" => {
+            media_copy(&w, attempt, action == "ramht-media-resume")
+        }
         "ramht-check" => fixture(repo, &w, attempt),
         "ramht-configure" => configure(repo, &w, attempt),
         "ramht-reconfigure" => {
@@ -531,4 +638,36 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
         w.completed();
     }
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stock_tail_continuation_preserves_prefix_and_quotes_source() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("xbx-tail-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let source = root.join("image (test)'s.iso");
+        let partial = root.join("partial");
+        let bytes: Vec<u8> = (0..=255).cycle().take(1024).collect();
+        fs::write(&source, &bytes).unwrap();
+        fs::write(&partial, &bytes[..655]).unwrap();
+        let output = OpenOptions::new().append(true).open(&partial).unwrap();
+        let status = Command::new("sh")
+            .arg("-c")
+            .arg(tail_command(source.to_str().unwrap(), 369))
+            .stdout(Stdio::from(output))
+            .status()
+            .unwrap();
+        assert!(status.success());
+        assert_eq!(fs::read(&partial).unwrap(), bytes);
+        fs::remove_file(source).unwrap();
+        fs::remove_file(partial).unwrap();
+        fs::remove_dir(root).unwrap();
+    }
 }

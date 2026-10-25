@@ -153,3 +153,42 @@ preserved; no overwrite, permanent internal-host copy, new streaming framework,
 USB-mode workaround or emulator launch from unverified media is assigned.
 The concrete next prerequisite is that bounded staging amendment or an already
 supported read-only media view with qualified custody/return.
+
+Don subsequently authorized that exact copy, then a bounded continuation after
+its ten-minute transfer deadline. The ordinary Rust runner now accepts only the
+explicit additional8GiB envelope, supplied separately by the admitted operator;
+its default6GiB candidate bound is unchanged. The combined envelope is14GiB above
+the original allocation baseline, with the same shared12GiB reserve, identity,
+inode, aggregate accounting and existing shared/project locks. The actual Android
+lease is inherited through the transfer subprocess. No USB mode change is needed.
+
+The first stock `adb pull` reached its600-second deadline and all owned children
+were retired. Its process completed after610.081seconds, including retirement.
+The retained partial settled at5,644,288,000bytes, leaving2,180,874,240bytes.
+It is unverified and cannot be launched. A subsequent flush under the existing
+storage leases completed; partial and directory durability were recorded. No
+recent USB/block/filesystem error messages were found in the bounded kernel-log
+check. This does not qualify sustained write performance or hardware endurance.
+Pixel4's unchanged USB configuration and screen-off/nonsecure return were
+verified and its transaction released; no phone file/app/settings write occurred.
+The post-copy source metadata check was skipped on the failed transfer.
+
+The failed attempt exposed a durability gap in the ordinary copy task. The
+runner now flushes a retained partial and directory before releasing its storage
+leases on failure or accepting its size/hash on success. The continuation uses
+stock `tail` into an append-only file descriptor, preserving the retained prefix;
+an inherited OS file-size limit bounds the output to the selected image size.
+Remote filenames are shell-quoted. A synthetic binary fixture tests actual
+stock-tail execution with spaces and an apostrophe, exact suffix length and
+prefix preservation. A separate boundary test refuses arbitrary budget values.
+Both focused tests, Clippy with warnings denied and formatting passed in an
+isolated snapshot excluding every paused path. The initial descriptor-vector
+compile failure and all intervening source/build attempts are retained.
+
+Continuation is gated on its explicit1200-second amendment, unchanged input
+size, exact retained partial length, fresh qualified phone custody and successful
+stock-command availability check. No existing completed image is overwritten.
+Full expected SHA-256, exact complete size, storage sync and read-only sealing
+remain mandatory before native use. The approved continuation has not yet run;
+the latest phone custodian's return must first be reconciled. The deadline is
+not extended silently, and a free lock alone does not prove a verified return.

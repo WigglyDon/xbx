@@ -16,12 +16,21 @@ type Error = Box<dyn std::error::Error>;
 const GIB: u64 = 1024 * 1024 * 1024;
 const GROWTH: u64 = 6 * GIB;
 
+fn growth_bound(media: Option<&std::ffi::OsStr>) -> Result<u64, Error> {
+    match media.and_then(std::ffi::OsStr::to_str) {
+        None if media.is_none() => Ok(GROWTH),
+        Some("8589934592") => Ok(GROWTH + 8 * GIB),
+        _ => Err("only the explicit owner-approved 8 GiB media amendment is supported".into()),
+    }
+}
+
 pub struct Workspace {
     pub root: PathBuf,
     project: PathBuf,
     mount: PathBuf,
     uuid: String,
     maximum: u64,
+    growth: u64,
     shared: File,
     project_lock: File,
     phase_record: Option<PathBuf>,
@@ -64,6 +73,7 @@ impl Workspace {
             mount: PathBuf::from(required("XBX_SHARED_MOUNT")?),
             uuid: required("XBX_SHARED_UUID")?,
             maximum: 0,
+            growth: growth_bound(std::env::var_os("XBX_REFERENCE_MEDIA_GROWTH_BYTES").as_deref())?,
             shared,
             project_lock,
             phase_record: None,
@@ -72,8 +82,8 @@ impl Workspace {
         };
         this.presence()?;
         let baseline = this.allocated()?;
-        if this.available()? < 12 * GIB + GROWTH {
-            return Err("preserve shared 12 GiB reserve plus the 6 GiB candidate envelope".into());
+        if this.available()? < 12 * GIB + this.growth {
+            return Err("preserve shared 12 GiB reserve plus the admitted growth envelope".into());
         }
         if !this.root.exists() {
             fs::DirBuilder::new().mode(0o700).create(&this.root)?;
@@ -89,7 +99,7 @@ impl Workspace {
         this.maximum = fs::read_to_string(this.root.join("allocation-base.bytes"))?
             .trim()
             .parse::<u64>()?
-            .checked_add(GROWTH)
+            .checked_add(this.growth)
             .ok_or("allocation bound overflow")?;
         this.check()?;
         this.phase_record = std::env::var_os("XBX_SHARED_PHASE_RECORD").map(PathBuf::from);
@@ -106,11 +116,12 @@ impl Workspace {
             let timestamp = std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)?
                 .as_secs();
-            let growth = if held { GROWTH } else { 0 };
+            let growth = if held { self.growth } else { 0 };
+            let bound = self.growth;
             fs::write(
                 path,
                 format!(
-                    "{{\"owner\":\"xbx\",\"phase\":\"{}\",\"pid\":{},\"utc_unix_seconds\":{timestamp},\"status\":\"{status}\",\"lease_held\":{held},\"data_growth_bound\":{GROWTH},\"shared_floor\":{},\"outstanding_growth_commitment\":{growth}}}\n",
+                    "{{\"owner\":\"xbx\",\"phase\":\"{}\",\"pid\":{},\"utc_unix_seconds\":{timestamp},\"status\":\"{status}\",\"lease_held\":{held},\"data_growth_bound\":{bound},\"shared_floor\":{},\"outstanding_growth_commitment\":{growth}}}\n",
                     self.phase,
                     std::process::id(),
                     12 * GIB
@@ -235,14 +246,28 @@ impl Workspace {
         log: &Path,
         seconds: u64,
     ) -> Result<std::process::ExitStatus, Error> {
+        self.run_to(command, log, seconds, None)
+    }
+
+    pub fn run_to(
+        &self,
+        command: &mut Command,
+        log: &Path,
+        seconds: u64,
+        stdout: Option<File>,
+    ) -> Result<std::process::ExitStatus, Error> {
         self.check()?;
+        let media_output = stdout.is_some();
         let file = OpenOptions::new()
             .write(true)
             .create_new(true)
             .mode(0o600)
             .open(log)?;
         command
-            .stdout(Stdio::from(file.try_clone()?))
+            .stdout(Stdio::from(match stdout {
+                Some(output) => output,
+                None => file.try_clone()?,
+            }))
             .stderr(Stdio::from(file));
         for (key, relative) in [
             ("TMPDIR", "tmp"),
@@ -260,8 +285,18 @@ impl Workspace {
             .env("PIP_NO_INDEX", "1")
             .env("PIP_DISABLE_PIP_VERSION_CHECK", "1")
             .process_group(0);
-        let fds = [self.shared.as_raw_fd(), self.project_lock.as_raw_fd()];
-        command.env("XBX_TASK_LEASE_FDS", format!("{},{}", fds[0], fds[1]));
+        let mut fds = vec![self.shared.as_raw_fd(), self.project_lock.as_raw_fd()];
+        if let Some(fd) = std::env::var_os("CODEX_ANDROID_LEASE_FD") {
+            fds.push(
+                fd.to_str()
+                    .ok_or("invalid Android lease descriptor")?
+                    .parse::<i32>()?,
+            );
+        }
+        command.env(
+            "XBX_TASK_LEASE_FDS",
+            fds.iter().map(i32::to_string).collect::<Vec<_>>().join(","),
+        );
         unsafe extern "C" {
             fn fcntl(fd: i32, cmd: i32, ...) -> i32;
             fn setrlimit(resource: i32, limits: *const [u64; 2]) -> i32;
@@ -269,12 +304,15 @@ impl Workspace {
         }
         unsafe {
             command.pre_exec(move || {
-                for fd in fds {
+                for &fd in &fds {
                     if fcntl(fd, 2, 0) < 0 {
                         return Err(io::Error::last_os_error());
                     }
                 }
                 if setrlimit(4, &[0, 0]) < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                if media_output && setrlimit(1, &[7_825_162_240, 7_825_162_240]) < 0 {
                     return Err(io::Error::last_os_error());
                 }
                 Ok(())
@@ -360,4 +398,22 @@ fn group_alive(group: u32) -> Result<bool, Error> {
         }
     }
     Ok(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::OsStr;
+
+    #[test]
+    fn media_budget_requires_exact_scoped_amendment() {
+        assert_eq!(growth_bound(None).unwrap(), 6 * GIB);
+        assert_eq!(
+            growth_bound(Some(OsStr::new("8589934592"))).unwrap(),
+            14 * GIB
+        );
+        for value in ["", "0", "8589934593", "unlimited", "-1"] {
+            assert!(growth_bound(Some(OsStr::new(value))).is_err());
+        }
+    }
 }

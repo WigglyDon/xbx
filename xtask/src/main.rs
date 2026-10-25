@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     if let Some(
         action @ ("ramht-check" | "ramht-configure" | "ramht-reconfigure" | "ramht-build"
-        | "ramht-observe" | "ramht-title"),
+        | "ramht-observe" | "ramht-title" | "ramht-media-copy" | "ramht-media-resume"),
     ) = args.first().map(String::as_str)
     {
         return ramht::command(
