@@ -208,3 +208,41 @@ does not overwrite the historical failed MTP return. Shared/project leases were
 also verified released. The next existing peer received the requested bounded
 shared-workspace slot before the prepared Fable observation; this coordination
 does not claim that peer's execution, capacity or acceptance.
+
+## First unchanged Fable observation
+
+After the peer's actual writer retirement, fresh admission observed no USB I/O
+in flight, zero host writeback, ample memory, more than101GB externally available
+and released shared/project locks. One fresh64MiB Fable profile used the same
+RAMHT candidate, private flash/MCPX, pristine dashboard/EEPROM seeds, native FP,
+keyboard ControllerS, OpenGL/llvmpipe and dummy audio. The structural inspector
+reported the same7,825,162,240-byte image, partition offset405,798,912, title
+`4d53000d`, region5 and version3. The title receipt retained `network=core_default`;
+no network-feature qualification was attempted. This differs from the dashboard's
+explicit offline command and is recorded as an ordinary configuration gap.
+
+All seven retained PNGs were reviewed. They show the Xbox/Microsoft boot logo,
+an advancing armored-character introduction, then the Lionhead Studios logo
+with smoke. The introduction was visible before input. Start, D-pad Down and
+D-pad Up were delivered later; their images show continued animation, without
+a demonstrated menu/control response. The planned A did not execute. **This is
+actual title startup/video progress, not menu, gameplay or responsive-control
+acceptance, and not a completed compatibility failure.**
+
+The240-second capture helper exceeded its18-second controller limit. A valid
+late PNG was preserved and reviewed, but the operator's exception requested
+ordinary early retirement. The native observation ended after258.349seconds:
+exit0, `forced=false`, QMP acknowledged stop/quit and storage synced. The outer
+operator/task exited1 because of the capture failure. Native status and operator
+failure are distinct; neither is a300-second game timeout. The native PID and
+all shared/project/profile writer leases were subsequently verified released.
+The complete profile, seven images, input timings and original receipts remain.
+
+The first-party launcher had forced software graphics. A bounded existing-host
+GLX capability check observed accelerated Intel OpenGL4.6 on the same desktop;
+this is capability evidence, not a native game result. An ordinary correction
+is being prepared to select that host path explicitly, make title networking
+explicitly offline, defer capture durability to retirement under retained custody
+and keep an optional capture timeout from ending the native observation. The
+original executable and interrupted profile will remain unchanged. No matched
+open-firmware comparison, second-title observation or phone game trial has run.
