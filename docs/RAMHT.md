@@ -365,3 +365,48 @@ The isolated ordinary-source snapshot passed18boundary tests with3native/storage
 tests still gated, Clippy with warnings denied and formatting. Paused source was
 excluded. The full boundary run took96.63seconds on the admitted USB workspace.
 The prior default and retained working supervisor remain available separately.
+
+
+## Positive Fable reference control
+
+The separate600-second reference completed after600.421seconds with native and
+operator exit0, `forced=false`, QMP stop/quit acknowledged and storage synced.
+Its supervisor SHA-256 is
+`584f40446ebf3ccebaf5bcaa88bc31beb23c8ff2267e5be65556dc98a2f4218b`,
+compiled from the tested ordinary source committed at `2fe32c4`. The same retained
+RAMHT executable and immutable reference/seed inputs matched again; the complete
+verified read-only media's metadata stayed unchanged. Intel UHD620 OpenGL4.6
+was observed in the native log. This was functional compatibility observation,
+not an isolated host-performance measurement; another project compiled on the
+host without occupying this shared workspace lease.
+
+All16 retained frames were reviewed. They show boot, white transition, armored
+character, later cinematic imagery, black at300seconds, then the Fable
+**Press START** screen at331/361/391seconds. A at410.124seconds is followed by
+the **main menu, New Game selected**, at421/451/481seconds. A later ordinary
+Start at500.188seconds is followed by the **profile-name keyboard** at511/551/
+586seconds. These actual before/after transitions demonstrate visible menu
+progression and responsive selection. Down and Up occurred while the title
+prompt was displayed; directional menu navigation is not established. One extra
+navigation attempt dispatched after the native deadline refused before input;
+it did not change this result. No character gameplay, audible sound, completed
+profile/save or cold reload is qualified.
+
+All images/input/control directories were synced; shared/project/profile locks
+were verified reacquirable and the native PID absent. The next existing peer
+received actual storage return. The notification again lagged retirement during
+review/host tool dispatch; no writer remained during that lag. Profiles, source,
+media and every earlier attempt remain. Thirteen paused paths matched their
+original bytes and the remaining three retain their paused additions unstaged.
+Neither phone was used. Fold remains deferred by the owner, with second-title
+access waiting for its later window.
+
+This positive reference now justifies the assigned matched official OXOS64
+comparison in a fresh independent profile: same core, verified media, pristine
+disk/EEPROM seeds,64MiB, renderer, input schedule, dummy audio, offline mode and
+600-second interval. Bind the necessary firmware/boot-path difference explicitly:
+private modified-retail flash plus MCPX versus exact official OXOSv0.3.3 without
+MCPX. Do not substitute a writable profile, infer gameplay from the menu or reuse
+historical OXOS/Roswell failures as this result. The comparison remains pending
+its next serialized operating window; no additional second-title or device
+operation is needed to begin this justified comparison.
