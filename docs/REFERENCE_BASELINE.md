@@ -1,5 +1,15 @@
 # Private reference baseline: admission and input inventory
 
+Current continuation: the separate retained-core RAMHT candidate demonstrated
+64MiB dashboard navigation, then unchanged Fable title/main-menu/profile-entry
+progression with actual input responses. See [the positive reference control](RAMHT.md#positive-fable-reference-control)
+for exact source/artifact identities,600.421second normal retirement and limits.
+Gameplay/audio/save are still unqualified. The justified matched official-open
+comparison completed with splash-only imagery and normal retirement; see
+[its decision packet](RAMHT.md#matched-official-open-comparison-and-decision-packet).
+Fold/second-title access is deferred.
+The dated sections below preserve the earlier admission failures and native crash.
+
 The October 24 shared-workspace continuation below supersedes the earlier host
 admission refusal for its bounded external destination. Historical observations
 and internal-storage limitations remain attributable to their original phases.
@@ -270,6 +280,7 @@ The owner's subsequent continuation begins the bounded public RAMHT task in
 geometry problem without proprietary input. The separately retained candidate
 has now built and demonstrated the64MiB dashboard and A/B navigation. Its normal
 QMP retirement timed out; forced termination and storage sync are recorded
-separately from that visible success. No reference game has run. This does not
+separately from that visible success. Later Fable menu/control qualification
+is recorded in RAMHT.md and the current continuation above. This does not
 change the historical private-reference crash. The ordinary preparation envelope
 remains distinct from that candidate's measured, serialized build admission.

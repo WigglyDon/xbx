@@ -410,3 +410,79 @@ MCPX. Do not substitute a writable profile, infer gameplay from the menu or reus
 historical OXOS/Roswell failures as this result. The comparison remains pending
 its next serialized operating window; no additional second-title or device
 operation is needed to begin this justified comparison.
+
+
+## Matched official open comparison and decision packet
+
+The positive reference qualified the assigned one corresponding official OXOS64
+comparison. A fresh independent profile used the exact unmodified official
+v0.3.3 image, SHA-256
+`8bf516fcb453f18925ad0aad75ff923bd5f225420be6b0175d0fe818f0653314`,
+the same retained RAMHT core and ordinary supervisor, verified read-only Fable,
+pristine disk/EEPROM seeds,64MiB, actual Intel OpenGL4.6, native FP, keyboard
+ControllerS, offline mode, dummy audio, capture/input schedule and600-second
+budget. The necessary boot-environment difference is explicit: private
+modified-retail flash/MCPX versus official open flash without MCPX. These are
+separate writable profiles, never firmware substitution in an existing profile.
+
+The open observation completed after **602.574seconds**. Native and observer
+exit0, `forced=false`, QMP stop/quit acknowledged, storage/captures/input/control
+directories synced; no capture timed out. Immutable core/firmware/seed hashes
+matched and verified read-only media metadata stayed unchanged. The native PID
+was absent and shared/project/profile locks were reacquirable at the immediate
+return check. The queued peer received return before visual analysis. About
+98.28GB remained available on the shared volume; the same14GiB aggregate growth
+allowance above the original baseline and12GiB shared reserve were retained.
+This was a completed functional observation, not a host-resource interruption.
+
+**All16 sampled frames decode to identical pixels:** the OXOS startup splash.
+First, intermediate, post-A and final frames were visually reviewed; decoded
+pixel hashes bind every retained frame to that reviewed image. Start, Down, Up,
+A and later Start were delivered at approximately320/350/381/410/500seconds;
+no visible title, menu, gameplay or input response was demonstrated. Actual
+controller attachment was verified. The official image produced zero serial-log
+bytes, so no specific guest exception or missing service is attributed.
+Normal native retirement does not establish guest startup success.
+
+A literal comparison of a retired reference config and the live open config
+initially refused because xemu rewrites configuration on exit, changing formatting
+and omitting defaults. TOML parsing, private-profile path normalization and the
+retained upstream defaults establish settings parity apart from the required
+MCPX path. This evidence check changed neither profile nor any runtime guard.
+
+| Current acceptance boundary | Actual result | Consequence |
+| --- | --- | --- |
+| Private Fable reference | Title prompt -> main menu after A; New Game -> profile-name keyboard after Start | A working menu/selection control now exists for the actual retained media/core |
+| Official OXOS64, matched600seconds | Splash-only sampled frames, no visible control response; normal native retirement | The replacement environment remains unqualified for Fable |
+| Public RAMHT repair and ordinary Rust supervisor | Original regression, build, dashboard navigation, reference menu and matched retirement receipts | Retain these evidenced changes and every predecessor |
+| Android/open installation | No new candidate or device trial | Desktop open-game progression gate remains unmet |
+| Second-title control | Only retained Fold archive, not newly accessed | Wait for the owner's later Fold window; do not download a duplicate |
+
+**Architectural disposition:** retain the current engine lineage, public RAMHT
+repair and Rust-owned product/supervisor. Keep the distributable setup-free
+open-environment requirement. A private working reference is not a shipping
+firmware choice. The matched difference narrows the remaining compatibility
+boundary to the replacement boot/environment path for this configuration; it
+does not isolate one kernel API, prove a particular service fault, certify a
+complete/authentic disc dump or establish any result for Roswell64.
+
+There is no identified small public-contract repair in the silent official
+observation. No evidence supports a further configuration matrix, proprietary
+instruction analysis, kernel-service substitution or a resumed paused probe.
+The next implementation prerequisite is a scoped public/open-environment
+compatibility boundary with an observable contract and original/public
+reproduction. Selecting/instrumenting a new research boundary requires Master's
+scoped decision under AGENTS.md; it cannot be inferred from a static splash.
+This packet provides the working reference, exact matched result and missing
+observability for that decision. It does not request another routine build/run
+approval, a donor tour or a whole-kernel rewrite. The owner-deferred second-title
+check is a separate available continuation when its physical input returns.
+
+No PSX/phone data or source was altered, no new media was copied/extracted, and
+all prior source, builds, profiles, media, unfinished work and evidence remain.
+The original16 paused paths are preserved outside the committed ordinary slice.
+The preceding peer's USB timeout/cleanup overrun was reconciled by its actual
+successful changed-state cleanup before this run; neither a free lock nor that
+prior timeout was treated as a health/capacity grant. No repair, reset, forced
+unmount or weakened guard was attempted. XBX retains no runtime, writer lease,
+device custody or outstanding growth commitment from these completed checks.
