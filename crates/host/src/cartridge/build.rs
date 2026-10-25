@@ -111,11 +111,11 @@ fn fixture(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
 }
 fn package(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
     let project = w.root.parent().ok_or("workspace parent")?;
-    let dir = w.root.join("package-v2");
+    let dir = w.root.join("package-v3");
     c::mkdir(&dir)?;
     c::mkdir(&dir.join("native"))?;
     fs::create_dir_all(dir.join("native/subprojects/slirp"))?;
-    let core = w.root.join("native-v2/core");
+    let core = w.root.join("native-v3/core");
     let open = project.join("open-startup-v1/build-release-v3/bios.bin");
     if c::file_digest(&core)? != resources::CORE || c::file_digest(&open)? != resources::OPEN {
         return Err("accepted input identity differs".into());
@@ -259,7 +259,7 @@ impl Drop for Transport {
 
 fn proof(w: &BuildPaths) -> Result<(), Error> {
     let app = w.root.join(format!("proof-{}", c::new_id()?));
-    let package = w.root.join("package-v2");
+    let package = w.root.join("package-v3");
     println!(
         "{}",
         json!({"fresh_app":app,"packaged_runtime":package,"original_program":true,"phone":false})
@@ -303,6 +303,10 @@ fn proof(w: &BuildPaths) -> Result<(), Error> {
     third.send(json!({"op":"fixture-input","text":"f"}))?;
     third.wait("CART COMPLETE")?;
     third.quit()?;
+    c::write_new(
+        &app.join("runtime.qualified"),
+        resources::Resources::open(&package)?.identity.as_bytes(),
+    )?;
     c::write_new(&app.join("continuity.qualified"),b"original A unsaved2/save1 fresh-process restore; action3; second fresh restore3; A-B-A; real native snapshots; original UART input only\n")?;
     Ok(())
 }
@@ -394,12 +398,8 @@ fn native(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
 }
 
 fn partial(w: &BuildPaths) -> Result<(), Error> {
-    let app = fs::read_dir(&w.root)?
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .find(|p| p.join("continuity.qualified").is_file())
-        .ok_or("no completed original continuity proof")?;
-    let r = resources::Resources::open(&w.root.join("package-v2"))?;
+    let r = resources::Resources::open(&w.root.join("package-v3"))?;
+    let app = qualified(w, &r)?;
     let library = c::library::Library::read(&app)?;
     let entry = library.entries.first().ok_or("original entry")?;
     let receipt = c::desktop::original_partial_load_test(&app, &r, entry)?;
@@ -437,15 +437,19 @@ fn memory(parent: u32) -> Vec<Value> {
         })
         .collect()
 }
-fn qualified(w: &BuildPaths) -> Result<std::path::PathBuf, Error> {
+fn qualified(w: &BuildPaths, r: &resources::Resources) -> Result<std::path::PathBuf, Error> {
     fs::read_dir(&w.root)?
         .filter_map(Result::ok)
         .map(|e| e.path())
-        .find(|p| p.join("continuity.qualified").is_file())
-        .ok_or_else(|| "no completed original continuity proof".into())
+        .find(|p| {
+            p.join("continuity.qualified").is_file()
+                && fs::read_to_string(p.join("runtime.qualified")).is_ok_and(|id| id == r.identity)
+        })
+        .ok_or_else(|| "no completed original continuity proof for this exact runtime".into())
 }
+
 fn clone_original(w: &BuildPaths, r: &resources::Resources) -> Result<std::path::PathBuf, Error> {
-    let source = qualified(w)?;
+    let source = qualified(w, r)?;
     let _app = crate::storage::ProfileLease::acquire(&source)?;
     let library = c::library::Library::read(&source)?;
     let dest = w.root.join(format!("policy-{}", c::new_id()?));
@@ -494,7 +498,7 @@ fn clone_original(w: &BuildPaths, r: &resources::Resources) -> Result<std::path:
     Ok(dest)
 }
 fn policy_proof(w: &BuildPaths) -> Result<(), Error> {
-    let package = w.root.join("package-v2");
+    let package = w.root.join("package-v3");
     let r = resources::Resources::open(&package)?;
     let app = clone_original(w, &r)?;
     let library = c::library::Library::read(&app)?;
@@ -502,7 +506,7 @@ fn policy_proof(w: &BuildPaths) -> Result<(), Error> {
     let profile = app.join("profiles").join(&library.entries[0].profile);
     println!(
         "{}",
-        json!({"isolated_synthetic_app":app,"source_preserved":qualified(w)?,"shared_policy":true})
+        json!({"isolated_synthetic_app":app,"source_preserved":qualified(w,&r)?,"shared_policy":true})
     );
     let mut first = Transport::spawn(&app, &package)?;
     first.send(json!({"op":"open","game":a}))?;
@@ -511,7 +515,7 @@ fn policy_proof(w: &BuildPaths) -> Result<(), Error> {
     first.send(json!({"op":"pause"}))?;
     first.quit()?;
     let mut second = Transport::spawn(&app, &package)?;
-    second.send(json!({"op":"open","game":a}))?;
+    second.send(json!({"op":"return"}))?;
     second.send(json!({"op":"fixture-input","text":"?"}))?;
     if second.send(json!({"op":"serial"}))?["text"]
         .as_str()
@@ -615,7 +619,7 @@ fn paused_contract(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
             + actual[start..]
                 .find("\nvoid hmp_delvm")
                 .ok_or("capture function extent")?;
-        c::write_new(&dir.join("subject.inc"), actual[start..end].as_bytes())?;
+        c::write_new(&dir.join("subject.inc"), &actual.as_bytes()[start..end])?;
         fs::copy(
             repo.join("fixtures/paused_capture_shim.c"),
             dir.join("shim.c"),
@@ -724,7 +728,7 @@ fn native_paused(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
         .ok_or("inputs")?;
     let ui = w.root.join("native-v2/ui.o");
     let identity: Value = c::read_json(&w.root.join("native-v2/build.identity.json"))?;
-    if identity["core_sha256"] != resources::CORE
+    if identity["core_sha256"] != resources::HEADLESS_CORE
         || identity["patch_sha256"]
             != c::file_digest(&repo.join("patches/xemu-headless-session.patch"))?
     {
@@ -760,7 +764,7 @@ fn native_paused(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(
-            &json!({"base_pin":"03b988c9d76553b33ed712ba00822ffdf49f0e7d","prior_core_sha256":resources::CORE,"prior_headless_object_sha256":c::file_digest(&ui)?,"paused_capture_patch_sha256":c::file_digest(&repo.join("patches/xemu-paused-savevm.patch"))?,"regression_result_sha256":c::file_digest(&contract)?,"core_sha256":c::file_digest(&new.join("core"))?,"recompiled_units":["migration/migration-hmp-cmds.c"],"reused_previous_headless_repair":true,"accepted_base_RAMHT_retained":true,"prior_builds_untouched":true}),
+            &json!({"base_pin":"03b988c9d76553b33ed712ba00822ffdf49f0e7d","prior_core_sha256":resources::HEADLESS_CORE,"prior_headless_object_sha256":c::file_digest(&ui)?,"paused_capture_patch_sha256":c::file_digest(&repo.join("patches/xemu-paused-savevm.patch"))?,"regression_result_sha256":c::file_digest(&contract)?,"core_sha256":c::file_digest(&new.join("core"))?,"recompiled_units":["migration/migration-hmp-cmds.c"],"reused_previous_headless_repair":true,"accepted_base_RAMHT_retained":true,"prior_builds_untouched":true}),
         )?,
     )?;
     Ok(())

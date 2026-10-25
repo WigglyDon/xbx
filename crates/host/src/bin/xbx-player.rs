@@ -36,6 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     json!({})
                 }
                 "open" => json!({"restored":player.launch(string("game")?)?}),
+                "return" => json!({"opened":player.return_last()?}),
                 "pause" => {
                     player.pause(true)?;
                     json!({})

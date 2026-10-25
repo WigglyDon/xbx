@@ -19,6 +19,12 @@ pub trait Engine: Sized {
     fn load(&mut self) -> io::Result<()>;
     fn retire(&mut self) -> io::Result<bool>;
 }
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LastGame {
+    schema: u32,
+    game: String,
+}
 pub struct Live<E: Engine> {
     pub native: E,
     pub profile: store::Profile,
@@ -54,11 +60,19 @@ impl<E: Engine> Player<E> {
     }
     pub fn launch(&mut self, id: &str) -> io::Result<bool> {
         let entry = library::Library::read(&self.app)?.resolve(id)?;
-        // Resolve media before disturbing another game's only live state.
-        let (media, _) = library::Library::media(&entry)?;
         if self.live.as_ref().is_some_and(|l| l.binding.game == id) {
-            return Ok(self.live.as_ref().unwrap().restored);
+            let (restored, paused) = {
+                let l = self.live.as_ref().unwrap();
+                (l.restored, l.paused)
+            };
+            if !paused {
+                self.resume()?;
+            }
+            return Ok(restored);
         }
+        // Resolve a different game's media before disturbing the current owner.
+        // A same-game return retains its existing native read-only capability.
+        let (media, _) = library::Library::media(&entry)?;
         self.depart()?;
         let p = store::Profile::open(&self.app, &entry, &self.resources)?;
         let binding = Binding {
@@ -121,10 +135,31 @@ impl<E: Engine> Player<E> {
             running: false,
             committed: false,
         });
+        atomic(
+            &self.app.join("last-game.json"),
+            &json(&LastGame {
+                schema: 1,
+                game: id.into(),
+            })?,
+        )?;
         if !paused {
             self.resume()?
         }
         Ok(checkpoint.is_some())
+    }
+    pub fn return_last(&mut self) -> io::Result<bool> {
+        let last: LastGame = match read_json(&self.app.join("last-game.json")) {
+            Ok(v) => v,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(e) => return Err(e),
+        };
+        if last.schema != 1 || !valid_id(&last.game) {
+            return Err(io::Error::other(
+                "invalid saved game target; collection and progress retained",
+            ));
+        }
+        self.launch(&last.game)?;
+        Ok(true)
     }
     pub fn resume(&mut self) -> io::Result<()> {
         let l = self

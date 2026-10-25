@@ -57,7 +57,8 @@ sector holds a separate durable marker. RAM contains a counter and arithmetic
 integrity cookie. These are original-program mechanism checks, not Xbox
 controller, commercial in-game save or Fable acceptance.
 
-The tools-v9 product path completed this sequence with the packaged open runtime
+The tools-v15 product path completed this sequence on corrected native-v3
+(the earlier tools-v9 result remains retained), using the packaged open runtime
 and a fresh application-data directory:
 
 1. A started at RAM0/save0. Input advanced RAM1, wrote save1, then advanced RAM2
@@ -78,11 +79,15 @@ Two fixtures have SHA-256
 `317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a`
 and `85a173c73aa642fd82f64146149c6a37c38720ac8a020eb03d0c4f34de6c3255`.
 
-Measured checkpoint operations were78.468s and53.033s; fresh restores took
-37.114s and39.648s, including host resource/storage validation. The A/B switch
-back took81.675s. These shared-workspace values do not qualify low-friction
-latency. A bounded120s sample of the first player/native pair observed VmHWM
-3312KiB/411148KiB; that is not a whole-proof aggregate peak or device result.
+Measured corrected-runtime checkpoint operations were5.760s and8.450s; fresh
+restores took24.232s and19.401s, including resource/storage validation. The A/B
+switch back took11.443s. Sampled native high-water values reached403068KiB and
+the Rust player3500KiB. Current original checkpoints occupy approximately5.6MiB
+each (qcow2 lengths10.6--10.7MiB plus256-byte EEPROM and750-byte binding record).
+These are operation-time process samples, not simultaneous aggregate peaks or
+device results. They do not qualify low-friction latency. Earlier tools-v9
+checkpoint operations78.468s/53.033s and restores37.114s/39.648s remain evidence;
+uncontrolled shared-host conditions prevent attributing a speedup to a patch.
 
 ## Supported native correction and focused checks
 
@@ -118,35 +123,53 @@ accepted checkpoint, pointer and generation were unchanged afterward. Native
 retirement was clean. This was an intentionally incompatible original-only
 topology; no game/platform defect is attributed to that induced failure.
 
-The later tools-v14 candidate compiles, including explicit Stop, protected
-retirement of known successful storage generations, and focused follow-up
-drivers. The seven-case retention/safety checks and actual shared-policy
-Pause/newer-ordinary-save follow-up have not run on that source. The older six
-passing tests remain attributed to tools-v11. Later automatic-return edits
-remain unfinished separately.
+The tools-v16 exact source compiles; seven focused storage cases, Clippy with
+warnings denied and formatting pass. The additional case protects legacy and
+failed storage while retiring only a known managed successful predecessor after
+durable replacement. A byte-slice Clippy failure on tools-v15 was corrected;
+its seven passing cases remain preserved separately.
 
-## Paused capture preparation gap and pending correction
+Actual tools-v16 shared-policy follow-up passed on a private copy of the
+qualified original app. Explicit Pause captured automatically; a fresh process
+used the persisted last-game target, remained paused and emitted no pending
+terminal response until Resume. It recovered RAM3/save1, then reached RAM4 and
+committed. A subsequent ordinary guest save wrote4 before explicit Stop. An
+injected older checkpoint reference was refused before native restore; current
+disk/EEPROM, rejected checkpoint, pointer and generation were byte-for-byte
+unchanged by refusal. Explicit Restart cold-loaded RAM0/save4, then new input
+produced RAM1/save4. Every normal native return was clean. The original completed
+proof and rejected checkpoint remained intact.
 
-Further public-source audit found a preparation gap in the prototype's HMP
-route: `save_snapshot` calls `vm_stop(SAVE_VM)` while already paused, but
-`do_vm_stop` notifies device owners only from RUNNING/SUSPENDED. NV2A's SAVE_VM
-preparation can therefore be skipped even though serialization and its post-save
-callbacks run. The earned original RAM/disk restoration does not establish
-complete GPU/APU preparation or sound-state correctness.
+## Paused capture preparation correction
 
-`xemu-paused-savevm.patch` prepares a narrow correction using the retained Android
-wrapper's run/pause transition under BQL, restoring explicit Pause after success
-or error. The original Rust/C host fixture links the exact public HMP function
-with controlled preparation/error dependencies. Its first host link failed for
-missing PIC; the corrected `-fPIC` build task compiles, but the fixture itself
-has not executed. No before/after test success or corrected native image is
-claimed. The native follow-through reuses the headless object and recompiles
-only the HMP unit; it is gated on the original regression.
+Public-source audit found a preparation gap in the prototype's HMP route:
+`save_snapshot` calls `vm_stop(SAVE_VM)` while already paused, but `do_vm_stop`
+notifies device owners only from RUNNING/SUSPENDED. NV2A SAVE_VM preparation can
+therefore be skipped although serialization and post-save callbacks run. The
+earlier RAM/disk result alone did not establish those preparations or sound.
 
-Next admitted work is the prepared paused-capture regression, its single-unit
-native repair, fresh integrated original continuity/retention checks, and the
-actual shared-policy Pause/newer-save check. Clean and failed profiles remain
-preserved; no checkpoint is silently migrated to another core identity.
+`xemu-paused-savevm.patch` applies the retained Android wrapper's narrow
+run/pause transition under BQL, restoring explicit Pause after success or error.
+The original Rust/C host fixture links the exact public HMP function with
+controlled preparation/error dependencies. Its first host link failed for
+missing PIC and is retained. The corrected exact-function regression executed:
+before, running control passed but both paused cases failed to prepare devices;
+after, paused success, paused error preservation and running control all passed.
+This host fixture controls dependencies; it is not a full native serializer,
+i386 ABI or guest concurrency test.
+
+Native-v3 reused the headless object and recompiled only the HMP unit, relinking
+retained base/RAMHT objects. Core SHA-256 is
+`b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6`;
+paused patch SHA-256 is
+`2e2c0938a26487168b8ebebe80442296d7cccd35ee14e3cbc9980bfe5e7aa556`.
+Its exact runtime identity gates reuse of original proof checkpoints. The full
+fresh-process/A-B-A proof and actual policy follow-up above passed on this
+package. A new actual native partial-load fault also passed: restoration failed
+on the deliberately omitted saved UART section, current disk/EEPROM/checkpoint/
+pointer/generation stayed unchanged and native retirement was clean. Prior
+checkpoints are not silently migrated. Sound output and GPU/APU component-value
+coverage remain distinct from these original CPU/RAM/disk and owner-route checks.
 
 ## Boundaries and preservation
 
@@ -156,16 +179,16 @@ attempt resets that baseline or spends an earlier allowance. Exact private
 commands/source snapshots/build identities, output and failure receipts remain
 in the owned `cartridge-v1` workspace/evidence. No game media was duplicated.
 
-At18:58:46UTC, the actual capacity lease was busy, with the xbx project lease and
-all three qualified app/profile leases reacquirable. No owned runtime/build job
-remained. Read-only accounting measured12,287,623,168 allocated bytes, an increase
-of772,947,968bytes;93,440,376,832 bytes and7,504,252 inodes were available. Those
-readings do not grant capacity. Repeated admission refusals started no dependent
-test/build and created no reservation, peer pause or replacement scheduler.
+Earlier capacity refusals started no dependent test/build or reservation. Later
+phases admitted through the same locks and unchanged budget, completed and
+released normally. At21:14:49UTC the v16 admission measured12,634,599,424 allocated
+bytes,92,976,795,648 bytes available and7,503,441 inodes. This timestamped reading
+does not grant a later window or reset the baseline. No peer pause or replacement
+scheduler was created.
 
 Fable's accepted open result remains splash-only; no new Fable result is claimed
 here. The corrected-logging observation and scoped startup-lifetime comparison
-are deferred until the first complete storage-safety slice, then continue under
+are next under
 Master's bounded public-platform authority. Android lifecycle integration and a
 private candidate, normal controller play, sound and ordinary save/cold reload
 remain unfinished. No phone, PSX/sibling mutation, project pause, cross-agent

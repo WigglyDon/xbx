@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "purpose": "private Linux cartridge continuity candidate; not a public binary release",
+  "engine": {
+    "repository": "https://github.com/xemu-project/xemu",
+    "commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+    "base_patch": "patches/xemu-reference-desktop.patch",
+    "ramht_patch": "patches/xemu-reference-ramht.patch",
+    "headless_patch": "patches/xemu-headless-session.patch",
+    "headless_patch_sha256": "0d0e7c5abf05ad3ed268fdef2d7a3467d331960f761d5c77fd61eb6c2ae1e72a",
+    "paused_capture_patch": "patches/xemu-paused-savevm.patch",
+    "paused_capture_patch_sha256": "2e2c0938a26487168b8ebebe80442296d7cccd35ee14e3cbc9980bfe5e7aa556",
+    "candidate_sha256": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+    "state_abi": 1
+  },
+  "open_system": {
+    "repository": "https://github.com/kooscode/oxos",
+    "commit": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+    "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+    "required_read_patch": "patches/oxos-required-reads.patch",
+    "phase_patch": "patches/oxos-basic-startup-phases.patch",
+    "IMAGE": "open",
+    "SELFTEST": 0,
+    "TRACE_IMPORTS": 0,
+    "DEBUG": 0,
+    "SERIAL": 0,
+    "SPLASH": "none",
+    "image_sha256": "c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8"
+  },
+  "native_regression": "exact public HMP paused cases red before and three cases green after; native-v3 original two-generation A-B-A, explicit Pause/return, newer-save refusal/restart and actual partial-load containment passed",
+  "profile": {
+    "memory_mib": 64,
+    "network": "none",
+    "floating_point": "native",
+    "storage": "Rust-generated empty FATX with isolated writable qcow2 and generated EEPROM",
+    "restore": "native whole-machine snapshot into isolated attempt, generation and logical-save revalidation"
+  }
+}

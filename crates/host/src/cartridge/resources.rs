@@ -2,7 +2,8 @@
 use super::*;
 use std::path::{Path, PathBuf};
 pub const REFERENCE_CORE: &str = "eaefdb4f61d01133557374585383e531438e0341d11579c11e8575283a5ccb9b";
-pub const CORE: &str = "554f6164155b673bd97be067d435f98bebe54c73dd0fa556e7480de9035e543f";
+pub const HEADLESS_CORE: &str = "554f6164155b673bd97be067d435f98bebe54c73dd0fa556e7480de9035e543f";
+pub const CORE: &str = "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6";
 pub const OPEN: &str = "c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8";
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
