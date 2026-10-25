@@ -41,6 +41,7 @@ pub struct Native {
     serial: UnixStream,
     receipt: PathBuf,
     pub directory: PathBuf,
+    pub(crate) run: PathBuf,
     retired: bool,
 }
 impl Native {
@@ -92,16 +93,7 @@ impl Native {
             .env("SDL_AUDIO_DRIVER", "dummy")
             .env("SDL_VIDEO_DRIVER", "x11")
             .env("LIBGL_ALWAYS_SOFTWARE", "0")
-            .args([
-                "-S",
-                "-accel",
-                "tcg",
-                "-nic",
-                "none",
-                "-display",
-                "none",
-                "-config_path",
-            ])
+            .args(["-S", "-accel", "tcg", "-nic", "none", "-config_path"])
             .arg(run.join("xemu.toml"))
             .arg("-qmp")
             .arg(format!("unix:{},server=on,wait=off", socket_path.display()))
@@ -119,6 +111,9 @@ impl Native {
             .stdin(Stdio::null())
             .stdout(log.try_clone()?)
             .stderr(log);
+        if !r.window {
+            c.args(["-display", "none"]);
+        }
         for (key, name) in [
             ("XDG_DATA_HOME", "data"),
             ("XDG_CONFIG_HOME", "config"),
@@ -134,6 +129,7 @@ impl Native {
         p.lease.inherit_for(&mut c);
         app_lease.inherit_for(&mut c);
         let mut child = Process(c.spawn()?);
+        write_new(&run.join("native.pid"), child.id().to_string().as_bytes())?;
         let deadline = Instant::now() + Duration::from_secs(20);
         let socket = loop {
             match UnixStream::connect(&socket_path) {
@@ -168,12 +164,29 @@ impl Native {
             serial,
             receipt: run.join("native-return.json"),
             directory: dir.into(),
+            run,
             retired: false,
         };
         let mut greeting = String::new();
         native.reader.read_line(&mut greeting)?;
         native.call("qmp_capabilities", json!({}))?;
         native.call("query-status", json!({}))?;
+        if r.window {
+            let deadline = Instant::now() + Duration::from_secs(10);
+            loop {
+                let usb = native.hmp("info usb")?;
+                if usb.contains("Xbox") && usb.contains("Controller") {
+                    write_new(&native.run.join("usb-devices.txt"), usb.as_bytes())?;
+                    break;
+                }
+                if Instant::now() >= deadline {
+                    return Err(io::Error::other(
+                        "visible runtime Controller S did not attach",
+                    ));
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        }
         Ok(native)
     }
     pub fn call(&mut self, execute: &str, arguments: Value) -> io::Result<Value> {
@@ -266,6 +279,9 @@ impl Native {
         }
         Ok(String::from_utf8_lossy(&bytes).into_owned())
     }
+    pub(crate) fn exited(&mut self) -> io::Result<bool> {
+        Ok(self.child.try_wait()?.is_some())
+    }
     /// Original fixture terminal input only; no title memory access/observer.
     pub fn fixture_input(&mut self, text: &str) -> io::Result<()> {
         if text.len() > 64 || !text.is_ascii() {
@@ -315,8 +331,13 @@ impl Drop for Native {
     fn drop(&mut self) {
         if !self.retired {
             let _ = self.child.kill();
-            let _ = self.child.wait();
-            let _ = store::sync_files(&self.directory);
+            let status = self.child.wait();
+            let synced = store::sync_files(&self.directory);
+            let _ = write_new(&self.receipt, &super::json(&json!({
+                "qmp_acknowledged":false,"native_exit":status.as_ref().ok().map(ToString::to_string),
+                "forced":true,"native_reaped":status.is_ok(),"storage_synced":synced.is_ok(),
+                "clean":false,"reason":"unacknowledged_scope_exit"
+            })).unwrap_or_default());
             let _ = fs::remove_file(&self.socket_path);
             let _ = fs::remove_file(&self.serial_path);
         }

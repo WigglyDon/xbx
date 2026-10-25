@@ -151,11 +151,204 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-policy-proof" => policy_proof(&w)?,
         "cartridge-paused-contract" => paused_contract(repo, &w)?,
         "cartridge-native-paused" => native_paused(repo, &w)?,
+        "cartridge-fable" => fable(repo, &w)?,
+        "cartridge-lifetime-build" => super::lifetime::build(repo, root)?,
+        "cartridge-lifetime-observe" => super::lifetime::observe(repo, root)?,
         _ => return Err("unknown cartridge build action".into()),
     };
     Ok(())
 }
-fn section_digest(bytes: &[u8]) -> Result<[u8; 20], Error> {
+
+/// One evidence-selected, corrected logging observation. This developer-only
+/// resource route is never exposed by xbx-player or the ordinary manifest.
+fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
+    if w.root.join("fable-logging.native-started.json").exists() {
+        return Err("the single corrected logging guest attempt already started; reconcile its actual result instead of repeating it".into());
+    }
+    let package = w.root.join("package-v3");
+    let normal = resources::Resources::open(&package)?;
+    let proof = qualified(w, &normal)?;
+    let partial: Value = c::read_json(&proof.join("partial-native-load.json"))?;
+    if partial["authoritative_disk_eeprom_checkpoint_pointer_generation_unchanged"] != true
+        || partial["native_return_clean"] != true
+        || !fs::read_dir(&w.root)?
+            .filter_map(Result::ok)
+            .any(|e| e.path().join("policy.qualified").is_file())
+    {
+        return Err("complete original continuity/storage-safety slice required".into());
+    }
+    let project = w.root.parent().ok_or("project")?;
+    let logging = project.join("open-startup-v1/build-basic-v3/bios.bin");
+    if c::file_digest(&logging)? != resources::LOGGING_OPEN
+        || !fs::read_to_string(project.join("open-startup-v1/fixture-v3.qualified"))?
+            .contains(&format!("bios_sha256={}\n", resources::LOGGING_OPEN))
+    {
+        return Err("accepted corrected logging qualification differs".into());
+    }
+    if !w.root.join("fable-logging.started.json").exists() {
+        c::write_new(
+            &w.root.join("fable-logging.started.json"),
+            &c::json(&json!({
+            "source":"Master6399143636 after XBX-CARTRIDGE-1 original proof",
+            "core":resources::CORE,"open_system":resources::LOGGING_OPEN,
+            "ordinary_product_policy":true,"memory_mib":64,"network":"none",
+            "fp":"native","graphics":"Intel OpenGL","audio":"dummy_unqualified"
+            }))?,
+        )?;
+    }
+    let dev = w.root.join("package-logging-v1");
+    if !dev.exists() {
+        c::mkdir(&dev)?;
+        fs::create_dir_all(dev.join("native/subprojects/slirp"))?;
+        for name in [
+            "native/core",
+            "native/qemu-img",
+            "native/subprojects/slirp/libslirp.so.0",
+        ] {
+            fs::hard_link(package.join(name), dev.join(name))?;
+        }
+        fs::copy(logging, dev.join("open.bin"))?;
+        let mut manifest = normal.manifest.clone();
+        manifest.open_system = resources::LOGGING_OPEN.into();
+        c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
+    }
+    let r = resources::Resources::logging(&dev)?;
+    let app = w.root.join(format!("fable-logging-{}", c::new_id()?));
+    let mut player = c::desktop::Player::with_resources(&app, r)?;
+    let media = std::path::PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?);
+    let admission_started = Instant::now();
+    let game = player.add(&media)?;
+    println!(
+        "{}",
+        json!({"stage":"game_imported_without_copy","elapsed_ms":admission_started.elapsed().as_millis()})
+    );
+    let entry = c::library::Library::read(&app)?.resolve(&game)?;
+    // The compatibility comparison retains its previously qualified seeds. This
+    // is a fresh developer-control profile, never a firmware/storage migration.
+    // The ordinary product path still generates its own empty storage.
+    let disk = repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2");
+    if c::file_digest(&disk)? != "00d7df7a2bc235f8801764f00b7f40e194d1e392f7a9619d6b2396c89770f6dd"
+    {
+        return Err("matched storage seed differs".into());
+    }
+    let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
+    let seed_before = (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
+    {
+        let p = c::store::Profile::open(&app, &entry, &player.resources)?;
+        let dir = p.attempt()?;
+        c::store::copy_sparse(&disk, &dir.join("hdd.qcow2"))?;
+        c::store::copy_sparse(&eeprom, &dir.join("eeprom.bin"))?;
+        p.select(&dir)?;
+    }
+    let media_before = fs::metadata(&media)?;
+    c::write_new(
+        &w.root.join("fable-logging.native-started.json"),
+        &c::json(
+            &json!({"app":app,"same_seed":true,"media_import_ms":admission_started.elapsed().as_millis()}),
+        )?,
+    )?;
+    player.launch(&game)?;
+    let run = player.live.as_ref().ok_or("live")?.native.run.clone();
+    println!(
+        "{}",
+        json!({"fresh_product_app":app,"native_run":run,"same_seed":true,"controller_attachment":"verified_native_inventory"})
+    );
+    let mut log = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(app.join("kernel.log"))?;
+    let started = Instant::now();
+    let mut text = String::new();
+    let mut events = Vec::new();
+    let mut next_capture = 0;
+    let captures = [
+        3, 10, 25, 75, 115, 145, 180, 240, 300, 330, 360, 390, 420, 480, 510, 550, 585,
+    ];
+    let mut next_input = 0;
+    let inputs = [
+        (315, "Return"),
+        (345, "Down"),
+        (375, "Up"),
+        (405, "a"),
+        (495, "Return"),
+    ];
+    let observe = (|| -> Result<&str, Error> {
+        loop {
+            let native = &mut player.live.as_mut().ok_or("live")?.native;
+            let new = native.serial()?;
+            log.write_all(new.as_bytes())?;
+            text.push_str(&new);
+            if text.len() > 1024 * 1024 {
+                return Err("ordinary output bound reached".into());
+            }
+            let terminal =
+                text.contains("*** bug check") || text.contains("*** unexpected exception ");
+            let elapsed = started.elapsed().as_secs();
+            if terminal || next_capture < captures.len() && elapsed >= captures[next_capture] {
+                let result = Command::new("python3")
+                    .arg(repo.join(".local/capture-ramht-window-v2.py"))
+                    .arg(&run)
+                    .arg(player.resources.core())
+                    .output()?;
+                events.push(json!({"elapsed_ms":started.elapsed().as_millis(),"capture_exit":result.status.code(),"output":String::from_utf8_lossy(&result.stdout),"error":String::from_utf8_lossy(&result.stderr),"visible_review_required":true}));
+                next_capture += 1;
+            }
+            if terminal {
+                return Ok("guest_terminal_startup_failure");
+            }
+            if native.exited()? {
+                return Ok("native_exited_during_observation");
+            }
+            if next_input < inputs.len() && elapsed >= inputs[next_input].0 {
+                let key = inputs[next_input].1;
+                let result = Command::new("python3")
+                    .arg(repo.join(".local/ramht-window-input-v1.py"))
+                    .arg(&run)
+                    .arg(player.resources.core())
+                    .arg(key)
+                    .output()?;
+                events.push(json!({"elapsed_ms":started.elapsed().as_millis(),"normal_key":key,"operator_exit":result.status.code(),"visible_response_unqualified":true}));
+                next_input += 1;
+            }
+            if elapsed >= 600 {
+                return Ok("observation_budget_expired_requires_visual_review");
+            }
+            std::thread::sleep(Duration::from_millis(100));
+        }
+    })();
+    log.sync_all()?;
+    let reason = match observe {
+        Ok(v) => v.to_owned(),
+        Err(e) => format!("observation_error:{e}"),
+    };
+    // An observed terminal machine is retained as diagnostic evidence, not
+    // published as a healthy automatic-return checkpoint.
+    let returned = player.stop();
+    let media_after = fs::metadata(&media)?;
+    let immutable_inputs_unchanged = seed_before
+        == (c::file_digest(&disk)?, c::file_digest(&eeprom)?)
+        && media_before.len() == media_after.len()
+        && media_before.modified()? == media_after.modified()?;
+    c::write_new(
+        &app.join("observation.json"),
+        &c::json(&json!({
+            "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":600,
+            "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
+            "return_error":returned.as_ref().err().map(ToString::to_string),"immutable_inputs_unchanged":immutable_inputs_unchanged,
+            "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
+        }))?,
+    )?;
+    println!(
+        "{}",
+        json!({"result":app.join("observation.json"),"reason":reason,"normal_retirement":returned.is_ok()})
+    );
+    returned?;
+    if !immutable_inputs_unchanged {
+        return Err("immutable inputs changed".into());
+    }
+    Ok(())
+}
+pub(super) fn section_digest(bytes: &[u8]) -> Result<[u8; 20], Error> {
     use std::process::Stdio;
     let mut child = Command::new("sha1sum")
         .stdin(Stdio::piped())

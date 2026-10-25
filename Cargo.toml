@@ -9,3 +9,11 @@ license = "MIT"
 
 [profile.release]
 strip = "debuginfo"
+
+# Full-disc identity checks must remain practical in private development builds.
+# Keep the standard, reviewed implementation and optimize its compression loop.
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.test.package.sha2]
+opt-level = 3

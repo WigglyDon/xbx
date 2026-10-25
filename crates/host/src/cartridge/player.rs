@@ -42,13 +42,16 @@ pub struct Player<E: Engine> {
 }
 impl<E: Engine> Player<E> {
     pub fn open(app: &Path, resources: &Path) -> io::Result<Self> {
+        Self::with_resources(app, resources::Resources::open(resources)?)
+    }
+    pub(crate) fn with_resources(app: &Path, resources: resources::Resources) -> io::Result<Self> {
         if !app.exists() {
             mkdir(app)?
         }
         let app = app.canonicalize()?;
         let lease = crate::storage::ProfileLease::acquire(&app)?;
         Ok(Self {
-            resources: resources::Resources::open(resources)?,
+            resources,
             app,
             live: None,
             _lease: lease,

@@ -186,10 +186,11 @@ bytes,92,976,795,648 bytes available and7,503,441 inodes. This timestamped readi
 does not grant a later window or reset the baseline. No peer pause or replacement
 scheduler was created.
 
-Fable's accepted open result remains splash-only; no new Fable result is claimed
-here. The corrected-logging observation and scoped startup-lifetime comparison
-are next under
-Master's bounded public-platform authority. Android lifecycle integration and a
+The single corrected-logging Fable observation still showed only the open-kernel
+splash and ended on the existing post-handoff access violation, with clean native
+retirement. Both original startup-lifetime cases passed on reference and open;
+no termination repair is supported. [Exact results and next evidence boundary](OPEN_STARTUP.md).
+Android lifecycle integration and a
 private candidate, normal controller play, sound and ordinary save/cold reload
 remain unfinished. No phone, PSX/sibling mutation, project pause, cross-agent
 scheduler or routine broadcast occurred. All prior media/builds/profiles/evidence

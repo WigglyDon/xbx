@@ -1,6 +1,82 @@
 # Basic-logging open title startup
 
-Master [6393149897](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6393149897)
+## Cartridge continuation: corrected logging and initial-thread lifetime
+
+After the first XBX-CARTRIDGE-1 continuity/storage-safety slice, the single
+corrected-logging Fable observation used already-qualified image
+`8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e`.
+It ran through the shared Rust product session policy in fresh storage, with
+the retained pristine disk/EEPROM seeds, unchanged read-only external game,
+64MiB, native FP, actual Intel OpenGL, attached ControllerS, offline networking
+and dummy audio. The integrated core is native-v3 `b302cafa…8ead6`, retaining
+the accepted base/RAMHT repairs plus the independently evidenced headless and
+paused-capture corrections; their changed branches do not run during ordinary
+visible cold startup. This core change is explicit, not a bit-identical rerun
+of the earlier reference campaign.
+
+The visible window remained the open-kernel splash. Ordinary logging reported
+successful load, selection complete, handoff begin and title returned, then
+bugcheck0x1e/access violation. The emitted location0x000f8f17 is outside the
+matching public kernel map (preferred base0x80010000); it identifies no public
+service or responsible thread. The observation/return interval was4.632s,
+ending promptly on the established terminal output; both actual owned-window
+captures were retained and the terminal frame reviewed. No normal game input
+was scheduled before this early terminal result. Native quit acknowledged,
+exit0/forced=false/reaped/storage synced. No healthy game checkpoint or menu,
+gameplay, sound, in-game save or commercial resume milestone was earned.
+
+An earlier admission was retired before native launch: unoptimized development
+SHA-256 consumed about200 CPU seconds for2GB of the image, so the full import
+could not fit its finite window. Only the verified childless owned importer was
+terminated; the Rust guard reaped it and released. Its empty app directory and
+receipt remain. Optimizing the standard sha2 dependency's development/test
+compression code allowed the actual import in109.428s, without copying media.
+This is a development-runner correction, not game progression or qualified
+low-friction import latency.
+
+Public dashboard main at xemu-dashboard8cb5e525 (blob4126b66e) remains in its
+menu loop until firmware return. The retained thread fixture waits for its
+children. Neither proves a worker survives the initial title thread's return.
+Original `native/fixtures/startup-lifetime.S` therefore adds two finite cases.
+Both use persistent image-owned context, explicit callbacks/arguments, preserved
+callee-saved registers, ordinary explicitly initialized COM1 and checked handles.
+The control waits for child termination before its parent completes. In the
+distinguishing case the initial entry returns normally; the worker must succeed
+at a finite wait on an independently opened parent-thread handle before checking
+its persistent inputs and emitting completion. A pre-return flag or elapsed
+delay alone is not accepted.
+
+Both identical original images passed on the retained private execution control
+and corrected open image, using the same native-v3 core,64MiB and fresh matched
+seeds. Reference control/exit took13.771s/15.255s; open control/exit
+22.449s/13.481s, including ordinary supervision/retirement. All four verified
+ordinary guest output/completion and clean native returns. The open exit case
+logged title return before the worker's after-parent-termination completion.
+No call journal, exception/allocator/FPU observer, game-memory read or private
+firmware implementation source was used. Private input provenance/identity
+checks remain private; no new reference dashboard or commercial control ran.
+
+Original source SHA-256
+`219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60`;
+control ISO `b856a00a55d919f860e1d56f0a8305b75ddbe71fc482f945d1bd3cbf30957ea9`;
+exit ISO `a4f1c4ae11b00cc8a639f0a7ec9c8c3287b81b5aecb43352f4af9711bbeb2ce0`.
+The source uses public ABI facts from nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd.
+Tools-v19's seven focused storage cases, workspace Clippy with warnings denied
+and formatting pass. Exact commands/source snapshots, native return receipts,
+private comparison inputs, images and failures are retained in the owned
+cartridge workspace.
+
+This lifetime mechanism is not reproduced as defective; no termination repair
+or additional Fable trial follows from the pass. The remaining Fable boundary
+is the post-handoff access violation outside the public map, with no demonstrated
+public-contract cause. Further compatibility work needs a concrete public
+contract/original reproducer or Master's newly scoped evidence decision, rather
+than an invented thread fix or speculative matrix. Android session integration
+continues independently; synthetic passes do not substitute for playable Fable.
+
+## Earlier basic-logging and loader-correction history
+
+The earlier Master [6393149897](https://github.com/WigglyDon/xbx/issues/1#issuecomment-6393149897)
 accepts the completed official dashboard, private Fable reference and matched
 splash-only open result. This continuation does not repeat those campaigns.
 It builds the exact official source with basic logging, qualifies the retained

@@ -7,6 +7,8 @@ pub mod checkpoint;
 #[cfg(not(target_os = "android"))]
 pub mod desktop;
 pub mod library;
+#[cfg(not(target_os = "android"))]
+mod lifetime;
 pub mod player;
 pub mod resources;
 pub mod store;

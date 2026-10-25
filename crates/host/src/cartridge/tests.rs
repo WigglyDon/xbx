@@ -53,6 +53,7 @@ impl Fixture {
         let r = resources::Resources {
             root: runtime,
             identity: "c".repeat(64),
+            window: false,
             manifest: resources::Manifest {
                 schema: 1,
                 core: resources::CORE.into(),
