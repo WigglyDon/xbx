@@ -13,5 +13,12 @@
   "retained_fixture_sha256": "8efe94b6f8a26f63247f44bc42da9ed437e431a5ed03180ba73044140cb88491",
   "corrected_core_sha256": "eaefdb4f61d01133557374585383e531438e0341d11579c11e8575283a5ccb9b",
   "private_inputs_in_source": false,
-  "paused_patches_in_source": false
+  "paused_patches_in_source": false,
+  "optional_fixed_phase_patch": "patches/oxos-basic-startup-phases.patch",
+  "optional_fixed_phase_patch_sha256": "f8614fb02be334a96fe5140230c5d057b9031611f649a5e634a1cc3b56e3e8a5",
+  "required_reads_patch": "patches/oxos-required-reads.patch",
+  "required_reads_patch_sha256": "a111bee046f078cbe740ae58ac0e26abfd08ab13fe2bde4a74588bc95ce64d43",
+  "accepted_loader_repair_source": "patches/oxos-loader-complete.patch",
+  "accepted_loader_repair_sha256": "420490cdde28fb40a882c179aa735ae6bd6c20aa4a056bed5131dcabfb4d5fcb",
+  "required_read_fixture": "actual extracted public function; original synthetic IO; host pointer adapter,32bit counts; not i386 ABI conformance"
 }

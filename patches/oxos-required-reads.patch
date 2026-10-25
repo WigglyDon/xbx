@@ -1,0 +1,36 @@
+--- a/kernel/src/xe/loader.cpp
++++ b/kernel/src/xe/loader.cpp
+@@ -69,6 +69,15 @@
+     return status;
+ }
+ 
++
++// Required extents must be complete; the initial header read remains a probe.
++// Functional guard retained from xbx's accepted loader-completeness repair.
++static NTSTATUS XepReadRequired(HANDLE h, PVOID buffer, ULONG length, ULONG offset) {
++    ULONG got = 0;
++    NTSTATUS status = XeReadFile(h, buffer, length, offset, &got);
++    return NT_SUCCESS(status) && got != length ? STATUS_END_OF_FILE : status;
++}
++
+ static NTSTATUS XeOpenImage(HANDLE *h) {
+     OBJECT_ATTRIBUTES a = {nullptr, &XeImageFileName, OBJ_CASE_INSENSITIVE};
+     IO_STATUS_BLOCK iosb;
+@@ -87,7 +96,7 @@
+     (*s->HeadSharedPageReferenceCount)++;
+     (*s->TailSharedPageReferenceCount)++;
+     if (s->SizeOfRawData)
+-        status = XeReadFile(file, (PVOID)s->VirtualAddress, s->SizeOfRawData, s->PointerToRawData);
++        status = XepReadRequired(file, (PVOID)s->VirtualAddress, s->SizeOfRawData, s->PointerToRawData);
+     if (NT_SUCCESS(status)) {
+         if (s->VirtualSize > s->SizeOfRawData)
+             RtlZeroMemory((PUCHAR)s->VirtualAddress + s->SizeOfRawData, s->VirtualSize - s->SizeOfRawData);
+@@ -255,7 +264,7 @@
+     if (NT_SUCCESS(status)) {
+         RtlCopyMemory((PVOID)XBE_BASE, head, got < sizeOfHeaders ? got : sizeOfHeaders);
+         if (sizeOfHeaders > got)
+-            status = XeReadFile(h, (PVOID)(XBE_BASE + got), sizeOfHeaders - got, got);
++            status = XepReadRequired(h, (PVOID)(XBE_BASE + got), sizeOfHeaders - got, got);
+     }
+     ExFreePool(head);
+     ULONG cert = XbeField(0x118), sections = XbeField(0x120), count = XbeField(0x11C);

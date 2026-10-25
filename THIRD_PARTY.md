@@ -239,3 +239,16 @@ Rust build/runner policy are original MIT work. Existing pinned OXOS mkxbe/mkxis
 keep their own terms. Public nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd and
 Cxbx f1e54be515bb7989bf5109ebea2494b6b13eb1bd interfaces were read for comparison;
 no implementation was copied. See [API_JOURNAL.md](docs/API_JOURNAL.md).
+
+## Scoped ordinary open startup and required reads
+
+`patches/oxos-basic-startup-phases.patch` and
+`patches/oxos-required-reads.patch` modify public OXOS loader source at
+`9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96`; OXOS GPL-2.0 and applicable per-file
+terms remain. The required-read guard reuses the functional behavior previously
+accepted in `oxos-loader-complete.patch`, without its diagnostic chain. Original
+Rust build/test policy and synthetic required-read fixture are MIT; the C++ file
+is a mechanical host ABI adapter. Extracted upstream function bodies and their
+linked fixture keep actual upstream obligations. No binary is published. See
+[OPEN_STARTUP.md](docs/OPEN_STARTUP.md) and `open-startup.lock.json` for pins,
+qualification limits and actual artifact identities.

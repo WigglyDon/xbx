@@ -88,7 +88,11 @@ fn prepare(repo: &Path, w: &Workspace, label: &str) -> Result<(), Error> {
         30,
     )?;
     // Reuse retained objects without fetching into or changing their repository.
-    let retained = repo.join(".local/src/oxos");
+    let retained = if label != "v1" && w.root.join("depot-v1").is_dir() {
+        w.root.join("depot-v1")
+    } else {
+        repo.join(".local/src/oxos")
+    };
     let objects = git(
         &retained,
         &[
@@ -197,13 +201,7 @@ fn prepare(repo: &Path, w: &Workspace, label: &str) -> Result<(), Error> {
     save(&source.join("source.objects"), &listing)?;
     Ok(())
 }
-fn build(repo: &Path, w: &Workspace, label: &str, serial: bool) -> Result<(), Error> {
-    let source = w.root.join(format!("source-{label}"));
-    let identity = fs::read_to_string(source.join("source.identity"))?;
-    if !identity.contains(&format!("source={PIN}\n")) || !identity.contains("paused_patches=none\n")
-    {
-        return Err("source identity differs".into());
-    }
+fn verify_source(source: &Path) -> Result<(), Error> {
     for line in fs::read_to_string(source.join("source.objects"))?.lines() {
         let (metadata, path) = line.split_once('\t').ok_or("bad source manifest")?;
         let expected = metadata.split_whitespace().nth(2).ok_or("missing blob")?;
@@ -214,6 +212,186 @@ fn build(repo: &Path, w: &Workspace, label: &str, serial: bool) -> Result<(), Er
         if !out.status.success() || String::from_utf8(out.stdout)?.trim() != expected {
             return Err("pinned source bytes differ before build".into());
         }
+    }
+    Ok(())
+}
+fn apply_loader_patch(
+    repo: &Path,
+    w: &Workspace,
+    label: &str,
+    name: &str,
+    expected: &str,
+    kind: &str,
+) -> Result<(), Error> {
+    let source = w.root.join(format!("source-{label}"));
+    verify_source(&source)?;
+    let patch = repo.join(name);
+    let digest = hash(&patch)?;
+    if digest != expected {
+        return Err("pinned public loader patch differs".into());
+    }
+    checked(
+        w,
+        Command::new("git")
+            .arg("-C")
+            .arg(&source)
+            .arg("apply")
+            .arg(&patch),
+        &format!("{kind}-{label}.log"),
+        30,
+    )?;
+    let original = fs::read_to_string(source.join("source.objects"))?;
+    save(&source.join(format!("before-{kind}.objects")), &original)?;
+    let path = "kernel/src/xe/loader.cpp";
+    let out = Command::new("git")
+        .arg("hash-object")
+        .arg(source.join(path))
+        .output()?;
+    if !out.status.success() {
+        return Err("patched source hash failed".into());
+    }
+    let changed = String::from_utf8(out.stdout)?;
+    let updated = original
+        .lines()
+        .map(|line| {
+            if line.ends_with(&format!("\t{path}")) {
+                format!("100644 blob {}\t{path}", changed.trim())
+            } else {
+                line.into()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+        + "\n";
+    fs::write(source.join("source.objects"), updated)?;
+    File::open(source.join("source.objects"))?.sync_all()?;
+    save(
+        &source.join(format!("{kind}.identity")),
+        &format!("{kind}_patch_sha256={digest}\n"),
+    )
+}
+fn phases(repo: &Path, w: &Workspace, label: &str) -> Result<(), Error> {
+    apply_loader_patch(
+        repo,
+        w,
+        label,
+        "patches/oxos-basic-startup-phases.patch",
+        "f8614fb02be334a96fe5140230c5d057b9031611f649a5e634a1cc3b56e3e8a5",
+        "phase",
+    )
+}
+fn extracted<'a>(source: &'a str, name: &str) -> Result<&'a str, Error> {
+    let start = source
+        .find(&format!("static NTSTATUS {name}("))
+        .ok_or("actual loader function absent")?;
+    let end = source[start..]
+        .find("\n}")
+        .ok_or("actual loader function end absent")?;
+    Ok(&source[start..start + end + 2])
+}
+fn read_contract(repo: &Path, w: &Workspace, label: &str) -> Result<(), Error> {
+    let root = w.root.join(format!("read-contract-{label}"));
+    directory(&root)?;
+    for stage in ["before", "after"] {
+        let source = w.root.join(if stage == "before" {
+            "source-v1".into()
+        } else {
+            format!("source-{label}")
+        });
+        verify_source(&source)?;
+        let code = fs::read_to_string(source.join("kernel/src/xe/loader.cpp"))?;
+        let dst = root.join(stage);
+        directory(&dst)?;
+        let mut functions = extracted(&code, "XeReadFile")?.to_owned();
+        functions.push('\n');
+        if stage == "after" {
+            functions.push_str(extracted(&code, "XepReadRequired")?);
+            functions.push('\n');
+        }
+        functions.push_str(extracted(&code, "XepLoadSection")?);
+        functions.push('\n');
+        save(&dst.join("required-functions.inc"), &functions)?;
+        checked(
+            w,
+            Command::new("c++")
+                .args(["-std=c++20", "-O2", "-Wall", "-Wextra", "-Werror", "-I"])
+                .arg(&dst)
+                .arg("-c")
+                .arg(repo.join("fixtures/required_reads_shim.cpp"))
+                .arg("-o")
+                .arg(dst.join("shim.o")),
+            &format!("read-{label}-{stage}-cc.log"),
+            60,
+        )?;
+        checked(
+            w,
+            Command::new("ar")
+                .arg("rcs")
+                .arg(dst.join("librequired_reads.a"))
+                .arg(dst.join("shim.o")),
+            &format!("read-{label}-{stage}-ar.log"),
+            30,
+        )?;
+        checked(
+            w,
+            Command::new("rustc")
+                .args(["--edition=2024", "--test"])
+                .arg(repo.join("fixtures/required_reads_contract.rs"))
+                .arg("-L")
+                .arg(format!("native={}", dst.display()))
+                .args(["-C", "debuginfo=0", "-o"])
+                .arg(dst.join("contract")),
+            &format!("read-{label}-{stage}-rustc.log"),
+            60,
+        )?;
+        let log = w.root.join(format!("read-{label}-{stage}-test.log"));
+        let status = w.run(
+            Command::new(dst.join("contract")).args(["--test-threads=1"]),
+            &log,
+            30,
+        )?;
+        let text = fs::read_to_string(log)?;
+        if stage == "before" {
+            if status.code() != Some(101)
+                || !text.contains("short successful section read was accepted")
+                || !text.contains("2 passed; 1 failed")
+            {
+                return Err(
+                    "actual original function did not reproduce selected short-read failure".into(),
+                );
+            }
+        } else if !status.success() || !text.contains("3 passed; 0 failed") {
+            return Err("corrected actual function failed focused contract".into());
+        }
+    }
+    save(
+        &root.join("result.identity"),
+        "original_function_red=true\ncorrected_function_green=true\nsynthetic_IO_only=true\nbyte_counts_32bit=true\nhost_pointer_adapter_not_i386_ABI_test=true\nFable_cause_unattributed=true\n",
+    )
+}
+fn build(repo: &Path, w: &Workspace, label: &str, serial: bool) -> Result<(), Error> {
+    let source = w.root.join(format!("source-{label}"));
+    let mut identity = fs::read_to_string(source.join("source.identity"))?;
+    for kind in ["phase", "required"] {
+        if source.join(format!("{kind}.identity")).exists() {
+            identity.push_str(&fs::read_to_string(
+                source.join(format!("{kind}.identity")),
+            )?);
+        }
+    }
+    if !identity.contains(&format!("source={PIN}\n")) || !identity.contains("paused_patches=none\n")
+    {
+        return Err("source identity differs".into());
+    }
+    verify_source(&source)?;
+    if !serial
+        && !fs::read_to_string(
+            w.root
+                .join(format!("read-contract-{label}/result.identity")),
+        )?
+        .contains("corrected_function_green=true\n")
+    {
+        return Err("serial-off validation requires independently evidenced correction".into());
     }
     let kind = if serial { "basic" } else { "release" };
     let out = w.root.join(format!("build-{kind}-{label}"));
@@ -285,13 +463,22 @@ fn build(repo: &Path, w: &Workspace, label: &str, serial: bool) -> Result<(), Er
     let _ = repo;
     Ok(())
 }
-fn observe(repo: &Path, w: &Workspace, label: &str, fixture: bool) -> Result<(), Error> {
+fn observe(
+    repo: &Path,
+    w: &Workspace,
+    label: &str,
+    fixture: bool,
+    serial: bool,
+) -> Result<(), Error> {
     let project = w.root.parent().ok_or("missing project")?;
     let core = project.join("ramht-v1/build-v2-retry2/qemu-system-i386");
     if hash(&core)? != CORE {
         return Err("corrected core differs".into());
     }
-    let build = w.root.join(format!("build-basic-{label}"));
+    let build = w.root.join(format!(
+        "build-{}-{label}",
+        if serial { "basic" } else { "release" }
+    ));
     let flash = build.join("bios.bin");
     if !fs::read_to_string(build.join("build.identity"))?
         .contains(&format!("bios_sha256={}\n", hash(&flash)?))
@@ -299,9 +486,14 @@ fn observe(repo: &Path, w: &Workspace, label: &str, fixture: bool) -> Result<(),
         return Err("logging image differs".into());
     }
     let firmware = hash(&flash)?;
+    let qualified_image = if serial {
+        firmware.clone()
+    } else {
+        hash(&w.root.join(format!("build-basic-{label}/bios.bin")))?
+    };
     if !fixture
         && !fs::read_to_string(w.root.join(format!("fixture-{label}.qualified")))?
-            .contains(&format!("bios_sha256={firmware}\n"))
+            .contains(&format!("bios_sha256={qualified_image}\n"))
     {
         return Err("this logging image needs its retained fixture qualification".into());
     }
@@ -318,7 +510,13 @@ fn observe(repo: &Path, w: &Workspace, label: &str, fixture: bool) -> Result<(),
     let seconds = if fixture { 90 } else { 600 };
     let profile = w.root.join(format!(
         "p-{}-{label}",
-        if fixture { "fixture" } else { "fable" }
+        if fixture {
+            "fixture"
+        } else if serial {
+            "fable"
+        } else {
+            "release-fable"
+        }
     ));
     let supervisor = PathBuf::from(std::env::var("XBX_DESKTOP_SUPERVISOR")?);
     let mut cmd = if let Some(driver) = std::env::var_os("XBX_OBSERVATION_DRIVER") {
@@ -336,19 +534,32 @@ fn observe(repo: &Path, w: &Workspace, label: &str, fixture: bool) -> Result<(),
         .arg(repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin"))
         .arg(media)
         .arg(seconds.to_string())
-        .env("XBX_DESKTOP_BASIC_SERIAL", "1")
         .env("XBX_DESKTOP_MEMORY_MIB", "64")
         .env("XBX_DESKTOP_VIDEO_DRIVER", "x11")
         .env("XBX_DESKTOP_GRAPHICS", "host")
         .env("XBX_DESKTOP_CONTROLLER", "keyboard")
         .env("XBX_DESKTOP_FP", "native");
+    if serial {
+        cmd.env("XBX_DESKTOP_BASIC_SERIAL", "1");
+    } else {
+        cmd.env_remove("XBX_DESKTOP_BASIC_SERIAL");
+    }
     if !fixture {
         cmd.env("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS", "600");
     }
     checked(
         w,
         &mut cmd,
-        &format!("{}-{label}.log", if fixture { "fixture" } else { "fable" }),
+        &format!(
+            "{}-{label}.log",
+            if fixture {
+                "fixture"
+            } else if serial {
+                "fable"
+            } else {
+                "release-fable"
+            }
+        ),
         seconds + 90,
     )?;
     if fixture {
@@ -383,6 +594,9 @@ pub fn command(repo: &Path, action: &str, label: &str) -> Result<(), Error> {
     if !matches!(
         action,
         "open-startup-prepare"
+            | "open-startup-phases"
+            | "open-startup-repair"
+            | "open-startup-release-fable"
             | "open-startup-build"
             | "open-startup-release"
             | "open-startup-fixture"
@@ -401,10 +615,30 @@ pub fn command(repo: &Path, action: &str, label: &str) -> Result<(), Error> {
     let w = Workspace::acquire_startup(repo, action)?;
     match action {
         "open-startup-prepare" => prepare(repo, &w, label)?,
+        "open-startup-phases" => {
+            prepare(repo, &w, label)?;
+            phases(repo, &w, label)?;
+            build(repo, &w, label, true)?;
+        }
         "open-startup-build" => build(repo, &w, label, true)?,
         "open-startup-release" => build(repo, &w, label, false)?,
-        "open-startup-fixture" => observe(repo, &w, label, true)?,
-        "open-startup-fable" => observe(repo, &w, label, false)?,
+        "open-startup-repair" => {
+            prepare(repo, &w, label)?;
+            phases(repo, &w, label)?;
+            apply_loader_patch(
+                repo,
+                &w,
+                label,
+                "patches/oxos-required-reads.patch",
+                "a111bee046f078cbe740ae58ac0e26abfd08ab13fe2bde4a74588bc95ce64d43",
+                "required",
+            )?;
+            read_contract(repo, &w, label)?;
+            build(repo, &w, label, true)?;
+        }
+        "open-startup-fixture" => observe(repo, &w, label, true, true)?,
+        "open-startup-fable" => observe(repo, &w, label, false, true)?,
+        "open-startup-release-fable" => observe(repo, &w, label, false, false)?,
         _ => return Err("unknown basic startup action".into()),
     }
     w.check()?;

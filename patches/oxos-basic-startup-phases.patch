@@ -1,0 +1,14 @@
+--- a/kernel/src/xe/loader.cpp
++++ b/kernel/src/xe/loader.cpp
+@@ -597,8 +597,11 @@
+         IdexDiskCountPowerCycle();
+     }
+     XepChooseTitle();
++    XK_SERIAL("startup: selection complete\n");
+     XepPrepareToEnterTitle();
++    XK_SERIAL("startup: handoff begin\n");
+     ((void(__cdecl *)())XbeField(0x128))();
++    XK_SERIAL("startup: title returned\n");
+     PsTerminateSystemThread(STATUS_SUCCESS);
+ }
+ 
