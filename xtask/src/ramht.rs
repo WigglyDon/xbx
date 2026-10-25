@@ -578,12 +578,15 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
         | "ramht-title"
         | "ramht-title-host"
         | "ramht-title-host-extended"
+        | "ramht-open-dashboard-host"
         | "ramht-open-title-host" => {
-            let open = action == "ramht-open-title-host";
+            let open_dashboard = action == "ramht-open-dashboard-host";
+            let open = action == "ramht-open-title-host" || open_dashboard;
+            let dashboard = action == "ramht-observe" || open_dashboard;
             let extended = action == "ramht-title-host-extended";
             let interval = match (
                 extended,
-                open,
+                open && !dashboard,
                 std::env::var_os("XBX_REFERENCE_CONTROL_INTERVAL_SECONDS"),
             ) {
                 (true, _, _) => 600,
@@ -592,6 +595,7 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                 _ => 300,
             };
             if open
+                && !dashboard
                 && std::env::var("XBX_REFERENCE_POSITIVE_CONTROL").as_deref()
                     != Ok("menu-and-controls-reviewed")
             {
@@ -607,7 +611,9 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             let supervisor = PathBuf::from(std::env::var("XBX_DESKTOP_SUPERVISOR")?);
             let profile = w.root.parent().ok_or("missing project root")?.join(format!(
                 "rh-{}64-{attempt}",
-                if open {
+                if open_dashboard {
+                    "open-dash-host"
+                } else if open {
                     "open-title-host"
                 } else if extended {
                     "extended-title-host"
@@ -640,17 +646,17 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
             } else {
                 Command::new(&supervisor)
             };
-            cmd.arg(if action != "ramht-observe" {
-                "run-title"
-            } else {
+            cmd.arg(if dashboard {
                 "run-dashboard"
+            } else {
+                "run-title"
             })
             .arg(&core)
             .arg(&profile)
             .arg(flash)
             .arg(repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2"))
             .arg(repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin"));
-            if action != "ramht-observe" {
+            if !dashboard {
                 cmd.arg(PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?));
             }
             if action == "ramht-title-host" || open || extended {
@@ -672,7 +678,9 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Error> {
                 &mut cmd,
                 &w.root.join(format!(
                     "{}-{attempt}.log",
-                    if open {
+                    if open_dashboard {
+                        "dash-open-host"
+                    } else if open {
                         "title-open-host"
                     } else if extended {
                         "title-extended-host"

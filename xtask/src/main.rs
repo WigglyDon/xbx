@@ -36,6 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         | "ramht-title"
         | "ramht-title-host"
         | "ramht-title-host-extended"
+        | "ramht-open-dashboard-host"
         | "ramht-open-title-host"
         | "ramht-media-copy"
         | "ramht-media-resume"),
