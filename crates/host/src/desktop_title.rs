@@ -74,6 +74,11 @@ fn run_environment(
     bootrom: Option<&Path>,
     journal_map: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let basic_serial = match std::env::var_os("XBX_DESKTOP_BASIC_SERIAL") {
+        None => false,
+        Some(value) if value == "1" && journal_map.is_none() => true,
+        _ => return Err("basic serial capture requires exact scope and no journal".into()),
+    };
     let ceiling =
         match std::env::var_os("XBX_DESKTOP_REFERENCE_INTERVAL_SECONDS") {
             None => 300,
@@ -180,6 +185,11 @@ fn run_environment(
     }
     let (mut log_reader, log_writer) = UnixStream::pair()?;
     let mut log = File::create(root.join("native.log"))?;
+    let mut serial_log = if basic_serial {
+        Some(File::create(root.join("kernel.log"))?)
+    } else {
+        None
+    };
     let mut command = Command::new(engine);
     command
         .current_dir(&root)
@@ -217,8 +227,17 @@ fn run_environment(
     command
         .arg("-qmp")
         .arg(format!("unix:{},server=on,wait=off", qmp.display()))
-        .args(["-device", "lpc47m157", "-serial"])
-        .arg(format!("file:{}", root.join("kernel.log").display()))
+        .args(["-device", "lpc47m157"]);
+    if basic_serial {
+        // Existing QEMU serial transport, drained through the same finite
+        // host-owned stream. This is ordinary output, never a guest probe.
+        command.args(["-monitor", "none", "-serial", "stdio"]);
+    } else {
+        command
+            .arg("-serial")
+            .arg(format!("file:{}", root.join("kernel.log").display()));
+    }
+    command
         .stdin(Stdio::null())
         .stdout(Stdio::from(std::os::fd::OwnedFd::from(
             log_writer.try_clone()?,
@@ -231,16 +250,33 @@ fn run_environment(
     drop(incoming);
     let drain = std::thread::spawn(move || {
         let mut remaining = 4 * 1024 * 1024;
+        let mut truncated = false;
+        let mut capture_ok = true;
         let mut buffer = [0u8; 8192];
-        while let Ok(n) = log_reader.read(&mut buffer) {
+        loop {
+            let n = match log_reader.read(&mut buffer) {
+                Ok(n) => n,
+                Err(_) => {
+                    capture_ok = false;
+                    break;
+                }
+            };
             if n == 0 {
                 break;
             }
             let keep = n.min(remaining);
-            let _ = log.write_all(&buffer[..keep]);
+            capture_ok &= log.write_all(&buffer[..keep]).is_ok();
+            if let Some(serial) = serial_log.as_mut() {
+                capture_ok &= serial.write_all(&buffer[..keep]).is_ok();
+            }
+            truncated |= keep < n;
             remaining -= keep;
         }
-        let _ = log.sync_all();
+        capture_ok &= log.sync_all().is_ok();
+        if let Some(serial) = serial_log.as_mut() {
+            capture_ok &= serial.sync_all().is_ok();
+        }
+        (truncated, capture_ok)
     });
     let start = Instant::now();
     let deadline = start + Duration::from_secs(seconds);
@@ -310,6 +346,7 @@ fn run_environment(
             // Existing runtime status only. Exceptions alone do not establish a
             // terminal failure. An explicit error-dashboard request or bugcheck does.
             let terminal = text.contains("*** bug check")
+                || (basic_serial && text.contains("*** unexpected exception "))
                 || text.lines().any(|l| {
                     l.contains("dashboard_fields=1")
                         && l.contains("reason=00000001")
@@ -379,8 +416,17 @@ fn run_environment(
         std::thread::sleep(Duration::from_millis(20));
     };
     drop(monitor_keepalive);
-    let _ = drain.join();
+    let capture = drain.join();
     lease.sync_storage()?;
+    if basic_serial {
+        let (truncated, capture_ok) = capture.unwrap_or((true, false));
+        fs::write(
+            root.join("serial-capture.txt"),
+            format!(
+                "transport=ordinary_stdio_combined_with_native_output\nlimit_bytes=4194304\ntruncated={truncated}\ncapture_ok={capture_ok}\n"
+            ),
+        )?;
+    }
     fs::write(
         root.join("termination.txt"),
         format!(

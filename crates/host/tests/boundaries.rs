@@ -202,6 +202,52 @@ fn extended_reference_interval_is_explicit_finite_and_bound_to_title() {
 
 #[cfg(not(target_os = "android"))]
 #[test]
+fn basic_serial_capture_is_bounded_and_survives_native_early_exit() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = std::env::temp_dir().join(format!(
+        "s{:x}",
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir(&dir).unwrap();
+    let engine = dir.join("engine");
+    fs::write(&engine, b"#!/bin/sh\nhead -c 4194320 /dev/zero\n").unwrap();
+    fs::set_permissions(&engine, fs::Permissions::from_mode(0o700)).unwrap();
+    for name in ["flash", "disk", "eeprom"] {
+        fs::write(dir.join(name), b"original synthetic seed").unwrap();
+    }
+    let profile = dir.join("p");
+    let result = Command::new(env!("CARGO_BIN_EXE_xbx-host"))
+        .env("XBX_DESKTOP_BASIC_SERIAL", "1")
+        .args(["run-dashboard"])
+        .arg(&engine)
+        .arg(&profile)
+        .arg(dir.join("flash"))
+        .arg(dir.join("disk"))
+        .arg(dir.join("eeprom"))
+        .arg("15")
+        .output()
+        .unwrap();
+    assert!(!result.status.success()); // synthetic child deliberately has no QMP
+    for name in ["native.log", "kernel.log"] {
+        assert_eq!(fs::metadata(profile.join(name)).unwrap().len(), 4194304);
+    }
+    let capture = fs::read_to_string(profile.join("serial-capture.txt")).unwrap();
+    assert!(capture.contains("truncated=true\n"));
+    assert!(capture.contains("capture_ok=true\n"));
+    let termination = fs::read_to_string(profile.join("termination.txt")).unwrap();
+    assert!(termination.contains("storage_synced=true\n"));
+    assert!(ProfileLease::acquire(&profile).is_ok());
+    assert_eq!(
+        fs::read(dir.join("disk")).unwrap(),
+        b"original synthetic seed"
+    );
+}
+
+#[cfg(not(target_os = "android"))]
+#[test]
 fn unsupported_desktop_graphics_refuses_before_profile_creation() {
     let dir = scratch("unsupported-graphics");
     for (graphics, video) in [("", "x11"), ("automatic", "x11"), ("host", "offscreen")] {

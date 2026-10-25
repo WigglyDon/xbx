@@ -52,6 +52,19 @@ fn required(key: &str) -> Result<String, Error> {
 
 impl Workspace {
     pub fn acquire(repo: &Path, phase: &str) -> Result<Self, Error> {
+        Self::acquire_scoped(
+            repo,
+            phase,
+            "ramht-v1",
+            growth_bound(std::env::var_os("XBX_REFERENCE_MEDIA_GROWTH_BYTES").as_deref())?,
+        )
+    }
+
+    pub fn acquire_startup(repo: &Path, phase: &str) -> Result<Self, Error> {
+        Self::acquire_scoped(repo, phase, "open-startup-v1", GIB)
+    }
+
+    fn acquire_scoped(repo: &Path, phase: &str, label: &str, growth: u64) -> Result<Self, Error> {
         let shared = OpenOptions::new()
             .read(true)
             .write(true)
@@ -68,12 +81,12 @@ impl Workspace {
             .map_err(|_| "another xbx writer is active")?;
         let project = PathBuf::from(required("XBX_SHARED_ROOT")?).join("projects/xbx");
         let mut this = Self {
-            root: project.join("ramht-v1"),
+            root: project.join(label),
             project,
             mount: PathBuf::from(required("XBX_SHARED_MOUNT")?),
             uuid: required("XBX_SHARED_UUID")?,
             maximum: 0,
-            growth: growth_bound(std::env::var_os("XBX_REFERENCE_MEDIA_GROWTH_BYTES").as_deref())?,
+            growth,
             shared,
             project_lock,
             phase_record: None,
@@ -235,7 +248,7 @@ impl Workspace {
         if allocated > self.maximum
             || self.available()? < 12 * GIB + self.maximum.saturating_sub(allocated)
         {
-            return Err("RAMHT candidate allocation or shared reserve bound refused".into());
+            return Err("candidate allocation or shared reserve bound refused".into());
         }
         Ok(())
     }
