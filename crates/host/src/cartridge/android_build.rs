@@ -421,3 +421,92 @@ pub(super) fn bridge(repo: &Path, root: &Path) -> Result<(), Error> {
     )?;
     Ok(())
 }
+
+/// QMP and the original cartridge UART both require the socket chardev. Its
+/// registration lives in a constructor-only archive member, so the static
+/// Android link otherwise drops it. Retain that exact member as a direct input;
+/// do not rebuild or force-load the entire core.
+pub(super) fn socket_driver(repo: &Path, root: &Path) -> Result<(), Error> {
+    let previous = root.join("android-native-bridge-v1");
+    let archive = root.join("android-native-v1/libxemu_core.a");
+    if c::file_digest(&previous.join("libxemu.so"))?
+        != "9c8b5e1dcf9654d1ec907bc6c70ba97421183a99efa5e2dc8681fd9097cc8c7a"
+    {
+        return Err("socket repair requires the retained ABI4 candidate".into());
+    }
+    let new = root.join("android-native-socket-v1");
+    c::mkdir(&new)?;
+    let llvm =
+        PathBuf::from(std::env::var("XBX_NDK")?).join("toolchains/llvm/prebuilt/linux-x86_64/bin");
+    let members = output(Command::new(llvm.join("llvm-ar")).arg("t").arg(&archive))?;
+    if members.lines().filter(|s| *s == "char-socket.c.o").count() != 1 {
+        return Err("retained socket archive member is absent or ambiguous".into());
+    }
+    let member = Command::new(llvm.join("llvm-ar"))
+        .arg("p")
+        .arg(&archive)
+        .arg("char-socket.c.o")
+        .output()?;
+    if !member.status.success() || member.stdout.is_empty() || member.stdout.len() > 1024 * 1024 {
+        return Err("bounded retained socket member extraction failed".into());
+    }
+    let object = new.join("char-socket.c.o");
+    c::write_new(&object, &member.stdout)?;
+    let lib = new.join("libxemu.so");
+    let retained_link = fs::read_to_string(previous.join("link.command"))?;
+    let archive_argument = format!(" {} ", literal(&archive)?);
+    if retained_link.matches(&archive_argument).count() != 1 {
+        return Err("expected one retained core archive input".into());
+    }
+    let command = retained_link
+        .replace(
+            &format!(" -o {} ", literal(&previous.join("libxemu.so"))?),
+            &format!(" -o {} ", literal(&lib)?),
+        )
+        .replace(
+            &literal(&previous.join("link.d"))?,
+            &literal(&new.join("link.d"))?,
+        )
+        .replace(
+            &archive_argument,
+            &format!(" {} {} ", literal(&object)?, literal(&archive)?),
+        );
+    c::write_new(&new.join("link.command"), command.as_bytes())?;
+    c::store::checked(
+        Command::new("sh")
+            .current_dir(repo.join(".local/build-android"))
+            .arg("-c")
+            .arg(command),
+    )?;
+    let symbols = output(
+        Command::new(llvm.join("llvm-nm"))
+            .arg("--defined-only")
+            .arg(&lib),
+    )?;
+    for symbol in [
+        "qmp_chardev_open_socket",
+        "char_socket_class_init",
+        "tcp_chr_connect",
+    ] {
+        if !symbols
+            .lines()
+            .any(|line| line.split_whitespace().last() == Some(symbol))
+        {
+            return Err("linked socket registration/backend is missing".into());
+        }
+    }
+    c::write_new(&new.join("socket-symbols.txt"), symbols.as_bytes())?;
+    c::write_new(
+        &new.join("build.identity.json"),
+        &c::json(&json!({
+            "bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,
+            "library_sha256":c::file_digest(&lib)?,"prior_library_sha256":c::file_digest(&previous.join("libxemu.so"))?,
+            "retained_archive_sha256":c::file_digest(&archive)?,"direct_member":"char-socket.c.o",
+            "direct_member_sha256":c::file_digest(&object)?,"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac",
+            "recompiled_units":[],"whole_core_rebuild":false,"all_prior_artifacts_preserved":true,
+            "evidence":"stock original-cartridge QMP startup rejected socket char driver",
+            "device_operation":false,"lifecycle_qualification":false
+        }))?,
+    )?;
+    Ok(())
+}

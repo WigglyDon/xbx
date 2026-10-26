@@ -296,6 +296,54 @@ helper execution and native shutdown remain unqualified. These small original
 inputs and app-created storage have not been deleted.
 
 
+## Attributed Android socket-driver correction
+
+Under Master6407613531, the retained first-launch diagnostics were retrieved
+through fresh stock Pixel4 admission before another launch or native change.
+The bounded read matched the existing original entry/profile, collected only
+its root diagnostic files and minimal storage controls, and preserved all bytes.
+Two selected logs were empty; the attributable nonempty log recorded QEMU launch
+arguments but no initialization outcome. That absence alone identified no cause.
+The read-only window returned with no own process, screen OFF and lease released.
+
+One subsequent unchanged-candidate launch presented the expected recovery menu:
+the interrupted session had no healthy checkpoint. The operator selected the
+actual **Restart using current ordinary saves** action for this original fixture.
+Process-specific output then established native display preinitialization,
+followed by QMP argument rejection: **'socket' is not a valid char driver name**.
+The process exited before machine initialization. This is an ordinary Android
+link defect, not an open-kernel/game compatibility result. No Fable trial or
+checkpoint/restore acceptance follows from it. The failed attempt and current
+ordinary storage remain retained; the phone returned screen OFF, own processes
+absent, helper exit0 and lease released.
+
+The retained archive already contains `char-socket.c.o`; its socket type is
+registered only by a constructor, so an ordinary static archive link discarded
+the unreferenced member. The new Rust build action
+`cartridge-android-socket` extracts that one unambiguous member from the accepted
+archive and supplies it directly before the archive in a new link. It preserves
+the prior core and all source/objects, compiles no native unit and does not
+force-load the whole core. The resulting library contains the checked socket
+open/class/connection functions. Native SHA-256:
+`0a79043449af4dae36c56b2ab255f176098e96e31b2f582eec2cb473aa86ec6d`;
+retained member SHA-256:
+`108a22ab9be161354c44c9d05474b9f47b554e0a1c4ed93ee4e8d4b27694d547`.
+The separate `cartridge-android-package-socket` action packages that changed
+core while reusing the existing read-only image helper and generated seed.
+Actual Android guest execution and continuity remain to be qualified.
+
+The changed private APK is built and signature/package/alignment verified with
+the same signing identity, package, minimum/target APIs and Java source. APK
+SHA-256 `11e3c689a04d7398b6755d9ac557b5d1ded3d8b8ae61706f07a482a8d83a1ad4`;
+Rust library SHA-256
+`018621488f83365c08fc5b8d0457ee23f6dcf1490453c0bf9261bad236a8e532`.
+The image helper and generated seed retain their previous hashes. Exact isolated
+tools-v29 source passed eight storage-policy tests, warnings-denied workspace
+Clippy and formatting. The already-installed candidate remains unchanged:
+fresh custody review found an active, unreturned device transaction, so the
+changed APK has not been installed or boot-qualified. No peer pause, queue or
+new operating window was manufactured from a free host resource.
+
 ## Owner-authorized Fold setup
 
 After Master6407613531, the owner explicitly authorized setup on the Fold and

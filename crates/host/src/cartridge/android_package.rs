@@ -24,7 +24,18 @@ fn java_files(dir: &Path, out: &mut Vec<PathBuf>) -> io::Result<()> {
     Ok(())
 }
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let native = root.join("android-native-bridge-v1");
+    build_candidate(repo, root, "android-native-bridge-v1", "android-package-v2")
+}
+pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
+}
+fn build_candidate(
+    repo: &Path,
+    root: &Path,
+    native_stage: &str,
+    package_stage: &str,
+) -> Result<(), Error> {
+    let native = root.join(native_stage);
     let helper = root.join("android-helper-v4");
     let old = repo.join(".local/build-android");
     let core_hash = c::file_digest(&native.join("libxemu.so"))?;
@@ -36,7 +47,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     {
         return Err("mechanical bridge source/ABI differs".into());
     }
-    let out = root.join("android-package-v2");
+    let out = root.join(package_stage);
     c::mkdir(&out)?;
     let source = std::env::current_exe()?
         .parent()
