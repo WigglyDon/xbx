@@ -490,6 +490,97 @@ its initial-state Home checkpoint intact. Back-menu operation, noninitial-state
 capture/restoration, explicit Pause and Home/return remain pending device proof.
 No peer pause, reservation or polling loop was created.
 
+### Android original-cartridge continuity qualification
+
+On October 26, the existing-entry sequence under Master6407613531 completed
+on the standing stock Pixel4 through the installed finite-recipe custodian.
+The previously built Back adapter `cacf0d1d…56f4a` was installed by the normal
+same-signer update, retaining `bbc4cab9…8477` as rollback. Existing library and
+last-game records compared byte-for-byte unchanged. No rebuild, reimport,
+data clear, firmware selection or commercial launch occurred. The native core,
+Rust runtime, helper and generated seed remain the exact preceding artifacts.
+
+Android Back actually opened the Rust menu. Its presented original-only
+commands produced these guest responses, captured and opened for visual review:
+
+| Stage | RAM counter | Synthetic disk marker | Integrity cookie |
+| --- | --- | --- | --- |
+| Initial query | 0 | 0 | `31415926` |
+| Advance | 1 | 0 | `4498F505` |
+| Write marker | 1 | 1 | `4498F505` |
+| Advance before Pause | 2 | 1 | `57F090E4` |
+| Fresh process, after Resume and query | 2 | 1 | `57F090E4` |
+| New action after restoration | 3 | 1 | `6B482CC3` |
+| Query after Home/return, without selecting Resume | 3 | 1 | `6B482CC3` |
+| New action after Home/return | 4 | 1 | `7E9FC8A2` |
+
+Explicit Pause durably published generation7 with `paused=true`, and the app
+visibly showed Paused. Leave game acknowledged native quit, joined the machine
+thread, returned native status0 and synced storage. The OS process was independently
+observed absent before reopening the same entry. Its replacement had a different
+PID and `/proc/PID/stat` start value, restored visible Pause, then returned the
+same noninitial RAM/cookie and distinct disk marker after ordinary Resume.
+No recovery flag, checkpoint pointer or storage record was edited by the operator.
+
+Home from the running restored session exercised the actual lifecycle path.
+Return was requested while capture was still completing; generation8 was
+observed afterward with `paused=false`. The same live OS process responded to
+the query and next action without an explicit Resume. Final Leave game
+published generation9 with `paused=false`; its native record again showed
+acknowledged quit, joined machine thread, status0 and storage sync. Independent
+OS observation confirmed process death. Native return records conservatively
+retain `process_reaped=false`; the separate OS observations supply that proof.
+Writer leases remain owned until actual process exit.
+
+These are sampling bounds, measured from action acknowledgement, rather than
+instrumented engine/helper durations:
+
+| Boundary | Actual observation |
+| --- | --- |
+| Explicit Pause publication | Prior checkpoint at4.46s; generation7 by31.62s |
+| Fresh launch restoration | Visible Paused by26.06s after start acknowledgement |
+| Home publication | Prior checkpoint at38.78s; generation8 by80.19s |
+| Final departure | Process present at3.61s; absent by44.78s; generation9 observed by49.10s |
+
+Input-query and image-review delays are included. Logical-disk validation,
+helper, native capture and durable publication times and phone allocation growth
+were not separately measured. Low-friction latency and mobile performance remain
+unqualified. Some UART status updates present a partial line because the current
+bridge displays the latest received chunk; the full counter/marker/cookie values
+above were visible. This does not qualify commercial graphics, audio, Xbox-pad
+input or every native device's snapshot behavior. The retained desktop newer-save
+rejection proof is unchanged; this Android run adds no destructive rollback test.
+
+The first private recipe failed during Python imports because its filename
+shadowed the standard `operator` module, before any phone command. Its cleanup
+failed at that same import. The installed named cleanup-only recovery verified
+no XBX process and physical return while preserving both failure records. An
+isolated Python invocation then completed the product sequence. No shared helper,
+custody record, lock or sibling resource was manually repaired or removed.
+
+The final device recipe completed with27 UI actions and13 captured/opened
+screens, own processes absent, physical display OFF, no setting/tunnel changes
+and verified return under its held lease. Pixel4 remains booted and wired;
+screen-off is not a security-lock claim. Only after device return, a separate
+installed workspace recipe preserved and hash-verified the private operator,
+receipts, selected diagnostics and captures. Its existing project/capacity guards
+and fixed17,957,126,144byte allocation ceiling/shared12GiB reserve stayed intact.
+No storage reservation was held while waiting for the phone. All previous media,
+profiles, checkpoints, builds, rollback artifacts and sixteen paused paths remain.
+Fable's completed observations were not repeated; its compatibility is still
+unqualified. This earns the scoped original-cartridge Android continuity milestone.
+
+The remaining Fable boundary is the retained corrected-logging observation:
+selection/handoff returns, then a terminal access violation outside the public
+kernel map. The two original startup-thread lifetime cases already pass on both
+reference and open implementations. Under Master6399143636's pass branch,
+no termination repair, repeated splash/fault observation or speculative matrix
+follows. Further repair needs an independently identified concrete public startup
+contract and original reproducer, or a scoped additional-evidence direction.
+The Android result supplies neither a Fable cause nor authority to reopen the
+paused title-code, exception-tracing or allocator investigations. Phone availability
+and user-managed firmware are not the remaining dependencies.
+
 ## Owner-authorized Fold setup
 
 After Master6407613531, the owner explicitly authorized setup on the Fold and
