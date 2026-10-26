@@ -23,6 +23,7 @@ import android.view.DisplayCutout;
 import android.os.ParcelFileDescriptor;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -96,6 +97,17 @@ public class XbxActivity extends org.libsdl.app.SDLActivity {
         }});
     }
     @Override public void onBackPressed() { nativeGame("__menu__"); }
+    @Override public boolean dispatchKeyEvent(KeyEvent event) {
+        // SDL consumes key events before Activity.onBackPressed(). Forward the
+        // platform Back release to the existing Rust-owned menu command.
+        if (!mBrokenLibraries && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                nativeGame("__menu__");
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
     public void finishPlayer(int next) {
         java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
         runOnUiThread(new Runnable() { @Override public void run() {

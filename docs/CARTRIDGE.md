@@ -455,13 +455,40 @@ controlled process retirement verified own processes absent, physical screen OFF
 helper exit0 and lease released. This is not a clean native-quit result.
 
 A mechanical Back-key forwarding correction and packaging that reuses the
-unchanged native/Rust libraries are preserved locally but remain unbuilt. Its
-normal bootstrap admission refused an occupied shared capacity lease. The
-completed runtime/checkpoint work is published separately from that unfinished
-follow-up. Next: build/qualify the Back route, then earn noninitial state plus a
+unchanged native/Rust libraries were initially preserved unbuilt when normal
+bootstrap admission refused an occupied shared capacity lease. The completed
+runtime/checkpoint work was published separately from that unfinished follow-up.
+Next: qualify the Back route, then earn noninitial state plus a
 distinct disk marker, explicit Pause, a genuinely fresh process restoring the
 same state, a new action/new generation and Home/return. All previous data,
 builds, failure evidence and paused investigations remain; Fable is unqualified.
+
+### Back-event adapter candidate
+
+After the host capacity lease returned, tools-v36 built and passed warnings-denied
+workspace Clippy and formatting. The Activity now consumes the platform Back key
+and forwards its uncancelled release to the existing Rust menu command before
+SDL can consume it. Menu contents, game commands, pause intent and session policy
+remain Rust-owned. The existing onBackPressed callback still supports the
+platform callback route; gamepad Back is a separate input.
+
+The new `cartridge-android-package-back` action compiles the changed Java/DEX
+adapter and explicitly reuses the prior package's verified Rust library. It
+checks the retained core/helper/seed bindings and Rust-library digest and records
+the actual prior Rust source separately from the new build-owner source. No
+unchanged native core, Rust runtime, firmware or image helper was rebuilt.
+Signature/package and ZIP16KiB alignment checks passed. APK SHA-256:
+`cacf0d1d9057238b2fd876810888986a94ef7be50d95e22fcb356f4763956f4a`.
+Native core `a264a31f…6e18`, Rust library `8ef5efe7…b4b5`, helper, generated seed
+and open-system hashes match the installed session candidate exactly.
+
+Fresh host/output admission for this prepared candidate succeeded, then the
+physical-device transaction refused another live owner. The normal helper's
+identity preflight precedes that lock attempt; no XBX operator, installation or
+app/profile access followed. The installed APK remains `bbc4cab9…8477`, with
+its initial-state Home checkpoint intact. Back-menu operation, noninitial-state
+capture/restoration, explicit Pause and Home/return remain pending device proof.
+No peer pause, reservation or polling loop was created.
 
 ## Owner-authorized Fold setup
 

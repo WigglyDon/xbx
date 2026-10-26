@@ -45,11 +45,29 @@ pub(super) fn build_session(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-package-v5",
     )
 }
+pub(super) fn build_back(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(
+        repo,
+        root,
+        "android-native-session-v2",
+        "android-package-v6",
+        Some("android-package-v5"),
+    )
+}
 fn build_candidate(
     repo: &Path,
     root: &Path,
     native_stage: &str,
     package_stage: &str,
+) -> Result<(), Error> {
+    build_selected(repo, root, native_stage, package_stage, None)
+}
+fn build_selected(
+    repo: &Path,
+    root: &Path,
+    native_stage: &str,
+    package_stage: &str,
+    reuse_rust: Option<&str>,
 ) -> Result<(), Error> {
     let native = root.join(native_stage);
     let helper = root.join("android-helper-v4");
@@ -85,11 +103,29 @@ fn build_candidate(
         .ok_or("SDK root")?;
     let tools = sdk.join("build-tools/37.0.0");
     let jar = sdk.join("platforms/android-37.0/android.jar");
-    c::store::checked(Command::new("cargo").current_dir(&source).args(["build","--locked","--offline","-j","1","--release","--target","aarch64-linux-android","-p","xbx-host","--lib"])
+    let mut rust_source = json!(source);
+    let rust_library = if let Some(stage) = reuse_rust {
+        let retained = root.join(stage);
+        let identity: serde_json::Value = c::read_json(&retained.join("build.identity.json"))?;
+        let library = retained.join("lib/arm64-v8a/libxbx.so");
+        if identity["core_sha256"] != core_hash
+            || identity["helper_sha256"] != helper_hash
+            || identity["generated_seed_sha256"] != seed_hash
+            || identity["rust_library_sha256"] != c::file_digest(&library)?
+            || !identity["rust_source"].is_string()
+        {
+            return Err("retained Rust library/runtime bindings differ; preserve candidate".into());
+        }
+        rust_source = identity["rust_source"].clone();
+        library
+    } else {
+        c::store::checked(Command::new("cargo").current_dir(&source).args(["build","--locked","--offline","-j","1","--release","--target","aarch64-linux-android","-p","xbx-host","--lib"])
         .env("CARGO_TARGET_DIR",root.join("android-app-target")).env("XBX_NATIVE_LIB_DIR",&native)
         .env("CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER",ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"))
         .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash)
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
+        root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
+    };
     let assets = out.join("assets");
     let libs = out.join("lib/arm64-v8a");
     let classes = out.join("classes");
@@ -148,10 +184,7 @@ fn build_candidate(
         (native.join("libxemu.so"), "libxemu.so"),
         (helper.join("libxbx-disk.so"), "libxbx-disk.so"),
         (old.join("_deps/sdl3-build/libSDL3.so"), "libSDL3.so"),
-        (
-            root.join("android-app-target/aarch64-linux-android/release/libxbx.so"),
-            "libxbx.so",
-        ),
+        (rust_library, "libxbx.so"),
     ] {
         fs::copy(from, libs.join(name))?;
     }
@@ -278,7 +311,7 @@ fn build_candidate(
     c::write_new(
         &out.join("build.identity.json"),
         &c::json(
-            &json!({"apk_sha256":c::file_digest(&apk)?,"rust_library_sha256":c::file_digest(&libs.join("libxbx.so"))?,"core_sha256":core_hash,"helper_sha256":helper_hash,"generated_seed_sha256":seed_hash,"open_system_sha256":super::resources::OPEN,"manifest_sha256":c::file_digest(&repo.join("android/AndroidManifest.xml"))?,"java_source_sha256":java_hashes,"rust_source":source,"signing":"existing XBX identity reused; no private key copied","version_code":100,"whole_core_rebuild":false,"device_operation":false,"lifecycle_qualified":false,"Fable_playable":false,"all_stages_retained":true}),
+            &json!({"apk_sha256":c::file_digest(&apk)?,"rust_library_sha256":c::file_digest(&libs.join("libxbx.so"))?,"core_sha256":core_hash,"helper_sha256":helper_hash,"generated_seed_sha256":seed_hash,"open_system_sha256":super::resources::OPEN,"manifest_sha256":c::file_digest(&repo.join("android/AndroidManifest.xml"))?,"java_source_sha256":java_hashes,"rust_source":rust_source,"retained_rust_package":reuse_rust,"build_owner_source":source,"signing":"existing XBX identity reused; no private key copied","version_code":100,"whole_core_rebuild":false,"device_operation":false,"lifecycle_qualified":false,"Fable_playable":false,"all_stages_retained":true}),
         )?,
     )?;
     Ok(())

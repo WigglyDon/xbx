@@ -166,6 +166,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-package-socket" => super::android_package::build_socket(repo, root)?,
         "cartridge-android-package-monitor" => super::android_package::build_monitor(repo, root)?,
         "cartridge-android-package-session" => super::android_package::build_session(repo, root)?,
+        "cartridge-android-package-back" => super::android_package::build_back(repo, root)?,
         "cartridge-android-sign" => super::android_package::sign_retained(repo, root)?,
         "cartridge-capability" => capability(&w)?,
         _ => return Err("unknown cartridge build action".into()),
