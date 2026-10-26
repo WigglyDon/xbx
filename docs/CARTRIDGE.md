@@ -294,3 +294,34 @@ owner's continuation was bounded to the existing30-minute lab ceiling; no Fable
 phone trial occurred. Android unsaved-state restoration, Pause/Home behavior,
 helper execution and native shutdown remain unqualified. These small original
 inputs and app-created storage have not been deleted.
+
+
+## Owner-authorized Fold setup
+
+After Master6407613531, the owner explicitly authorized setup on the Fold and
+provided fresh connected/unlocked windows. This adds the same private candidate
+on that phone; it does not replace the pending Pixel4 first-launch evidence or
+authorize a repeated Fable campaign. Earlier transient USB disconnects occurred
+before app access and made no package/data changes. The completed window verified
+the bound stock user0/API37/arm64 platform with4096-byte pages and updated the
+existing `com.machinerhythm.xbx` package through normal same-signer install-r.
+The installed APK hash matches `67fda516…02ea5f`; no binary was rebuilt.
+
+The exact prior APK was already retained and hash/signer verified, so it was
+reused as rollback without making another duplicate. No app data was cleared or
+migrated. The new collection and touch-control layout were captured and actually
+reviewed on the active outer display in landscape2342x1080. No game input was
+imported or launched during this setup: native guest boot, real controller input,
+audio and complete-session restoration on the Fold remain unqualified.
+
+Stock screencap prepended a multi-display warning before its PNG stream. The raw
+capture remains intact; only its exact unchanged PNG bytes were extracted for
+inspection. An inactive Fold panel can report OFF while the active panel is ON,
+so the operator's initial any-OFF result was insufficient as return proof. Final
+bounded read-only verification used the physical Display Devices section:
+**both internal panels OFF**, keyguard showing and XBX processes absent. That
+verification used only tiny local receipts, with no shared-volume access/write,
+application launch or setting change. Both the setup and verification helpers
+exited0 and released their physical leases before the owner was told the Fold
+was released. Prior apps/media/saves, the rollback candidate and private evidence
+remain preserved; no security, Bluetooth or connectivity preference was changed.
