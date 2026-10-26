@@ -13,6 +13,8 @@ pub mod desktop;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;
+#[cfg(not(target_os = "android"))]
+mod npx_port;
 pub(crate) mod monitor;
 pub mod player;
 pub mod resources;

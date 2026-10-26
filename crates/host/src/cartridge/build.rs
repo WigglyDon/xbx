@@ -154,6 +154,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-fable" => fable(repo, &w)?,
         "cartridge-lifetime-build" => super::lifetime::build(repo, root)?,
         "cartridge-lifetime-observe" => super::lifetime::observe(repo, root)?,
+        "cartridge-npx-build" => super::npx_port::build(repo, root)?,
+        "cartridge-npx-observe" => super::npx_port::observe(repo, root)?,
         "cartridge-android-native" => super::android_build::native(repo, root)?,
         "cartridge-android-link" => super::android_build::link_adapters(repo, root)?,
         "cartridge-android-helper" => super::android_build::image_helper(repo, root)?,

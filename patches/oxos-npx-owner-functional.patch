@@ -1,0 +1,17 @@
+diff --git a/kernel/src/ke/npx.cpp b/kernel/src/ke/npx.cpp
+--- a/kernel/src/ke/npx.cpp
++++ b/kernel/src/ke/npx.cpp
+@@ -111,6 +111,13 @@ XBAPI NTSTATUS NTAPI KeRestoreFloatingPointState(KFLOATING_SAVE_ *FloatSave) {
+     __asm__ volatile("cli");
+     WriteCr0(ReadCr0() & ~CR0_TS);
+     PKTHREAD current = Prcb.CurrentThread;
++    // A caller can have switched out since saving, and can reach this service
++    // without touching FP after resuming. Preserve that other thread's live
++    // state before replacing the register file with this caller's saved state.
++    if (PKTHREAD owner = Prcb.NpxThread; owner && owner != current) {
++        __asm__ volatile("fxsave %0" : "=m"(*(UCHAR(*)[512])NpxArea(owner)));
++        owner->NpxState = NPX_STATE_NOT_LOADED;
++    }
+     __asm__ volatile("fxrstor %0" ::"m"(*(UCHAR(*)[512])area));
+     current->NpxState = NPX_STATE_LOADED;
+     Prcb.NpxThread = current;

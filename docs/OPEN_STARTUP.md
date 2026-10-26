@@ -1,5 +1,43 @@
 # Basic-logging open title startup
 
+## Functional-only integration of the accepted FPU-owner repair
+
+After the original-cartridge Android milestone at620a49b, public-source review
+found a concrete integration gap: the current9d8cd58 corrected logging/release
+source still contains the uncorrected KeRestoreFloatingPointState. Its source
+hash is4caab333…8fd9. The independently reproduced displaced-owner repair at
+fcbaeab had not been carried from the earlier composed diagnostic candidate
+into this source. This is evidence for a functional port, not attribution of
+Fable's post-handoff access violation.
+
+`patches/oxos-npx-owner-functional.patch` contains exactly the seven accepted
+added lines, with no old diagnostic chain. New source verification checks all
+retained corrected source blobs before copying them and confirms that only
+`kernel/src/ke/npx.cpp` changes. Existing required-read and fixed-phase changes,
+pinned Cromwell and retained native-v3 core remain. All old trees/builds/profiles
+and sixteen paused paths are preserved. The ordinary runtime and installed
+Android candidate are unchanged while this separate candidate is qualified.
+
+The original MIT `npx-ownership.S` regression remains byte-identical. A small
+UART adapter replaces its three result-report calls, activates the same public
+UART used by the lifetime fixture, and preserves registers/flags. Its register
+checks, persistent context, events, finite waits, parent/child ordering and
+original constants are retained. Rust verifies original input identity, creates
+the flat test image, and requires both child and final parent responses plus
+clean native retirement. No import journal, guest-memory read, private firmware
+implementation, exception/FPU observer or commercial-game instruction is used.
+
+Tools-v37 compiled; its focused completion-policy test, warnings-denied workspace
+Clippy and formatting passed. The separate SERIAL1/TRACE_IMPORTS0/SELFTEST0 open
+image built with one compiler job. Exact source/patch/fixture and actual build
+identities are in [cartridge-npx-owner.lock.json](../cartridge-npx-owner.lock.json).
+Current-image before/after guest regression is prepared but not yet observed;
+the existing workspace custodian returned at its safe build boundary and its
+same request is waiting without a held lease. No current native regression or
+Fable result is claimed from the build. The next dependent steps are that
+original regression, retained relaunch-fixture qualification of this exact image,
+then one matched changed-firmware Fable observation if those gates pass.
+
 ## Cartridge continuation: corrected logging and initial-thread lifetime
 
 After the first XBX-CARTRIDGE-1 continuity/storage-safety slice, the single

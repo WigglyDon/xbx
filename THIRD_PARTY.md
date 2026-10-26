@@ -16,6 +16,14 @@ and unchanged bases are bound by `kernel-npx.lock.json`. Original Rust owns
 build/acceptance policy. [THREAD_FPU.md](docs/THREAD_FPU.md) records the actual
 before/after proof and unsuccessful ordinary-game result, without game code.
 
+`patches/oxos-npx-owner-functional.patch` carries only that accepted seven-line
+repair from xbx `fcbaeab8f544f6ab4b78c027c032ba429549bd49` onto the retained
+OXOS `9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96` source. GPL/per-file terms
+remain; no historical instrumentation is included. The original MIT regression
+`npx-ownership.S` is reused with the original `npx-uart.S` output adapter and
+the public UART activation already used by `startup-lifetime.S`. Rust owns
+source verification, finite build and actual guest-result/return acceptance.
+
 The separate upstream desktop comparison retains public xemu at
 03b988c9d76553b33ed712ba00822ffdf49f0e7d. Its complete targeted integration diff
 is `patches/xemu-reference-desktop.patch`, bound by `reference-core.lock.json`.
