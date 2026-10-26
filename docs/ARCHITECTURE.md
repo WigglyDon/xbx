@@ -132,14 +132,21 @@ in-process teardown. The Rust qualification entry follows this lifetime and
 keeps the profile lease until process exit. This is source-backed policy, not
 earned Android shutdown/restart acceptance.
 
-The ABI-v3 qualification host distinguishes terminal machine rejection from
+The retained ABI-v3 qualification host distinguishes terminal machine rejection from
 display readiness. Resume requires successful initialization, a ready display,
 foreground and audio focus; a rejected EEPROM cannot be overridden by lifecycle
 events. A bounded initializer/teardown watchdog terminates the owning process
 without releasing its profile lease early. A scoped, retained read-only media FD
 is inspected and fingerprinted before its duplicate enters QEMU. The durable
 SavedSession holds opaque game/profile IDs and media/firmware bindings; LiveRuntime
-owns the transient file capability. This slice always cold-boots current storage.
+owns the transient file capability. That legacy slice always cold-boots current storage. The integrated ABI4 cartridge
+entry instead uses the shared complete-session policy; its private Android
+candidate is built, with device lifecycle qualification still pending. Android
+FD imports retain scoped read-only capabilities, logical disk validation uses
+the packaged read-only native backend helper, and profile/app leases persist
+through actual OS process exit. The two Activity process names are ephemeral
+serial lifetime boundaries, never saved game identities. No concurrent games
+or resident pool is introduced.
 
 Pause requested, machine quiesced, checkpoint durably committed and native
 teardown complete are distinct events. The pinned Android menu snapshot

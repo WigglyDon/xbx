@@ -287,3 +287,15 @@ function, retained privately with the build; the shim does not relicense it.
 The test controls owner-preparation and error dependencies, not emulated i386 ABI,
 serializer completeness or native-thread concurrency. Current execution status
 is recorded in CARTRIDGE.md rather than inferred from the test's presence.
+
+
+The ABI4 Android cartridge candidate retains the same pinned Android core and
+accepted Android patches, adding the reviewed HMP paused-capture and RAMHT repairs.
+`patches/xemu-android-image-reader.patch` modifies the retained fork's
+`android/app/src/main/cpp/xemu_hdd_tools_jni.c` under its actual GPL lineage. It
+exports read-only block open/length/read/close operations for a separate packaged
+Rust helper, reusing QEMU decoding rather than translating its disk format.
+The first-party Rust helper/lifecycle/packaging code is MIT; the mechanical
+Android bridge/Activity changes retain their existing notices. Candidate assets
+include the actual QEMU, SDL, OXOS and first-party notices. No sibling source or
+private firmware was added to this Android package.

@@ -4,7 +4,6 @@
 use super::*;
 use serde_json::{Value, json};
 use std::{
-    io::{BufRead, BufReader},
     os::{fd::AsRawFd, unix::net::UnixStream},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
@@ -33,9 +32,7 @@ impl Drop for Process {
 }
 pub struct Native {
     child: Process,
-    reader: BufReader<UnixStream>,
-    socket: UnixStream,
-    sequence: u64,
+    monitor: super::monitor::Monitor,
     socket_path: PathBuf,
     serial_path: PathBuf,
     serial: UnixStream,
@@ -147,18 +144,11 @@ impl Native {
                 }
             }
         };
-        // Original native/USB fixture showed a 64s restore. Keep a finite
-        // acknowledged control boundary; preserve timeout failures and custody.
-        socket.set_read_timeout(Some(Duration::from_secs(90)))?;
-        socket.set_write_timeout(Some(Duration::from_secs(5)))?;
-        let reader = BufReader::new(socket.try_clone()?);
         let serial = UnixStream::connect(&serial_path)?;
         serial.set_read_timeout(Some(Duration::from_millis(10)))?;
         let mut native = Self {
             child,
-            reader,
-            socket,
-            sequence: 0,
+            monitor: super::monitor::Monitor::connected(socket)?,
             socket_path,
             serial_path,
             serial,
@@ -167,10 +157,6 @@ impl Native {
             run,
             retired: false,
         };
-        let mut greeting = String::new();
-        native.reader.read_line(&mut greeting)?;
-        native.call("qmp_capabilities", json!({}))?;
-        native.call("query-status", json!({}))?;
         if r.window {
             let deadline = Instant::now() + Duration::from_secs(10);
             loop {
@@ -190,69 +176,25 @@ impl Native {
         Ok(native)
     }
     pub fn call(&mut self, execute: &str, arguments: Value) -> io::Result<Value> {
-        self.sequence += 1;
-        let id = self.sequence;
-        let request = json!({"execute":execute,"arguments":arguments,"id":id});
-        writeln!(self.socket, "{request}")?;
-        loop {
-            let mut line = String::new();
-            if self.reader.read_line(&mut line)? == 0 {
-                return Err(io::Error::other("native control closed"));
-            }
-            if line.len() > 1024 * 1024 {
-                return Err(io::Error::other("native control output limit"));
-            }
-            let v: Value = serde_json::from_str(&line).map_err(io::Error::other)?;
-            if v.get("id") == Some(&json!(id)) {
-                if let Some(e) = v.get("error") {
-                    return Err(io::Error::other(format!("native refused: {e}")));
-                }
-                return v
-                    .get("return")
-                    .cloned()
-                    .ok_or_else(|| io::Error::other("missing native acknowledgement"));
-            }
-        }
+        self.monitor.call(execute, arguments)
     }
     fn hmp(&mut self, command: &str) -> io::Result<String> {
-        let v = self.call("human-monitor-command", json!({"command-line":command}))?;
-        v.as_str()
+        self.call("human-monitor-command", json!({"command-line":command}))?
+            .as_str()
             .map(str::to_owned)
             .ok_or_else(|| io::Error::other("invalid native HMP response"))
     }
     pub fn pause(&mut self) -> io::Result<()> {
-        if self.call("query-status", json!({}))?["running"] == true {
-            self.call("stop", json!({}))?;
-        }
-        let v = self.call("query-status", json!({}))?;
-        if v["running"] != false {
-            return Err(io::Error::other("machine did not quiesce"));
-        }
-        Ok(())
+        self.monitor.pause()
     }
     fn resume(&mut self) -> io::Result<()> {
-        self.call("cont", json!({}))?;
-        Ok(())
+        self.monitor.resume()
     }
     pub fn capture(&mut self) -> io::Result<()> {
-        self.pause()?;
-        let result = self.hmp("savevm xbx-session")?;
-        if !result.trim().is_empty() {
-            return Err(io::Error::other(format!("native capture: {result}")));
-        }
-        let listing = self.hmp("info snapshots")?;
-        if !listing.contains("xbx-session") {
-            return Err(io::Error::other("native snapshot absent"));
-        }
-        Ok(())
+        self.monitor.capture()
     }
     fn load(&mut self) -> io::Result<()> {
-        self.pause()?;
-        let result = self.hmp("loadvm xbx-session")?;
-        if !result.trim().is_empty() {
-            return Err(io::Error::other(format!("native restore: {result}")));
-        }
-        self.pause()
+        self.monitor.load()
     }
     pub fn serial(&mut self) -> io::Result<String> {
         let mut bytes = Vec::new();

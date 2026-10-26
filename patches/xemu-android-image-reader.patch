@@ -1,0 +1,55 @@
+--- a/android/app/src/main/cpp/xemu_hdd_tools_jni.c
++++ b/android/app/src/main/cpp/xemu_hdd_tools_jni.c
+@@ -1151,5 +1151,52 @@
+ 
+     if (err) {
+         android_xbox_hdd_throw_error(env, "java/io/IOException", NULL, err);
+     }
+ }
++
++/* XBX mechanical read-only block adapter. Called only by the separate Rust
++ * image-helper process; never initialize a second block layer in a live VM.
++ * Rust owns bounds, hashing and session policy. Existing QEMU owns qcow2. */
++__attribute__((visibility("default")))
++void *xbx_image_open(const char *path)
++{
++    Error *err = NULL;
++    if (!android_xbox_hdd_ensure_block_layer(&err)) {
++        error_free(err);
++        return NULL;
++    }
++    BQL_LOCK_GUARD();
++    QDict *options = qdict_new();
++    /* Rust admits reads only while the actual VM/storage owner is quiesced.
++     * This is the same read-only sharing used by desktop qemu-img -U. */
++    qdict_put_bool(options, "force-share", true);
++    BlockBackend *blk = blk_new_open(path, NULL, options, BDRV_O_NO_BACKING, &err);
++    if (!blk) {
++        error_free(err);
++    }
++    return blk;
++}
++
++__attribute__((visibility("default")))
++int64_t xbx_image_length(void *image)
++{
++    BQL_LOCK_GUARD();
++    return blk_getlength(image);
++}
++
++__attribute__((visibility("default")))
++int xbx_image_read(void *image, uint64_t offset, void *buffer, size_t size)
++{
++    if (size > 65536 || offset > INT64_MAX) {
++        return -EINVAL;
++    }
++    BQL_LOCK_GUARD();
++    return blk_pread(image, offset, size, buffer, 0);
++}
++
++__attribute__((visibility("default")))
++void xbx_image_close(void *image)
++{
++    BQL_LOCK_GUARD();
++    blk_unref(image);
++}

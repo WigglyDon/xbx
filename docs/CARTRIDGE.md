@@ -14,8 +14,9 @@ mutable kernel state, rather than separate firmware snapshots or a chooser.
 `cartridge/player.rs` owns serialized launch/pause/departure/return policy.
 `desktop.rs` is its QMP transport. Native owners stop/drain/capture/load the
 complete machine; Rust does not serialize a second machine representation.
-The Android transport/lifecycle connection is still unfinished. A compiled
-shared policy is not an Android lifecycle qualification.
+The Android transport now uses that same policy. Its private APK is built and
+verified; actual Android lifecycle qualification remains pending. A compiled
+shared policy is not a device result.
 
 ## Resources and state safety
 
@@ -46,8 +47,10 @@ older RAM. Explicit user Pause differs from interruption and is checkpointed.
 
 The current desktop logical-content check uses a sparse read-only raw conversion
 and hashes canonical nonzero logical blocks. It does not hash qcow2 metadata as
-ordinary progress. This helper and the private copy approach require Android
-integration/measurement; host reflinks and ephemeral `-snapshot` are not used.
+ordinary progress. Android uses a separate packaged Rust executable and a narrow read-only adapter
+to the retained native qcow2 backend, hashing the same logical blocks. Its device
+execution and timing remain unqualified. Host reflinks and ephemeral `-snapshot`
+are not used.
 
 ## Actual original-program proof
 
@@ -190,8 +193,72 @@ The single corrected-logging Fable observation still showed only the open-kernel
 splash and ended on the existing post-handoff access violation, with clean native
 retirement. Both original startup-lifetime cases passed on reference and open;
 no termination repair is supported. [Exact results and next evidence boundary](OPEN_STARTUP.md).
-Android lifecycle integration and a
-private candidate, normal controller play, sound and ordinary save/cold reload
-remain unfinished. No phone, PSX/sibling mutation, project pause, cross-agent
-scheduler or routine broadcast occurred. All prior media/builds/profiles/evidence
+The Android candidate described below is built; device lifecycle, normal
+controller play, sound and ordinary save/cold reload remain unqualified. No
+PSX/sibling mutation, project pause, cross-agent scheduler or routine broadcast
+was introduced. All prior media/builds/profiles/evidence
 and sixteen paused paths remain preserved.
+
+
+## Android cartridge candidate, original-only qualification
+
+The Android entry now selects the packaged open runtime, generates isolated
+storage and uses the shared `Player` for import/relink, automatic departure,
+last-game return, explicit Pause/Resume and recovery. The scoped document URI is
+an identifier for a retained read-only FD; it is never reopened as a host path.
+Duplicate exact-image imports retain the existing game/profile identities.
+Actual host capability proof passed: pathname removal did not invalidate an open
+capability, writable FDs and incorrect relinks were refused, and correct relinking
+preserved both identities.
+
+The native QMP transport is shared with desktop. Actual desktop policy regression
+on tools-v28 passed after extraction: fresh-process explicit Pause/Resume, newer
+guest marker4 refusing the old checkpoint without changing either side, and
+explicit cold restart to RAM0/save4 then new input. Eight focused storage cases,
+Clippy with warnings denied and formatting passed. The eighth case retains
+interrupted administrative control files on an explicit recovery before allowing
+a new write epoch. This is not automatic disposal of incomplete states.
+
+Android neutralizes input on lost focus/surface and coalesces departure requests.
+Restoration starts paused; healthy foreground, focus and surface gates permit
+execution unless user Pause persists. One native machine is initialized per OS
+process. The alternate private Activity is only a serial fresh-process handoff;
+both app/profile flock descriptors remain held until the previous OS process
+exits. A joined native thread is recorded separately from a reaped OS process.
+Failed native restoration keeps attempted storage private; explicit recovery is
+deferred to a fresh process when the old process still holds its writer lease.
+The previous qualification namespace and profiles are not migrated or deleted.
+
+The retained Android pin is `4967efd3ee594cc236869a45ee4cb396e25af1ac`.
+Only HMP paused capture, the accepted RAMHT repair and the mechanical image-reader
+unit were recompiled into a copy of the retained archive. Six missing retained
+platform/bridge objects were recompiled for relinking; the final ABI4 bridge was
+then rebuilt alone. No SDK download or full-core rebuild occurred. Missing public
+headers were restored from retained Git objects in the separate owned source
+copy (3,720 headers,34,630,065 logical bytes). Old source/builds remain untouched.
+The read-only block adapter remains GPL-derived; substantive hashing, bounds,
+package assembly and lifecycle/storage policy are Rust.
+
+Private candidate identities:
+
+- Native core: `9c8b5e1dcf9654d1ec907bc6c70ba97421183a99efa5e2dc8681fd9097cc8c7a`.
+- Rust library, tools-v27 source: `587203ea0a7d5536e25498d187fc9d82878549665c20d8d31b4262011f5fa05a`.
+- Read-only image helper: `9f77fed23f0b04eb858c544661262fbdd8f31af159aeebda333b2fc2cfca0369`.
+- Generated empty qcow2: `04270e68f3a3aea1d3ea6170d40cad3616311f3a4d560914223ae33bf84e6e48`.
+- Signed APK: `67fda516c52ee22f00a99b0e54d415d0c1ca6a1b4b7b6ba62891f78f8802ea5f`.
+
+The APK retains `com.machinerhythm.xbx` and its existing signing identity,
+arm64-v8a, minimum API29 and target API36. Java/DEX/resource assembly, alignment,
+APK signature verification and package/ELF inspection passed. Open resource
+`c29e4f5e…079b8` is supplied internally; no firmware picker/private input exists
+in the ordinary cartridge entry. The executable helper uses its packaged native
+library directory with `$ORIGIN`, not a developer filesystem path. Build/link,
+Rust helper, Java lambda and signing-argument failures remain preserved beside
+the completed stages. These are build results, not phone execution acceptance.
+
+Master permits only the bounded original-fixture Pixel4 lifecycle check at this
+stage. Prepare rollback, verify current activated stock policy/identity and acquire
+the existing device transaction before installation. A first admission attempt
+was refused by an already-owned physical-device lock, before any app/UI mutation;
+its short host phase returned. No peer pause or reservation was requested. Fable
+phone trials still require the independent desktop commercial-game gate.

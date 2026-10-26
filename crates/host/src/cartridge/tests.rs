@@ -129,6 +129,63 @@ fn interrupted_reference_publication_keeps_prior_checkpoint_and_pending_evidence
     assert_eq!(checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap().id, id);
 }
 #[test]
+fn explicit_restart_preserves_interrupted_controls_and_current_saves() {
+    let f = Fixture::new();
+    let id = f.publish();
+    let session = fs::read(f.p.root.join("session.json")).unwrap();
+    let disk = file_digest(&f.p.current().unwrap().join("hdd.qcow2")).unwrap();
+    let state = file_digest(&f.p.root.join("checkpoints").join(id).join("hdd.qcow2")).unwrap();
+    write_new(&f.p.root.join("generation.pending"), b"2\n").unwrap();
+    mkdir(&f.p.root.join("session.pending")).unwrap();
+    assert!(f.p.lease.begin_writes().is_err());
+    checkpoint::restart(&f.p).unwrap();
+    assert_eq!(
+        file_digest(&f.p.current().unwrap().join("hdd.qcow2")).unwrap(),
+        disk
+    );
+    assert_eq!(
+        file_digest(
+            &f.p.root
+                .join("checkpoints")
+                .join(
+                    serde_json::from_slice::<checkpoint::Session>(&session)
+                        .unwrap()
+                        .checkpoint
+                )
+                .join("hdd.qcow2")
+        )
+        .unwrap(),
+        state
+    );
+    let paths: Vec<_> = fs::read_dir(&f.p.root)
+        .unwrap()
+        .map(|v| v.unwrap().path())
+        .collect();
+    assert!(paths.iter().any(|p| {
+        p.file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("interrupted-generation.pending-")
+            && fs::read(p).unwrap() == b"2\n"
+    }));
+    assert!(paths.iter().any(|p| {
+        p.file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("interrupted-session.pending-")
+            && p.is_dir()
+    }));
+    assert!(paths.iter().any(|p| {
+        p.file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("rejected-session-")
+            && fs::read(p).unwrap() == session
+    }));
+    assert!(f.p.root.join("restart.intent.json").is_file());
+    assert_eq!(f.p.lease.begin_writes().unwrap(), 2);
+}
+#[test]
 fn corruption_or_incompatible_runtime_never_rewrites_checkpoint_or_current_saves() {
     let f = Fixture::new();
     let id = f.publish();

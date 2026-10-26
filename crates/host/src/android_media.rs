@@ -59,7 +59,7 @@ pub fn status(text: &str) {
         unsafe { xbx_platform_status(text.as_ptr()) };
     }
 }
-fn asset(name: &str) -> std::io::Result<Vec<u8>> {
+pub(super) fn asset(name: &str) -> std::io::Result<Vec<u8>> {
     let name = CString::new(name).map_err(std::io::Error::other)?;
     let mut size = 0;
     let ptr = unsafe { SDL_LoadFile(name.as_ptr(), &mut size) };
@@ -202,36 +202,8 @@ fn opaque_id() -> std::io::Result<String> {
 }
 
 pub fn select(root: &Path, firmware: &str) -> Result<LiveRuntime, Box<dyn std::error::Error>> {
-    status("Choose Fable from Downloads");
-    let mut saved = fs::read_to_string(root.join("media.uri"))
-        .ok()
-        .and_then(|s| CString::new(s).ok());
-    let (mut file, uri) = loop {
-        unsafe { xbx_platform_open(saved.as_ref().map_or(std::ptr::null(), |s| s.as_ptr())) };
-        let slot = RESULT.lock().map_err(|_| "Media handoff failed")?;
-        let (mut slot, wait) = DELIVERED
-            .wait_timeout_while(slot, Duration::from_secs(600), |v| v.is_none())
-            .map_err(|_| "Media handoff failed")?;
-        if wait.timed_out() && slot.is_none() {
-            return Err("Game selection timed out; no machine was started".into());
-        }
-        let value = slot.take().ok_or("No document result")?;
-        drop(slot);
-        match value {
-            Err(error) if error == "grant-unavailable" && saved.is_some() => {
-                saved = None;
-                status("Locate Fable to restore access");
-            }
-            other => break other?,
-        }
-    };
-    if !uri.starts_with("content://") || uri.chars().any(char::is_control) {
-        return Err("Unsupported document identity".into());
-    }
-    let flags = unsafe { fcntl(file.as_raw_fd(), 3) }; // F_GETFL
-    if flags < 0 || flags & 3 != 0 {
-        return Err("The game document must be retained read-only".into());
-    }
+    let saved = fs::read_to_string(root.join("media.uri")).ok();
+    let (mut file, uri) = request(saved.as_deref())?;
     let before = file.metadata()?;
     let disc = crate::disc::inspect_open(&mut file)
         .map_err(|e| format!("Choose a complete local Xbox disc image: {e}"))?;
@@ -324,4 +296,36 @@ pub fn select(root: &Path, firmware: &str) -> Result<LiveRuntime, Box<dyn std::e
         disc,
         saved,
     })
+}
+
+pub(super) fn request(initial: Option<&str>) -> Result<(File, String), Box<dyn std::error::Error>> {
+    status("Choose a local Xbox game");
+    let mut saved = initial.and_then(|s| CString::new(s).ok());
+    let (file, uri) = loop {
+        unsafe { xbx_platform_open(saved.as_ref().map_or(std::ptr::null(), |s| s.as_ptr())) };
+        let slot = RESULT.lock().map_err(|_| "Media handoff failed")?;
+        let (mut slot, wait) = DELIVERED
+            .wait_timeout_while(slot, Duration::from_secs(600), |v| v.is_none())
+            .map_err(|_| "Media handoff failed")?;
+        if wait.timed_out() && slot.is_none() {
+            return Err("Game selection timed out; no machine was started".into());
+        }
+        let value = slot.take().ok_or("No document result")?;
+        drop(slot);
+        match value {
+            Err(error) if error == "grant-unavailable" && saved.is_some() => {
+                saved = None;
+                status("Locate this game to restore access");
+            }
+            other => break other?,
+        }
+    };
+    if !uri.starts_with("content://") || uri.chars().any(char::is_control) {
+        return Err("Unsupported document identity".into());
+    }
+    let flags = unsafe { fcntl(file.as_raw_fd(), 3) }; // F_GETFL
+    if flags < 0 || flags & 3 != 0 {
+        return Err("The game document must be retained read-only".into());
+    }
+    Ok((file, uri))
 }

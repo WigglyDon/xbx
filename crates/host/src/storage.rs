@@ -1,5 +1,5 @@
 //! Profile-wide OS lease and conservative disk-generation publication.
-//! Full machine checkpoints remain disabled until the engine's complete boundary is proven.
+//! Complete checkpoint policy lives in cartridge; native owners perform capture.
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Write};
 use std::os::fd::AsRawFd;
@@ -12,6 +12,19 @@ pub struct ProfileLease {
 }
 
 impl ProfileLease {
+    /// Embedded Android native owners may retain late threads after the main
+    /// machine joins. Keep the SAME open-description lock until OS process exit;
+    /// no successor is admitted merely because a Rust object was dropped.
+    #[cfg(target_os = "android")]
+    pub fn hold_until_process_exit(&self) -> io::Result<()> {
+        use std::sync::{Mutex, OnceLock};
+        static HELD: OnceLock<Mutex<Vec<File>>> = OnceLock::new();
+        HELD.get_or_init(|| Mutex::new(Vec::new()))
+            .lock()
+            .map_err(|_| io::Error::other("process lease retention failed"))?
+            .push(self._lock.try_clone()?);
+        Ok(())
+    }
     /// Carry the same open-file-description lease into a diagnostic native child.
     /// If the supervising Rust process dies, the native writer still owns the lease.
     pub fn inherit_for(&self, command: &mut std::process::Command) {

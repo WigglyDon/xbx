@@ -24,11 +24,15 @@ pub struct Resources {
     pub root: PathBuf,
     pub identity: String,
     pub manifest: Manifest,
+    #[cfg(not(target_os = "android"))]
     pub(crate) window: bool,
+    #[cfg(target_os = "android")]
+    pub(crate) native_dir: PathBuf,
 }
 impl Resources {
     /// The normal runtime accepts only the compiled supported open resource set.
     /// No proprietary/reference fallback, config override or firmware selector.
+    #[cfg(not(target_os = "android"))]
     pub fn open(root: &Path) -> io::Result<Self> {
         Self::validated(root, OPEN, false)
     }
@@ -38,6 +42,7 @@ impl Resources {
     pub(crate) fn logging(root: &Path) -> io::Result<Self> {
         Self::validated(root, LOGGING_OPEN, true)
     }
+    #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {
         let root = root.canonicalize()?;
         let m: Manifest = read_json(&root.join("runtime.json"))?;
@@ -72,9 +77,104 @@ impl Resources {
         })
     }
     pub fn core(&self) -> PathBuf {
-        self.root.join("native/core")
+        #[cfg(target_os = "android")]
+        {
+            self.native_dir.join("libxemu.so")
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            self.root.join("native/core")
+        }
     }
     pub fn image_tool(&self) -> PathBuf {
-        self.root.join("native/qemu-img")
+        #[cfg(target_os = "android")]
+        {
+            self.native_dir.join("libxbx-disk.so")
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            self.root.join("native/qemu-img")
+        }
+    }
+}
+
+#[cfg(target_os = "android")]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct AndroidPackage {
+    schema: u32,
+    core: String,
+    open_system: String,
+    image_helper: String,
+    empty_disk: String,
+    state_abi: u32,
+    bridge_abi: u32,
+}
+#[cfg(target_os = "android")]
+impl Resources {
+    pub fn open(root: &Path) -> io::Result<Self> {
+        unsafe extern "C" {
+            fn xbx_platform_native_dir() -> *const std::ffi::c_char;
+        }
+        let pointer = unsafe { xbx_platform_native_dir() };
+        if pointer.is_null() {
+            return Err(io::Error::other("Android platform resources are not ready"));
+        }
+        let native = unsafe { std::ffi::CStr::from_ptr(pointer) }
+            .to_str()
+            .map_err(io::Error::other)?;
+        Self::android(root, Path::new(native))
+    }
+    pub(crate) fn android(root: &Path, native_dir: &Path) -> io::Result<Self> {
+        let root = root.canonicalize()?;
+        let native_dir = native_dir.canonicalize()?;
+        let m: AndroidPackage = read_json(&root.join("runtime.json"))?;
+        let expected_core = option_env!("XBX_ANDROID_CORE_SHA256")
+            .ok_or_else(|| io::Error::other("Android native package identity missing"))?;
+        let expected_helper = option_env!("XBX_ANDROID_DISK_SHA256")
+            .ok_or_else(|| io::Error::other("Android disk-helper identity missing"))?;
+        let expected_seed = option_env!("XBX_ANDROID_SEED_SHA256")
+            .ok_or_else(|| io::Error::other("generated Android seed identity missing"))?;
+        if m.schema != 1
+            || m.state_abi != 1
+            || m.bridge_abi != 4
+            || m.open_system != OPEN
+            || m.core != expected_core
+            || m.image_helper != expected_helper
+            || m.empty_disk != expected_seed
+        {
+            return Err(io::Error::other(
+                "unsupported integrated Android resources; preserve sessions and saves",
+            ));
+        }
+        for (path, hash) in [
+            (native_dir.join("libxemu.so"), &m.core),
+            (native_dir.join("libxbx-disk.so"), &m.image_helper),
+            (root.join("open.bin"), &m.open_system),
+            (root.join("empty.qcow2"), &m.empty_disk),
+        ] {
+            if file_digest(&path)? != *hash {
+                return Err(io::Error::other("integrated Android resource damaged"));
+            }
+        }
+        Ok(Self {
+            identity: digest(
+                format!(
+                    "xbx-state:{}:{}:{}:64:offline",
+                    m.state_abi, m.core, m.open_system
+                )
+                .as_bytes(),
+            ),
+            root,
+            native_dir,
+            manifest: Manifest {
+                schema: 1,
+                core: m.core,
+                open_system: m.open_system,
+                disk_tool: m.image_helper,
+                slirp: String::new(),
+                state_abi: 1,
+            },
+        })
     }
 }

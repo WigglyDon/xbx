@@ -3,6 +3,9 @@
 package com.machinerhythm.xbx;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,6 +18,7 @@ import android.os.Bundle;
 import android.os.Build;
 import android.graphics.Insets;
 import android.view.WindowInsets;
+import android.view.SurfaceHolder;
 import android.view.DisplayCutout;
 import android.os.ParcelFileDescriptor;
 import android.view.Gravity;
@@ -24,9 +28,12 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public final class XbxActivity extends org.libsdl.app.SDLActivity {
+public class XbxActivity extends org.libsdl.app.SDLActivity {
     private static native void nativeSetForeground(boolean foreground);
     private static native void nativeSetAudioFocus(boolean focused);
+    private static native void nativeSetSurface(boolean available);
+    private static native void nativeNativeDirectory(String directory);
+    private static native void nativeGame(String key);
     private static native void nativeDocument(int fd, String uri, String error);
     private static native void nativeTouch(int id, int phase, float x, float y, float w, float h, float density);
     private static native float[] nativeLayout(int index, float w, float h, float density);
@@ -45,6 +52,7 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         if (mBrokenLibraries || mLayout == null) return;
+        nativeNativeDirectory(getApplicationInfo().nativeLibraryDir);
         controls = new Controls();
         mLayout.addView(controls, new ViewGroup.LayoutParams(-1, -1));
         status = new TextView(this);
@@ -61,6 +69,46 @@ public final class XbxActivity extends org.libsdl.app.SDLActivity {
                 @Override public void onAudioFocusChange(int change) { nativeSetAudioFocus(change == AudioManager.AUDIOFOCUS_GAIN); }
             })
             .build();
+    }
+
+    @Override protected org.libsdl.app.SDLSurface createSDLSurface(Context context) {
+        return new XbxSurface(context);
+    }
+    private final class XbxSurface extends org.libsdl.app.SDLSurface {
+        XbxSurface(Context context) { super(context); }
+        @Override public void surfaceDestroyed(SurfaceHolder holder) {
+            nativeSetSurface(false); nativeNeutral(); super.surfaceDestroyed(holder);
+        }
+        @Override public void surfaceChanged(SurfaceHolder holder,int format,int w,int h) {
+            super.surfaceChanged(holder,format,w,h); nativeSetSurface(w>0 && h>0);
+        }
+    }
+    public boolean wantsCollection() { return getIntent().getBooleanExtra("collection",false); }
+    public void showChoices(String heading,String[] labels,String[] keys) {
+        runOnUiThread(new Runnable() { @Override public void run() {
+            new AlertDialog.Builder(XbxActivity.this).setTitle(heading)
+                .setItems(labels,new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog,int index) { nativeGame(keys[index]); }
+                })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override public void onCancel(DialogInterface dialog) { nativeGame("__cancel__"); }
+                }).show();
+        }});
+    }
+    @Override public void onBackPressed() { nativeGame("__menu__"); }
+    public void finishPlayer(int next) {
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        runOnUiThread(new Runnable() { @Override public void run() {
+            if(next!=0) {
+                Class<?> target = XbxActivity.this instanceof XbxReturnActivity ? XbxActivity.class : XbxReturnActivity.class;
+                Intent intent = new Intent(XbxActivity.this,target);
+                intent.putExtra("collection",next==2);
+                startActivity(intent);
+            }
+            finish(); done.countDown();
+        }});
+        try { done.await(3,java.util.concurrent.TimeUnit.SECONDS); }
+        catch(InterruptedException interrupted) { Thread.currentThread().interrupt(); }
     }
 
     public void showStatus(String text) {

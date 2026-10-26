@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <glib.h>
 #include <stdatomic.h>
+#include <sys/statvfs.h>
 #include "xemu-settings.h"
 
 extern void qemu_init(int argc, char **argv);
@@ -31,7 +32,7 @@ static bool create_eeprom;
 static bool (*resume_gate)(void);
 static SDL_AtomicInt cancelled;
 
-XBX_EXPORT int xbx_engine_abi(void) { return 3; }
+XBX_EXPORT int xbx_engine_abi(void) { return 4; }
 XBX_EXPORT uint64_t xbx_engine_dvd_offset(void) { return dvd_offset; }
 XBX_EXPORT bool xbx_engine_allow_eeprom_create(void) { return create_eeprom; }
 XBX_EXPORT bool xbx_engine_resume_allowed(void) { return resume_gate && resume_gate(); }
@@ -87,6 +88,7 @@ typedef struct XbxCallbacks {
     void (*layout)(int, float, float, float, float *);
     const char *(*label)(int);
     void (*neutral)(void);
+    void (*game)(const char *);
 } XbxCallbacks;
 static _Atomic(const XbxCallbacks *) callbacks;
 XBX_EXPORT void xbx_platform_callbacks(const XbxCallbacks *value)
@@ -157,6 +159,71 @@ JNIEXPORT void JNICALL Java_com_machinerhythm_xbx_XbxActivity_nativeNeutral(JNIE
 {
     const XbxCallbacks *cb = atomic_load_explicit(&callbacks, memory_order_acquire);
     if (cb) cb->neutral();
+}
+
+/* Mechanical UI/data-directory adapters. Rust owns collection and lifecycle
+ * decisions; Android supplies its native library path and actual UI events. */
+static _Atomic(char *) xbx_native_dir;
+JNIEXPORT void JNICALL Java_com_machinerhythm_xbx_XbxActivity_nativeNativeDirectory(
+    JNIEnv *env, jclass cls, jstring directory)
+{
+    const char *value = (*env)->GetStringUTFChars(env, directory, NULL);
+    char *copy = g_strdup(value), *expected = NULL;
+    (*env)->ReleaseStringUTFChars(env, directory, value);
+    if (!atomic_compare_exchange_strong(&xbx_native_dir, &expected, copy)) g_free(copy);
+}
+XBX_EXPORT const char *xbx_platform_native_dir(void) { return atomic_load(&xbx_native_dir); }
+XBX_EXPORT uint64_t xbx_platform_available(const char *path)
+{
+    struct statvfs value;
+    return statvfs(path, &value) == 0 ? (uint64_t)value.f_bavail * value.f_frsize : 0;
+}
+JNIEXPORT void JNICALL Java_com_machinerhythm_xbx_XbxActivity_nativeGame(
+    JNIEnv *env, jclass cls, jstring game)
+{
+    const char *value = game ? (*env)->GetStringUTFChars(env, game, NULL) : NULL;
+    const XbxCallbacks *cb = atomic_load_explicit(&callbacks, memory_order_acquire);
+    if (cb && cb->game) cb->game(value);
+    if (value) (*env)->ReleaseStringUTFChars(env, game, value);
+}
+XBX_EXPORT void xbx_platform_choices(const char *title, const char **labels, const char **keys, int count)
+{
+    JNIEnv *env = SDL_GetAndroidJNIEnv();
+    jobject activity = SDL_GetAndroidActivity();
+    jclass cls = (*env)->GetObjectClass(env, activity);
+    jclass string = (*env)->FindClass(env, "java/lang/String");
+    jobjectArray names = (*env)->NewObjectArray(env, count, string, NULL);
+    jobjectArray values = (*env)->NewObjectArray(env, count, string, NULL);
+    for (int i = 0; i < count; i++) {
+        jstring name = (*env)->NewStringUTF(env, labels[i]);
+        jstring value = (*env)->NewStringUTF(env, keys[i]);
+        (*env)->SetObjectArrayElement(env, names, i, name);
+        (*env)->SetObjectArrayElement(env, values, i, value);
+        (*env)->DeleteLocalRef(env, name); (*env)->DeleteLocalRef(env, value);
+    }
+    jstring heading = (*env)->NewStringUTF(env, title);
+    jmethodID method = (*env)->GetMethodID(env, cls, "showChoices", "(Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;)V");
+    (*env)->CallVoidMethod(env, activity, method, heading, names, values);
+    (*env)->DeleteLocalRef(env, heading); (*env)->DeleteLocalRef(env, names);
+    (*env)->DeleteLocalRef(env, values); (*env)->DeleteLocalRef(env, string);
+    (*env)->DeleteLocalRef(env, cls); (*env)->DeleteLocalRef(env, activity);
+}
+XBX_EXPORT bool xbx_platform_collection_requested(void)
+{
+    JNIEnv *env = SDL_GetAndroidJNIEnv(); jobject activity = SDL_GetAndroidActivity();
+    jclass cls = (*env)->GetObjectClass(env, activity);
+    jmethodID method = (*env)->GetMethodID(env, cls, "wantsCollection", "()Z");
+    bool result = (*env)->CallBooleanMethod(env, activity, method);
+    (*env)->DeleteLocalRef(env, cls); (*env)->DeleteLocalRef(env, activity);
+    return result;
+}
+XBX_EXPORT void xbx_platform_finish_player(int next)
+{
+    JNIEnv *env = SDL_GetAndroidJNIEnv(); jobject activity = SDL_GetAndroidActivity();
+    jclass cls = (*env)->GetObjectClass(env, activity);
+    jmethodID method = (*env)->GetMethodID(env, cls, "finishPlayer", "(I)V");
+    (*env)->CallVoidMethod(env, activity, method, next);
+    (*env)->DeleteLocalRef(env, cls); (*env)->DeleteLocalRef(env, activity);
 }
 
 XBX_EXPORT void *xbx_digest_new(void) { return g_checksum_new(G_CHECKSUM_SHA256); }

@@ -5,6 +5,14 @@ use super::*;
 use serde_json::json;
 use std::path::{Path, PathBuf};
 pub trait Engine: Sized {
+    fn media(_app: &Path, entry: &library::Entry) -> io::Result<File> {
+        library::Library::media(entry).map(|(file, _)| file)
+    }
+    /// An embedded engine retains duplicate leases until its process exits;
+    /// joining its machine thread is not an OS process-reap observation.
+    fn process_reaped(&self) -> bool {
+        true
+    }
     fn start(
         r: &resources::Resources,
         p: &store::Profile,
@@ -62,20 +70,28 @@ impl<E: Engine> Player<E> {
         library.add(&self.app, media)
     }
     pub fn launch(&mut self, id: &str) -> io::Result<bool> {
+        self.launch_mode(id, true)
+    }
+    /// Native initialization/restore completes before lifecycle policy decides
+    /// whether the app has foreground, focus and a usable surface.
+    pub fn launch_quiesced(&mut self, id: &str) -> io::Result<bool> {
+        self.launch_mode(id, false)
+    }
+    fn launch_mode(&mut self, id: &str, auto_run: bool) -> io::Result<bool> {
         let entry = library::Library::read(&self.app)?.resolve(id)?;
         if self.live.as_ref().is_some_and(|l| l.binding.game == id) {
             let (restored, paused) = {
                 let l = self.live.as_ref().unwrap();
                 (l.restored, l.paused)
             };
-            if !paused {
+            if !paused && auto_run {
                 self.resume()?;
             }
             return Ok(restored);
         }
         // Resolve a different game's media before disturbing the current owner.
         // A same-game return retains its existing native read-only capability.
-        let (media, _) = library::Library::media(&entry)?;
+        let media = E::media(&self.app, &entry)?;
         self.depart()?;
         let p = store::Profile::open(&self.app, &entry, &self.resources)?;
         let binding = Binding {
@@ -108,6 +124,15 @@ impl<E: Engine> Player<E> {
             Some(v) => checkpoint::restore_copy(v, &p)?,
             None => p.current()?,
         };
+        // Publish target intent before native entry. A pending administrative
+        // write must not start a machine or select a restored disk generation.
+        atomic(
+            &self.app.join("last-game.json"),
+            &json(&LastGame {
+                schema: 1,
+                game: id.into(),
+            })?,
+        )?;
         if checkpoint.is_none() {
             p.lease.begin_writes()?;
         }
@@ -138,22 +163,28 @@ impl<E: Engine> Player<E> {
             running: false,
             committed: false,
         });
-        atomic(
-            &self.app.join("last-game.json"),
-            &json(&LastGame {
-                schema: 1,
-                game: id.into(),
-            })?,
-        )?;
-        if !paused {
+        if !paused && auto_run {
             self.resume()?
         }
         Ok(checkpoint.is_some())
     }
     pub fn return_last(&mut self) -> io::Result<bool> {
+        self.return_mode(true)
+    }
+    pub fn return_last_quiesced(&mut self) -> io::Result<bool> {
+        self.return_mode(false)
+    }
+    fn return_mode(&mut self, auto_run: bool) -> io::Result<bool> {
+        let Some(game) = self.last_game()? else {
+            return Ok(false);
+        };
+        self.launch_mode(&game, auto_run)?;
+        Ok(true)
+    }
+    pub fn last_game(&self) -> io::Result<Option<String>> {
         let last: LastGame = match read_json(&self.app.join("last-game.json")) {
             Ok(v) => v,
-            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(false),
+            Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
             Err(e) => return Err(e),
         };
         if last.schema != 1 || !valid_id(&last.game) {
@@ -161,8 +192,7 @@ impl<E: Engine> Player<E> {
                 "invalid saved game target; collection and progress retained",
             ));
         }
-        self.launch(&last.game)?;
-        Ok(true)
+        Ok(Some(last.game))
     }
     pub fn resume(&mut self) -> io::Result<()> {
         let l = self
@@ -211,20 +241,28 @@ impl<E: Engine> Player<E> {
     }
     pub fn depart(&mut self) -> io::Result<()> {
         if self.live.is_some() {
-            self.pause(false)?;
-            if !self.live.as_ref().unwrap().committed {
-                self.commit()?;
-            }
+            self.checkpoint_interruption()?;
             let mut l = self.live.take().unwrap();
             let clean = l.native.retire()?;
             write_new(
                 &l.profile.root.join(format!("return-{}.json", new_id()?)),
-                &json(&json!({"native_reaped":true,"storage_synced":true,"clean":clean}))?,
+                &json(
+                    &json!({"native_reaped":l.native.process_reaped(),"storage_synced":true,"clean":clean}),
+                )?,
             )?;
             if !clean {
                 return Err(io::Error::other(
                     "native shutdown not clean; checkpoint/profile retained",
                 ));
+            }
+        }
+        Ok(())
+    }
+    pub fn checkpoint_interruption(&mut self) -> io::Result<()> {
+        if self.live.is_some() {
+            self.pause(false)?;
+            if !self.live.as_ref().unwrap().committed {
+                self.commit()?;
             }
         }
         Ok(())

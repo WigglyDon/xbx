@@ -2,6 +2,10 @@
 //! One product policy for imported games, integrated runtime and durable return.
 //! GCX ac9693c5 informed generation checks/publication ordering; see THIRD_PARTY.
 #[cfg(not(target_os = "android"))]
+mod android_build;
+#[cfg(not(target_os = "android"))]
+mod android_package;
+#[cfg(not(target_os = "android"))]
 pub mod build;
 pub mod checkpoint;
 #[cfg(not(target_os = "android"))]
@@ -9,6 +13,7 @@ pub mod desktop;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;
+pub(crate) mod monitor;
 pub mod player;
 pub mod resources;
 pub mod store;
@@ -84,6 +89,29 @@ pub fn json<T: Serialize>(v: &T) -> io::Result<Vec<u8>> {
 pub fn mkdir(p: &Path) -> io::Result<()> {
     use std::os::unix::fs::DirBuilderExt;
     fs::DirBuilder::new().mode(0o700).create(p)
+}
+
+/// Used only by an explicit recovery decision under the existing writer lease.
+/// Retain interrupted control bytes/directories; never promote a pending value
+/// or erase recovery evidence, and keep normal publication guards unchanged.
+pub(crate) fn retain_pending(root: &Path, names: &[&str]) -> io::Result<()> {
+    for name in names {
+        if name.contains('/') || name.contains('\\') || *name == ".." {
+            return Err(io::Error::other("invalid recovery control name"));
+        }
+        let path = root.join(name);
+        match fs::symlink_metadata(&path) {
+            Ok(meta) => {
+                if meta.file_type().is_symlink() {
+                    return Err(io::Error::other("recovery control symlink retained"));
+                }
+                fs::rename(path, root.join(format!("interrupted-{name}-{}", new_id()?)))?;
+            }
+            Err(e) if e.kind() == io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e),
+        }
+    }
+    File::open(root)?.sync_all()
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

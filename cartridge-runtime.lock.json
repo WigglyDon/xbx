@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "purpose": "private Linux cartridge continuity candidate; not a public binary release",
+  "purpose": "private integrated desktop and Android cartridge candidates; not a public binary release",
   "engine": {
     "repository": "https://github.com/xemu-project/xemu",
     "commit": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
@@ -34,5 +34,21 @@
     "floating_point": "native",
     "storage": "Rust-generated empty FATX with isolated writable qcow2 and generated EEPROM",
     "restore": "native whole-machine snapshot into isolated attempt, generation and logical-save revalidation"
+  },
+  "android": {
+    "repository": "https://github.com/izzy2lost/xemu",
+    "commit": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "bridge_abi": 4,
+    "state_abi": 1,
+    "native_core_sha256": "9c8b5e1dcf9654d1ec907bc6c70ba97421183a99efa5e2dc8681fd9097cc8c7a",
+    "image_reader_patch": "patches/xemu-android-image-reader.patch",
+    "image_helper_sha256": "9f77fed23f0b04eb858c544661262fbdd8f31af159aeebda333b2fc2cfca0369",
+    "generated_empty_seed_sha256": "04270e68f3a3aea1d3ea6170d40cad3616311f3a4d560914223ae33bf84e6e48",
+    "private_apk_sha256": "67fda516c52ee22f00a99b0e54d415d0c1ca6a1b4b7b6ba62891f78f8802ea5f",
+    "rust_source": "tools-v27/source",
+    "device_execution_qualified": false,
+    "package": "com.machinerhythm.xbx",
+    "minimum_api": 29,
+    "target_api": 36
   }
 }

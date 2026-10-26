@@ -154,8 +154,62 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-fable" => fable(repo, &w)?,
         "cartridge-lifetime-build" => super::lifetime::build(repo, root)?,
         "cartridge-lifetime-observe" => super::lifetime::observe(repo, root)?,
+        "cartridge-android-native" => super::android_build::native(repo, root)?,
+        "cartridge-android-link" => super::android_build::link_adapters(repo, root)?,
+        "cartridge-android-helper" => super::android_build::image_helper(repo, root)?,
+        "cartridge-android-bridge" => super::android_build::bridge(repo, root)?,
+        "cartridge-android-package" => super::android_package::build(repo, root)?,
+        "cartridge-android-sign" => super::android_package::sign_retained(repo, root)?,
+        "cartridge-capability" => capability(&w)?,
         _ => return Err("unknown cartridge build action".into()),
     };
+    Ok(())
+}
+
+fn capability(w: &BuildPaths) -> Result<(), Error> {
+    use std::fs::OpenOptions;
+    let app = w.root.join(format!("capability-{}", c::new_id()?));
+    c::mkdir(&app)?;
+    let _lease = crate::storage::ProfileLease::acquire(&app)?;
+    let original = app.join("original.iso");
+    fs::copy(w.root.join("fixtures-v2/a.iso"), &original)?;
+    let file = fs::File::open(&original)?;
+    let moved = app.join("moved.iso");
+    fs::rename(&original, &moved)?;
+    let mut library = c::library::Library::read(&app)?;
+    let id = library.add_open(&app, "content://xbx-original/a", file)?;
+    let e = library.resolve(&id)?;
+    c::library::Library::verify_open(&e, fs::File::open(&moved)?)?;
+    if c::library::Library::verify_open(&e, OpenOptions::new().read(true).write(true).open(&moved)?)
+        .is_ok()
+    {
+        return Err("writable media capability admitted".into());
+    }
+    let before = fs::read(app.join("library.json"))?;
+    if library
+        .relink_open(
+            &app,
+            &id,
+            "content://xbx-original/wrong",
+            fs::File::open(w.root.join("fixtures-v2/b.iso"))?,
+        )
+        .is_ok()
+        || fs::read(app.join("library.json"))? != before
+    {
+        return Err("wrong media changed collection identity".into());
+    }
+    library.relink_open(
+        &app,
+        &id,
+        "content://xbx-original/relinked",
+        fs::File::open(&moved)?,
+    )?;
+    let after = library.resolve(&id)?;
+    if after.profile != e.profile || after.media_sha256 != e.media_sha256 || after.id != e.id {
+        return Err("relink changed durable identity".into());
+    }
+    c::write_new(&app.join("capability.qualified"),b"actual original read-only descriptor import survives pathname move; no content URI reopening; writable descriptor refused; wrong relink preserves collection; exact relink keeps game/profile identity\n")?;
+    println!("{}", json!({"original_capability_proof":app,"passed":true}));
     Ok(())
 }
 

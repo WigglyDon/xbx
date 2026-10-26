@@ -143,6 +143,15 @@ pub fn publish(
 /// Exact pointer preservation is useful for explicit restart and interrupted
 /// publication recovery. It never rolls ordinary storage back.
 pub fn restart(p: &store::Profile) -> io::Result<()> {
+    retain_pending(
+        &p.root,
+        &[
+            "session.pending",
+            "storage.pending",
+            "generation.pending",
+            "restart.intent.pending",
+        ],
+    )?;
     let path = p.root.join("session.json");
     if path.exists() {
         let retained = p.root.join(format!("rejected-session-{}.json", new_id()?));

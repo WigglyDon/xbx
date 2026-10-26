@@ -7,6 +7,8 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
+#[path = "android_cartridge.rs"]
+mod cartridge;
 #[path = "android_media.rs"]
 mod media;
 
@@ -62,6 +64,7 @@ struct Callbacks {
     layout: extern "C" fn(i32, f32, f32, f32, *mut f32),
     label: extern "C" fn(i32) -> *const c_char,
     neutral: extern "C" fn(),
+    game: extern "C" fn(*const c_char),
 }
 static CALLBACKS: Callbacks = Callbacks {
     media: media::result,
@@ -69,6 +72,7 @@ static CALLBACKS: Callbacks = Callbacks {
     layout,
     label,
     neutral,
+    game: cartridge::command,
 };
 extern "C" fn neutral() {
     if let Ok(mut touch) = TOUCH.lock() {
@@ -77,7 +81,7 @@ extern "C" fn neutral() {
     unsafe { xbx_pad_apply(0, [0i16; 6].as_ptr()) };
 }
 extern "C" fn touch(id: i32, phase: i32, x: f32, y: f32, _w: f32, _h: f32, _d: f32) {
-    if !STARTUP.may_resume() {
+    if !STARTUP.may_resume() || (cartridge::active() && !cartridge::may_input()) {
         return;
     }
     let Some(view) = VIEWPORT.lock().ok().and_then(|v| *v) else {
@@ -175,6 +179,10 @@ fn focus_changed() {
     if !STARTUP.may_resume() {
         neutral();
     }
+    if cartridge::active() {
+        cartridge::focus_changed();
+        return;
+    }
     if STARTUP.ready() {
         unsafe {
             if STARTUP.may_resume() {
@@ -197,7 +205,11 @@ pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeSetAu
     focus_changed();
 }
 extern "C" fn resume_allowed() -> bool {
-    STARTUP.may_resume()
+    if cartridge::active() {
+        cartridge::may_input()
+    } else {
+        STARTUP.may_resume()
+    }
 }
 
 /// # Safety
@@ -214,6 +226,11 @@ pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeSetFo
 
 // One cold-boot player, one stable private console profile and a retained grant.
 fn run() -> Result<i32, Box<dyn std::error::Error>> {
+    cartridge::run()
+}
+
+#[allow(dead_code)]
+fn run_legacy() -> Result<i32, Box<dyn std::error::Error>> {
     if STARTED.swap(true, Ordering::SeqCst) {
         return Err("engine already entered in this process".into());
     }
