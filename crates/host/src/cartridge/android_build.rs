@@ -501,6 +501,33 @@ fn retain_registration(repo: &Path, root: &Path, registration: Registration) -> 
     }
     let object = new.join(registration.member);
     c::write_new(&object, &member.stdout)?;
+    let lib = link_registration(repo, root, &previous, &new, &object, registration.symbols)?;
+    c::write_new(
+        &new.join("build.identity.json"),
+        &c::json(&json!({
+            "bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,
+            "library_sha256":c::file_digest(&lib)?,"prior_library_sha256":c::file_digest(&previous.join("libxemu.so"))?,
+            "retained_archive_sha256":c::file_digest(&archive)?,"direct_member":registration.member,
+            "direct_member_sha256":c::file_digest(&object)?,"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac",
+            "recompiled_units":[],"whole_core_rebuild":false,"all_prior_artifacts_preserved":true,
+            "evidence":"attributed original-cartridge QMP startup; retained constructor-only registration",
+            "device_operation":false,"lifecycle_qualification":false
+        }))?,
+    )?;
+    Ok(())
+}
+
+fn link_registration(
+    repo: &Path,
+    root: &Path,
+    previous: &Path,
+    new: &Path,
+    object: &Path,
+    required_symbols: &[&str],
+) -> Result<PathBuf, Error> {
+    let archive = root.join("android-native-v1/libxemu_core.a");
+    let llvm =
+        PathBuf::from(std::env::var("XBX_NDK")?).join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     let lib = new.join("libxemu.so");
     let retained_link = fs::read_to_string(previous.join("link.command"))?;
     let archive_argument = format!(" {} ", literal(&archive)?);
@@ -518,7 +545,7 @@ fn retain_registration(repo: &Path, root: &Path, registration: Registration) -> 
         )
         .replace(
             &archive_argument,
-            &format!(" {} {} ", literal(&object)?, literal(&archive)?),
+            &format!(" {} {} ", literal(object)?, literal(&archive)?),
         );
     c::write_new(&new.join("link.command"), command.as_bytes())?;
     c::store::checked(
@@ -532,7 +559,7 @@ fn retain_registration(repo: &Path, root: &Path, registration: Registration) -> 
             .arg("--defined-only")
             .arg(&lib),
     )?;
-    for symbol in registration.symbols {
+    for symbol in required_symbols {
         if !symbols
             .lines()
             .any(|line| line.split_whitespace().last() == Some(*symbol))
@@ -541,16 +568,181 @@ fn retain_registration(repo: &Path, root: &Path, registration: Registration) -> 
         }
     }
     c::write_new(&new.join("registration-symbols.txt"), symbols.as_bytes())?;
+    Ok(lib)
+}
+
+pub(super) fn session_monitor(repo: &Path, root: &Path) -> Result<(), Error> {
+    let previous = root.join("android-native-monitor-v1");
+    if c::file_digest(&previous.join("libxemu.so"))?
+        != "3e77e3f5c2b4ee156ad413db94b5001e05abc50c4dfc4456413f8799aa2e97ba"
+    {
+        return Err("session monitor requires the retained corrected QMP core".into());
+    }
+    let new = root.join("android-native-session-v2");
+    c::mkdir(&new)?;
+    let source = new.join("source");
+    c::mkdir(&source)?;
+    let headers = root.join("android-native-v1/source");
+    for name in ["include", "monitor", "ui"] {
+        std::os::unix::fs::symlink(headers.join(name), source.join(name))?;
+    }
+    let relative = "android/app/src/main/cpp/monitor_stub.c";
+    let retained = output(
+        Command::new("git")
+            .arg("-C")
+            .arg(repo.join(".local/src/xemu-android"))
+            .args([
+                "show",
+                "4967efd3ee594cc236869a45ee4cb396e25af1ac:android/app/src/main/cpp/monitor_stub.c",
+            ])
+            .env("GIT_NO_LAZY_FETCH", "1"),
+    )?;
+    fs::create_dir_all(
+        source
+            .join(relative)
+            .parent()
+            .ok_or("monitor source parent")?,
+    )?;
+    // Android's pinned config-host/config-target headers live beside this
+    // adapter, rather than in the generic CMake output directory. Reuse them
+    // read-only in the separate source; never alter the retained header tree.
+    for entry in fs::read_dir(headers.join("android/app/src/main/cpp"))? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file()
+            && path
+                .extension()
+                .is_some_and(|ext| matches!(ext.to_str(), Some("h" | "hpp" | "inc")))
+        {
+            std::os::unix::fs::symlink(
+                path,
+                source
+                    .join("android/app/src/main/cpp")
+                    .join(entry.file_name()),
+            )?;
+        }
+    }
+    c::write_new(&source.join(relative), retained.as_bytes())?;
+    let patch = repo.join("patches/xemu-android-session-monitor.patch");
+    c::store::checked(
+        Command::new("git")
+            .arg("-C")
+            .arg(&source)
+            .arg("apply")
+            .arg(&patch),
+    )?;
+    let object = compile(
+        &repo.join(".local/build-android"),
+        &source,
+        &repo.join(".local/src/xemu-android"),
+        &new,
+        relative,
+        "CMakeFiles/xemu_core.dir/monitor_stub.c.o",
+        "monitor_stub",
+    )?;
+    let lib = link_registration(
+        repo,
+        root,
+        &previous,
+        &new,
+        &object,
+        &[
+            "hmp_savevm",
+            "hmp_loadvm",
+            "hmp_info_snapshots",
+            "hmp_compare_cmd",
+            "event_loop_base_complete",
+            "qmp_chardev_open_socket",
+        ],
+    )?;
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(&json!({
             "bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,
             "library_sha256":c::file_digest(&lib)?,"prior_library_sha256":c::file_digest(&previous.join("libxemu.so"))?,
-            "retained_archive_sha256":c::file_digest(&archive)?,"direct_member":registration.member,
-            "direct_member_sha256":c::file_digest(&object)?,"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac",
-            "recompiled_units":[],"whole_core_rebuild":false,"all_prior_artifacts_preserved":true,
-            "evidence":"attributed original-cartridge QMP startup; retained constructor-only registration",
-            "device_operation":false,"lifecycle_qualification":false
+            "source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","session_monitor_patch_sha256":c::file_digest(&patch)?,
+            "retained_config_host_sha256":c::file_digest(&headers.join("android/app/src/main/cpp/config-host.h"))?,
+            "retained_config_target_sha256":c::file_digest(&headers.join("android/app/src/main/cpp/config-target.h"))?,
+            "recompiled_units":[relative],"monitor_source_sha256":c::file_digest(&source.join(relative))?,
+            "reuses_accepted_paused_capture":true,"whole_core_rebuild":false,"device_operation":false,
+            "all_prior_artifacts_preserved":true,"lifecycle_qualification":false
+        }))?,
+    )?;
+    Ok(())
+}
+
+/// Execute the actual table/comparator with controlled handler callbacks. This
+/// protects command routing; the Android VM still owns all snapshot acceptance.
+pub(super) fn monitor_contract(repo: &Path, root: &Path) -> Result<(), Error> {
+    let native = root.join("android-native-session-v2");
+    let identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
+    let subject = native.join("source/android/app/src/main/cpp/monitor_stub.c");
+    if identity["session_monitor_patch_sha256"]
+        != c::file_digest(&repo.join("patches/xemu-android-session-monitor.patch"))?
+        || identity["monitor_source_sha256"] != c::file_digest(&subject)?
+    {
+        return Err("monitor contract requires the exact built source/patch".into());
+    }
+    let retained = output(
+        Command::new("git")
+            .arg("-C")
+            .arg(repo.join(".local/src/xemu-android"))
+            .args([
+                "show",
+                "4967efd3ee594cc236869a45ee4cb396e25af1ac:android/app/src/main/cpp/monitor_stub.c",
+            ])
+            .env("GIT_NO_LAZY_FETCH", "1"),
+    )?;
+    let changed = fs::read_to_string(&subject)?;
+    let attempt = std::env::var("XBX_MONITOR_CONTRACT_ATTEMPT").unwrap_or_else(|_| "v1".into());
+    if attempt.is_empty()
+        || attempt.len() > 24
+        || !attempt
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+    {
+        return Err("invalid isolated monitor contract attempt".into());
+    }
+    let out = root.join(format!("android-monitor-contract-{attempt}"));
+    c::mkdir(&out)?;
+    let fixture = repo.join("native/fixtures/android-hmp-session.c");
+    let mut exits = serde_json::Map::new();
+    for (label, source, expected) in [("before", retained, 31), ("after", changed, 0)] {
+        let include = out.join(format!("{label}.inc"));
+        // The fixture supplies controlled host declarations, not an emulated
+        // Android ABI. Function bodies and command entries are unchanged.
+        let source = source
+            .lines()
+            .filter(|line| !line.trim_start().starts_with("#include"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        c::write_new(&include, source.as_bytes())?;
+        let binary = out.join(label);
+        c::store::checked(
+            Command::new("cc")
+                .args(["-std=gnu11", "-Wall", "-Werror"])
+                .arg(format!("-DSUBJECT=\"{}\"", literal(&include)?))
+                .arg(&fixture)
+                .arg("-o")
+                .arg(&binary),
+        )?;
+        let result = Command::new(&binary).output()?;
+        c::write_new(&out.join(format!("{label}.stdout")), &result.stdout)?;
+        c::write_new(&out.join(format!("{label}.stderr")), &result.stderr)?;
+        exits.insert(label.into(), json!(result.status.code()));
+        if result.status.code() != Some(expected) {
+            return Err("monitor routing red/green contract failed; evidence retained".into());
+        }
+    }
+    c::write_new(
+        &out.join("result.json"),
+        &c::json(&json!({
+            "source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac",
+            "fixture_sha256":c::file_digest(&fixture)?,"native_monitor_source_sha256":c::file_digest(&subject)?,
+            "session_monitor_patch_sha256":identity["session_monitor_patch_sha256"],"exits":exits,
+            "qualifies":"actual comparator matching aliases/rejecting prefixes and separate save/load/list routing",
+            "does_not_qualify":"Android ABI execution, native snapshot contents, guest execution or restoration",
+            "passed":true,"device_operation":false
         }))?,
     )?;
     Ok(())

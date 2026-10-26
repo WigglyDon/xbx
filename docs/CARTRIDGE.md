@@ -389,6 +389,80 @@ correction, then the assigned unsaved-state/fresh-process/Pause/Home sequence
 only after actual guest execution. All prior data and paused source remain;
 Fable is still unqualified. No retry loop, peer pause or scheduler was created.
 
+## Original Android guest execution and Home checkpoint
+
+After a later verified return, the monitor-corrected candidate was installed
+without clearing data; the existing library and last-game controls remained
+byte-for-byte unchanged. Native machine/display initialization and Vulkan
+renderer readiness completed. The core reported its touch controller connected
+to port1, but the reused HMP readiness probe timed out before guest execution.
+The pinned Android donor supplies an empty `hmp_cmds` table and a comparator
+that always rejects names. This explains the failed probe and also prevents the
+snapshot commands from being reached; it is not a missing controller diagnosis.
+The failed attempt returned with own processes absent, screen OFF and lease
+released. No guest execution was claimed for that candidate.
+
+The Android transport now checks the pin's acknowledged `x-query-usb` result,
+retains the older HMP response for attribution and still requires an actual
+Xbox controller before restoring or starting a guest. On timeout it retains the
+rejected topology. The new native patch connects only `savevm`, `loadvm` and
+`info snapshots` to their existing upstream implementations and restores the
+upstream command-name comparator. It introduces no state format or serializer.
+The isolated build recompiles only `monitor_stub.c`, reuses pinned Android
+configuration headers read-only and retains the socket/event-loop/paused-capture
+repairs. The first missing-header build is preserved separately.
+
+The actual-source host routing contract fails against the original stub
+(exit31) and passes against the compiled patched source (exit0), including exact
+and alias matching, rejected prefixes/unknown names and distinct save/load/list
+callbacks. Its controlled host declarations do not qualify Android ABI execution
+or snapshot restoration. The initial fixture compile failure is retained.
+Eight unchanged storage-policy cases, workspace Clippy and formatting passed in
+tools-v31; final builder/contract source passed Clippy and formatting in v35.
+Native compilation/linking confirms the populated command table and real
+handlers. APK signature/package, ZIP16KiB and all four ELF LOAD alignments pass.
+
+- Installed APK: `bbc4cab9300c432a3003a1e9c60ec7d07729af29cf4b5929fdc73585bad18477`.
+- Native core: `a264a31ff20a66f2d09e7220c267e87a574df7ce789c58e40d3ab9267ac26e18`.
+- Rust library, tools-v33 source: `8ef5efe7a2ce15fe2eaa32361fd5a5162c113c831b220beeefbf80affa31b4b5`.
+- Native patch: `c61d4e30c8b2ff551d2fcbafd26ee60a68dee60d33c8c0a2df16c73983eb9a4d`.
+
+In the next admitted stock Pixel4 window, the same-signer update retained its
+predecessor and preserved the existing entry/profile/storage. The operator chose
+the presented explicit restart using current ordinary saves. The actual guest
+then produced **CART A state=00000000 save=00000000 cookie=31415926**, visible in
+the app's status presentation and a captured/opened screen. The ordinary product
+path used its internally supplied open runtime and generated storage. The native
+USB query independently reported a Microsoft Xbox Controller at port1.3.1; the
+legacy HMP probe returned an unknown-command response. This qualifies original
+guest execution and controller presence, not Xbox-controller input or Fable.
+
+Android Back was delivered but did not open the product menu. The retained SDL
+surface consumes key events before `Activity.onBackPressed()`. Without the menu,
+the operator could not advance the original counter/write its disk marker or
+choose explicit Pause. No noninitial unsaved-state proof was manufactured.
+Home did trigger the shared automatic checkpoint path: its manifest was observed
+at generation6 with `paused=false`, bound to the current native runtime and
+ordinary disk/EEPROM hashes. The initial-state checkpoint remains retained.
+No fresh-process restore or successful Home/return is claimed yet.
+
+Timing is bounded by observations: guest output was observed within24.31s after
+the restart action was acknowledged. The checkpoint pointer was absent27.65s
+after Home and present by157.27s. These include operator sampling; exact boot,
+capture/helper/publication durations are not separately instrumented and no
+low-friction latency is qualified. After preserving the checkpoint, bounded
+controlled process retirement verified own processes absent, physical screen OFF,
+helper exit0 and lease released. This is not a clean native-quit result.
+
+A mechanical Back-key forwarding correction and packaging that reuses the
+unchanged native/Rust libraries are preserved locally but remain unbuilt. Its
+normal bootstrap admission refused an occupied shared capacity lease. The
+completed runtime/checkpoint work is published separately from that unfinished
+follow-up. Next: build/qualify the Back route, then earn noninitial state plus a
+distinct disk marker, explicit Pause, a genuinely fresh process restoring the
+same state, a new action/new generation and Home/return. All previous data,
+builds, failure evidence and paused investigations remain; Fable is unqualified.
+
 ## Owner-authorized Fold setup
 
 After Master6407613531, the owner explicitly authorized setup on the Fold and

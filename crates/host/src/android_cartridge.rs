@@ -261,20 +261,30 @@ impl Engine for Native {
             .map_err(io::Error::other)?
             .map_err(io::Error::other)?;
         let mut monitor = c::monitor::Monitor::connected(UnixStream::connect(&qmp)?)?;
+        // Retain the older HMP observation for attribution. This Android pin
+        // exposes USB topology directly through its native QMP interface;
+        // validate that acknowledged result before any restore or guest run.
+        let legacy = match monitor.call(
+            "human-monitor-command",
+            serde_json::json!({"command-line":"info usb"}),
+        ) {
+            Ok(value) => value,
+            Err(error) => serde_json::json!({"error":error.to_string()}),
+        };
+        c::write_new(&run.join("usb-legacy-monitor.json"), &c::json(&legacy)?)?;
         let deadline = Instant::now() + Duration::from_secs(10);
         loop {
-            let devices = monitor.call(
-                "human-monitor-command",
-                serde_json::json!({"command-line":"info usb"}),
-            )?;
+            let devices = monitor.call("x-query-usb", serde_json::json!({}))?;
             if devices
-                .as_str()
+                .get("human-readable-text")
+                .and_then(serde_json::Value::as_str)
                 .is_some_and(|s| s.contains("Xbox") && s.contains("Controller"))
             {
                 c::write_new(&run.join("usb-devices.json"), &c::json(&devices)?)?;
                 break;
             }
             if Instant::now() > deadline {
+                c::write_new(&run.join("usb-devices-rejected.json"), &c::json(&devices)?)?;
                 return Err(io::Error::other(
                     "required controller topology did not attach before restore",
                 ));

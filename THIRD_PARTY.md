@@ -299,3 +299,14 @@ The first-party Rust helper/lifecycle/packaging code is MIT; the mechanical
 Android bridge/Activity changes retain their existing notices. Candidate assets
 include the actual QEMU, SDL, OXOS and first-party notices. No sibling source or
 private firmware was added to this Android package.
+
+`patches/xemu-android-session-monitor.patch` connects only the existing native
+savevm/loadvm/snapshot-listing routines to the Android donor's previously empty
+HMP table. Its entries retain pinned `4967efd3` `hmp-commands*.hx` interfaces;
+the name comparator is copied from `monitor/hmp-target.c`, with Fabrice Bellard's
+copyright and permission notice retained in the patched source. The combined
+monitor integration retains the core's GPL obligations. Rust still owns session
+policy, storage safety and publication; no new machine serializer is introduced.
+`native/fixtures/android-hmp-session.c` is an original MIT host routing contract.
+Its privately generated subject is the actual pinned/patched monitor source;
+controlled callbacks qualify command routing, not native machine state.

@@ -37,6 +37,14 @@ pub(super) fn build_monitor(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-package-v4",
     )
 }
+pub(super) fn build_session(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-native-session-v2",
+        "android-package-v5",
+    )
+}
 fn build_candidate(
     repo: &Path,
     root: &Path,
@@ -54,6 +62,12 @@ fn build_candidate(
         || native_identity["bridge_abi"] != 4
     {
         return Err("mechanical bridge source/ABI differs".into());
+    }
+    if native_stage == "android-native-session-v2"
+        && native_identity["session_monitor_patch_sha256"]
+            != c::file_digest(&repo.join("patches/xemu-android-session-monitor.patch"))?
+    {
+        return Err("session monitor patch identity differs".into());
     }
     let out = root.join(package_stage);
     c::mkdir(&out)?;

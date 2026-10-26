@@ -4,7 +4,7 @@ use crate::ramht_workspace::Workspace;
 use std::{path::Path, process::Command};
 pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Box<dyn std::error::Error>> {
     let w = Workspace::acquire_cartridge(repo, action)?;
-    if action == "cartridge-checks" {
+    if matches!(action, "cartridge-checks" | "cartridge-build-checks") {
         if attempt.is_empty()
             || !attempt
                 .bytes()
@@ -13,7 +13,7 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Box<dyn s
             return Err("invalid isolated source label".into());
         }
         let source = w.root.join(format!("tools-{attempt}/source"));
-        let checks: Vec<Vec<&str>> = vec![
+        let mut checks: Vec<Vec<&str>> = vec![
             vec![
                 "test",
                 "--locked",
@@ -41,6 +41,9 @@ pub fn command(repo: &Path, action: &str, attempt: &str) -> Result<(), Box<dyn s
             ],
             vec!["fmt", "--all", "--", "--check"],
         ];
+        if action == "cartridge-build-checks" {
+            let _ = checks.remove(0);
+        }
         for (i, args) in checks.iter().enumerate() {
             if !w
                 .run(
