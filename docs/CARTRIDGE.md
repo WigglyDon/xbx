@@ -262,3 +262,35 @@ the existing device transaction before installation. A first admission attempt
 was refused by an already-owned physical-device lock, before any app/UI mutation;
 its short host phase returned. No peer pause or reservation was requested. Fable
 phone trials still require the independent desktop commercial-game gate.
+
+
+First admitted Pixel4 original-only window: stock identity/build matched, existing
+own APK retained and signer matched, cartridge APK updated without clearing data,
+and a uniquely named128KiB original image transferred with exact hash readback.
+The actual new collection was captured and reviewed. Document search found the
+original input, but the private operator refused an ambiguous filename shared by
+the search field and result row. The operator targeting rule was corrected;
+this was not a native boot or compatibility failure. No guest was launched and no
+complete-session/device acceptance is claimed. The app was retired, own processes
+verified absent, physical screen OFF and transaction released with no pending
+restore. Prior APK/data, new namespace, original input and private evidence remain.
+
+
+The subsequent admitted continuation reached real scoped import: the collection
+published a new original-game identity, generated its game-isolated qcow2 profile
+and published the last-game target before native entry. No guest output or native
+boot was verified before the app left foreground. User interaction and a picker
+keyboard overlap affected the earlier selections, so these attempts do not
+establish a runtime compatibility failure. No native repair is justified yet.
+The current attempt and legacy data remain preserved. Retrieval must target only
+this cartridge entry's new root diagnostic files before attributing the first
+launch boundary; the initial operator had targeted the legacy diagnostic folder,
+whose retained bytes were not used to resume an old investigation.
+
+Both subsequent windows returned with own app processes absent, physical screen
+OFF, the device transaction released and no pending restore. The private candidate
+remains installed with app data preserved and the previous APK retained. The
+owner's continuation was bounded to the existing30-minute lab ceiling; no Fable
+phone trial occurred. Android unsaved-state restoration, Pause/Home behavior,
+helper execution and native shutdown remain unqualified. These small original
+inputs and app-created storage have not been deleted.
