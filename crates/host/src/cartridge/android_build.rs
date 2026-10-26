@@ -427,30 +427,79 @@ pub(super) fn bridge(repo: &Path, root: &Path) -> Result<(), Error> {
 /// Android link otherwise drops it. Retain that exact member as a direct input;
 /// do not rebuild or force-load the entire core.
 pub(super) fn socket_driver(repo: &Path, root: &Path) -> Result<(), Error> {
-    let previous = root.join("android-native-bridge-v1");
+    retain_registration(
+        repo,
+        root,
+        Registration {
+            previous: "android-native-bridge-v1",
+            next: "android-native-socket-v1",
+            expected: "9c8b5e1dcf9654d1ec907bc6c70ba97421183a99efa5e2dc8681fd9097cc8c7a",
+            member: "char-socket.c.o",
+            symbols: &[
+                "qmp_chardev_open_socket",
+                "char_socket_class_init",
+                "tcp_chr_connect",
+            ],
+        },
+    )
+}
+
+/// The donor's fallback event-loop base has no completion interface. QMP's
+/// IOThread therefore exists with a null context unless the real base type's
+/// constructor is retained. Keep the original implementation and its ordering.
+pub(super) fn monitor_base(repo: &Path, root: &Path) -> Result<(), Error> {
+    retain_registration(
+        repo,
+        root,
+        Registration {
+            previous: "android-native-socket-v1",
+            next: "android-native-monitor-v1",
+            expected: "0a79043449af4dae36c56b2ab255f176098e96e31b2f582eec2cb473aa86ec6d",
+            member: "event-loop-base.c.o",
+            symbols: &[
+                "event_loop_base_complete",
+                "event_loop_base_class_init",
+                "qmp_chardev_open_socket",
+            ],
+        },
+    )
+}
+
+struct Registration {
+    previous: &'static str,
+    next: &'static str,
+    expected: &'static str,
+    member: &'static str,
+    symbols: &'static [&'static str],
+}
+fn retain_registration(repo: &Path, root: &Path, registration: Registration) -> Result<(), Error> {
+    let previous = root.join(registration.previous);
     let archive = root.join("android-native-v1/libxemu_core.a");
-    if c::file_digest(&previous.join("libxemu.so"))?
-        != "9c8b5e1dcf9654d1ec907bc6c70ba97421183a99efa5e2dc8681fd9097cc8c7a"
-    {
-        return Err("socket repair requires the retained ABI4 candidate".into());
+    if c::file_digest(&previous.join("libxemu.so"))? != registration.expected {
+        return Err("registration repair requires its retained ABI4 candidate".into());
     }
-    let new = root.join("android-native-socket-v1");
+    let new = root.join(registration.next);
     c::mkdir(&new)?;
     let llvm =
         PathBuf::from(std::env::var("XBX_NDK")?).join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     let members = output(Command::new(llvm.join("llvm-ar")).arg("t").arg(&archive))?;
-    if members.lines().filter(|s| *s == "char-socket.c.o").count() != 1 {
-        return Err("retained socket archive member is absent or ambiguous".into());
+    if members
+        .lines()
+        .filter(|s| *s == registration.member)
+        .count()
+        != 1
+    {
+        return Err("retained registration archive member is absent or ambiguous".into());
     }
     let member = Command::new(llvm.join("llvm-ar"))
         .arg("p")
         .arg(&archive)
-        .arg("char-socket.c.o")
+        .arg(registration.member)
         .output()?;
     if !member.status.success() || member.stdout.is_empty() || member.stdout.len() > 1024 * 1024 {
-        return Err("bounded retained socket member extraction failed".into());
+        return Err("bounded retained registration member extraction failed".into());
     }
-    let object = new.join("char-socket.c.o");
+    let object = new.join(registration.member);
     c::write_new(&object, &member.stdout)?;
     let lib = new.join("libxemu.so");
     let retained_link = fs::read_to_string(previous.join("link.command"))?;
@@ -483,28 +532,24 @@ pub(super) fn socket_driver(repo: &Path, root: &Path) -> Result<(), Error> {
             .arg("--defined-only")
             .arg(&lib),
     )?;
-    for symbol in [
-        "qmp_chardev_open_socket",
-        "char_socket_class_init",
-        "tcp_chr_connect",
-    ] {
+    for symbol in registration.symbols {
         if !symbols
             .lines()
-            .any(|line| line.split_whitespace().last() == Some(symbol))
+            .any(|line| line.split_whitespace().last() == Some(*symbol))
         {
-            return Err("linked socket registration/backend is missing".into());
+            return Err("linked required registration/backend is missing".into());
         }
     }
-    c::write_new(&new.join("socket-symbols.txt"), symbols.as_bytes())?;
+    c::write_new(&new.join("registration-symbols.txt"), symbols.as_bytes())?;
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(&json!({
             "bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,
             "library_sha256":c::file_digest(&lib)?,"prior_library_sha256":c::file_digest(&previous.join("libxemu.so"))?,
-            "retained_archive_sha256":c::file_digest(&archive)?,"direct_member":"char-socket.c.o",
+            "retained_archive_sha256":c::file_digest(&archive)?,"direct_member":registration.member,
             "direct_member_sha256":c::file_digest(&object)?,"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac",
             "recompiled_units":[],"whole_core_rebuild":false,"all_prior_artifacts_preserved":true,
-            "evidence":"stock original-cartridge QMP startup rejected socket char driver",
+            "evidence":"attributed original-cartridge QMP startup; retained constructor-only registration",
             "device_operation":false,"lifecycle_qualification":false
         }))?,
     )?;

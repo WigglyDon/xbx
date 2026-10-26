@@ -339,10 +339,53 @@ Rust library SHA-256
 `018621488f83365c08fc5b8d0457ee23f6dcf1490453c0bf9261bad236a8e532`.
 The image helper and generated seed retain their previous hashes. Exact isolated
 tools-v29 source passed eight storage-policy tests, warnings-denied workspace
-Clippy and formatting. The already-installed candidate remains unchanged:
-fresh custody review found an active, unreturned device transaction, so the
-changed APK has not been installed or boot-qualified. No peer pause, queue or
-new operating window was manufactured from a free host resource.
+Clippy and formatting. An initial custody review found an active unreturned
+transaction; after its verified return, normal fresh admission became available.
+No peer pause, queue or operating window was manufactured from a free host
+resource.
+
+The changed APK was then installed on stock Pixel4 through the same-signer
+data-preserving update route. The prior APK remained as rollback; the existing
+library and last-game records compared byte-for-byte unchanged, and the installed
+new hash was verified. Two preceding host signer-output parser refusals changed
+no package and returned the phone cleanly. The corrected exact invocation was
+tested off-device against both APKs before the successful update.
+
+The existing original entry again required explicit restart using current saves.
+That restart passed the former socket rejection but faulted during QMP monitor
+initialization, before guest execution. The attributed native stack resolves to
+`aio_bh_schedule_oneshot_full` with a null context from `monitor_init_qmp`.
+The real `event-loop-base.c.o` is another constructor-only member discarded by
+the Android static link. The donor's fallback base lacks the UserCreatable
+completion interface that invokes the IOThread initializer; its thread object
+therefore has no AioContext. The socket candidate lacks the real completion
+callback, while the retained archive contains it. The failed app process exited;
+the operator verified own processes absent, physical screen OFF and released
+the transaction with helper exit0. No clean guest shutdown is claimed.
+
+The separate `cartridge-android-monitor` action retains that one real base object
+in addition to the already-retained socket backend, preserving normal upstream
+registration and completion rather than adding a substitute thread mechanism.
+It reuses the same archive, compiles no native unit and leaves prior builds
+untouched. `cartridge-android-package-monitor` produces a separate private APK
+with unchanged helper, seed, signing, Java and application policy. Tools-v30
+passed all eight storage-policy tests, warnings-denied Clippy and formatting;
+the final library contains both real completion and socket functions. APK
+signature/package, ZIP16KiB alignment and all four ELF LOAD alignments passed.
+
+- Native core: `3e77e3f5c2b4ee156ad413db94b5001e05abc50c4dfc4456413f8799aa2e97ba`.
+- APK: `61825de67f5f502d68bc4625f25eec6c3fcc2f5c6f58449053413f08f4224a84`.
+- Rust library: `735a670d8bccac37d6aa109a4a255bf8a39bf33d9168b1d8d215f4d735b5d4c2`.
+- Retained event-loop member: `4f91ca70686024ca70916c8eac1acccd8de481362aab4ff3bc0f77f8c2e408d5`.
+
+Fresh device admission for this second correction reached host/output admission,
+then refused because another transaction owned the physical phone. No device
+query/update or guest trial followed. The installed Pixel4 candidate remains
+`11e3c689…a1ad4`; Fold remains on its earlier collection-only candidate. The next
+necessary result is booting the existing original entry with the monitor
+correction, then the assigned unsaved-state/fresh-process/Pause/Home sequence
+only after actual guest execution. All prior data and paused source remain;
+Fable is still unqualified. No retry loop, peer pause or scheduler was created.
 
 ## Owner-authorized Fold setup
 

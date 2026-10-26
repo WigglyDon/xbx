@@ -29,6 +29,14 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
+pub(super) fn build_monitor(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-native-monitor-v1",
+        "android-package-v4",
+    )
+}
 fn build_candidate(
     repo: &Path,
     root: &Path,
