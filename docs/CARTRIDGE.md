@@ -379,8 +379,10 @@ signature/package, ZIP16KiB alignment and all four ELF LOAD alignments passed.
 - Retained event-loop member: `4f91ca70686024ca70916c8eac1acccd8de481362aab4ff3bc0f77f8c2e408d5`.
 
 Fresh device admission for this second correction reached host/output admission,
-then refused because another transaction owned the physical phone. No device
-query/update or guest trial followed. The installed Pixel4 candidate remains
+then refused because another transaction owned the physical phone. The helper's
+normal identity/profile preflight precedes its lock attempt; no XBX operator,
+app/profile access, package update or guest trial followed the refusal. The
+installed Pixel4 candidate remains
 `11e3c689…a1ad4`; Fold remains on its earlier collection-only candidate. The next
 necessary result is booting the existing original entry with the monitor
 correction, then the assigned unsaved-state/fresh-process/Pause/Home sequence
