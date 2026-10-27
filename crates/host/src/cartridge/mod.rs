@@ -12,6 +12,8 @@ pub mod checkpoint;
 pub mod desktop;
 #[cfg(not(target_os = "android"))]
 mod fault_context;
+#[cfg(not(target_os = "android"))]
+mod file_read;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;

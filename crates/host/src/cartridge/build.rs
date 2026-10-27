@@ -145,6 +145,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
     match action {
         "cartridge-package" => package(repo, &w)?,
         "cartridge-fixture" => fixture(repo, &w)?,
+        "cartridge-file-read-build" => super::file_read::build(repo, root)?,
+        "cartridge-file-read-observe" => super::file_read::observe(repo, root)?,
         "cartridge-proof" => proof(&w)?,
         "cartridge-native" => native(repo, &w)?,
         "cartridge-partial-load" => partial(&w)?,

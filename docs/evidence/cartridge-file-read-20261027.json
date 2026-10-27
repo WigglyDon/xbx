@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "scope": "Original generated public file-read contract; no commercial acceptance",
+  "public_abi": {
+    "repository": "XboxDev/nxdk",
+    "commit": "a6c31ee90540710a3df26a0712b61492f2ea03dd",
+    "files": [
+      "lib/xboxkrnl/xboxkrnl.h",
+      "lib/xboxkrnl/xboxkrnl.exe.def"
+    ]
+  },
+  "original_code_and_generated_payload": true,
+  "retained_first_party_UART": "native/fixtures/startup-lifetime.S",
+  "contract": [
+    "Query file attributes and size",
+    "Open synchronous sequential read-only file",
+    "Seek to beginning",
+    "Page-aligned 16KiB read: status, exact returned count, every generated word",
+    "Seek and read across a sector boundary: exact count and generated words",
+    "Normal native shutdown and unchanged immutable seeds"
+  ],
+  "prepared_checks": {
+    "results": [
+      {
+        "name": "fmt",
+        "exit": 0
+      },
+      {
+        "name": "clippy",
+        "exit": 0
+      }
+    ],
+    "host_available_before": 2602065920,
+    "peak_aggregate_resident_bytes": 330637312,
+    "elapsed_seconds": 6.783351464022417,
+    "address_space_bound": 8589934592,
+    "external_writes": false,
+    "native_runs": false
+  },
+  "prepared_build": {
+    "results": [
+      {
+        "name": "build",
+        "exit": 0
+      }
+    ],
+    "host_available_before": 3129880576,
+    "peak_aggregate_resident_bytes": 347594752,
+    "elapsed_seconds": 23.887237951043062,
+    "address_space_bound": 8589934592,
+    "external_writes": false,
+    "native_runs": false
+  },
+  "native_observation": "pending; no guest pass claimed",
+  "pending_job": "bdc7e8676c14409f84d25a22b547ff54",
+  "commercial_acceptance": false,
+  "ordinary_runtime_changed": false,
+  "source_sha256": {
+    "native/fixtures/file-read.S": "9e121a3ac6b3d97a62a944049cdf039232b236d560f16d109391f16936238560",
+    "native/fixtures/startup-lifetime.S": "219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60",
+    "crates/host/src/cartridge/file_read.rs": "f562f43b650f6fa348748b6b043683360f9cc7816560360ce8012305f40ac771",
+    "crates/host/src/cartridge/build.rs": "535cd4d3cbe877101cc844f39a0eb71f0678a21cbf93b6bef11ef18cf0351b47",
+    "crates/host/src/cartridge/mod.rs": "9ed8fb039aff339fdf297d80c1b021d886d6afbee03e73ce420f5adc551785b1"
+  }
+}

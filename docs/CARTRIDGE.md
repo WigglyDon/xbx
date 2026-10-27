@@ -610,3 +610,25 @@ application launch or setting change. Both the setup and verification helpers
 exited0 and released their physical leases before the owner was told the Fold
 was released. Prior apps/media/saves, the rollback candidate and private evidence
 remain preserved; no security, Bluetooth or connectivity preference was changed.
+
+## Original file-read integrity control
+
+The owner's subsequent explicit targeted-fault authorization permits the private
+follow-through recorded in `evidence/cartridge-fault-observation-20261027.json`.
+It does not resume the older broad diagnostic branches. The observed archive
+header mismatch motivates an original public file-read control; it does not yet
+identify a causal platform defect.
+
+`xbx-cartridge-build REPO WORKSPACE cartridge-file-read-build` constructs an
+original XBE and XDVDFS image with generated data. Its public ABI references are
+pinned in `evidence/cartridge-file-read-20261027.json`; its UART routines reuse
+our existing original fixture. Code and writable data occupy separate pages.
+`cartridge-file-read-observe` uses the retained corrected core and logging open
+system through the existing Rust Player, with fresh matched seeded storage.
+It checks file attributes, size, seek, aligned read status/count/content and a
+sector-boundary read, then records actual native shutdown and seed preservation.
+The actions refuse existing output paths and preserve failed profiles.
+
+These are developer qualification actions under ordinary workspace custody,
+not product firmware selection. Build/check success is distinct from guest
+execution, and an original pass does not establish playable Fable.
