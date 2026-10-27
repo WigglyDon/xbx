@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 pub const REFERENCE_CORE: &str = "eaefdb4f61d01133557374585383e531438e0341d11579c11e8575283a5ccb9b";
 pub const HEADLESS_CORE: &str = "554f6164155b673bd97be067d435f98bebe54c73dd0fa556e7480de9035e543f";
 pub const CORE: &str = "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6";
+pub const X87_RESTART_CORE: &str =
+    "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318";
 pub const OPEN: &str = "c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8";
 pub const NPX_LOGGING_OPEN: &str =
     "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b";
@@ -49,11 +51,20 @@ impl Resources {
     pub(crate) fn npx_logging(root: &Path) -> io::Result<Self> {
         Self::validated(root, NPX_LOGGING_OPEN, true)
     }
+    /// Pinned original-qualification candidate, unreachable from ordinary open.
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn x87_logging(root: &Path) -> io::Result<Self> {
+        Self::validated_core(root, X87_RESTART_CORE, NPX_LOGGING_OPEN, true)
+    }
     #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {
+        Self::validated_core(root, CORE, open, window)
+    }
+    #[cfg(not(target_os = "android"))]
+    fn validated_core(root: &Path, core: &str, open: &str, window: bool) -> io::Result<Self> {
         let root = root.canonicalize()?;
         let m: Manifest = read_json(&root.join("runtime.json"))?;
-        if m.schema != 1 || m.core != CORE || m.open_system != open || m.state_abi != 1 {
+        if m.schema != 1 || m.core != core || m.open_system != open || m.state_abi != 1 {
             return Err(io::Error::other(
                 "unsupported integrated runtime; session and saves retained",
             ));

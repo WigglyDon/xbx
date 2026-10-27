@@ -318,3 +318,14 @@ policy, storage safety and publication; no new machine serializer is introduced.
 `native/fixtures/android-hmp-session.c` is an original MIT host routing contract.
 Its privately generated subject is the actual pinned/patched monitor source;
 controlled callbacks qualify command routing, not native machine state.
+
+### Precise x87 restart correction
+
+`patches/xemu-x87-instruction-boundary.patch` changes the retained
+`target/i386/tcg/translate.c` at xemu03b988c9d76553b33ed712ba00822ffdf49f0e7d.
+The file's LGPL-2.1-or-later notice and authorship remain; this is a targeted
+modification of that implementation, not MIT first-party emulation code. The
+original Rust build/qualification tooling and original guest fixture remain MIT.
+The composition retains the existing xemu/QEMU and dependency obligations. Only
+one C unit is rebuilt; accepted RAMHT, UI and paused-capture repairs are retained.
+[Source/build identities and scoped proof](docs/evidence/cartridge-x87-boundary-20261027.json).

@@ -322,7 +322,7 @@ pub(super) fn layout_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-fn outcome(text: &str) -> Option<bool> {
+pub(super) fn outcome(text: &str) -> Option<bool> {
     if !text.contains("NPX OWNERSHIP BOOT") {
         return None;
     }

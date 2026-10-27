@@ -4,7 +4,7 @@
   "scope": "Original synthetic register-state check, not commercial compatibility",
   "core_sha256": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
   "functional_port_qualified": true,
-  "fable_rerun": false,
+  "fable_rerun": true,
   "ordinary_runtime_changed": false,
   "original_source_unchanged": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
   "cases": [
@@ -352,5 +352,37 @@
     "existing_and_partial_profiles_retained": true,
     "first_SIGXFSZ_before_guest_due_discarded_blank_generation_preserved": true
   },
-  "fable_state": "one prepared request waiting for workspace capacity, no guest launched"
+  "fable_state": "completed_changed_firmware_observation_splash_only_terminal_startup_failure_no_menu_gameplay",
+  "fable_observation": {
+    "firmware": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "core_sha256": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+    "unchanged_external_game_and_matched_fresh_seeds": true,
+    "elapsed_observation_retirement_ms": 81829,
+    "terminal_capture_completed_by_ms": 26327,
+    "reason": "guest_terminal_startup_failure",
+    "captures_opened": 4,
+    "visible_result": "open-kernel splash only",
+    "normal_controller_input_delivered": false,
+    "menu_gameplay_sound_save_resume_qualified": false,
+    "immutable_inputs_unchanged": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "storage_synced": true
+    },
+    "memory": {
+      "resident_bound_bytes": 1073741824,
+      "address_space_bound_bytes": 8589934592,
+      "peak_resident_bytes": 545230848,
+      "peak_single_process_address_space_bytes": 5033115648
+    },
+    "healthy_checkpoint_published": false,
+    "private_title_memory_or_instructions_inspected": false
+  },
+  "fable_rerun_scope": "one changed firmware after actual original gates, not unchanged previous fault/splash campaign",
+  "fable_cause_established": false
 }

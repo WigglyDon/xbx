@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-27",
+  "scope": "Original x87 state preserved across precise code-page-write restart; no Fable cause established",
+  "build": {
+    "Fable_cause_established": false,
+    "base_core": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+    "compiler_jobs": 1,
+    "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "original_register_regression_qualified": false,
+    "patch": "6c696f094770fb98d38565bbc675ade5976d61ef12ac0fafdf1ec14c8cf5c984",
+    "prior_source_builds_unchanged": true,
+    "recompiled_units": [
+      "target/i386/tcg/translate.c"
+    ],
+    "retained_compile_commands": "4c15233779fc4ae61e4b7411d70df6523a627ad5a99e6978f753b896384c4297",
+    "retained_hmp_object": "71bf7db738c180206cc959d05183d81a577a39ceab1378ef28431ba0c6c7ad85",
+    "retained_native_recipe": "e397910be6b9720ac001fa9f7454698254558c7f2e3e1794c23fe2751293a25a",
+    "retained_ui_object": "41d6face97e483ef66c083d8ef9bd2377eb90839433e129ec2a16990b73e5527",
+    "source_after": "a5451f06dcb3f3f29cc7ac995383bdb0049e4a15552e4e949a08a7d15e1e1a76",
+    "source_before": "9a13a807f92ff591e36297ba81c9201c7f6596c68a566bfc8c4b6893c06b50b7",
+    "source_pin": "03b988c9d76553b33ed712ba00822ffdf49f0e7d"
+  },
+  "original_before": {
+    "core": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+    "firmware": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "fixture": "fe624afdafb26645f8beb088559988981c557b2bda357b899a275e32f0b62b1f",
+    "guest_result": "parent BAD00204 then child BAD00301",
+    "native_clean": true,
+    "retained_without_repeat": true
+  },
+  "original_after": [
+    {
+      "case": "flat",
+      "fixture": "fe624afdafb26645f8beb088559988981c557b2bda357b899a275e32f0b62b1f",
+      "elapsed_ms": 9823,
+      "guest_passed": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "storage_synced": true
+      }
+    },
+    {
+      "case": "separate",
+      "fixture": "372b08bfa9b9022b74985a088ecae10eeea7e25cf61823db6b0242f23b19123e",
+      "elapsed_ms": 20189,
+      "guest_passed": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "storage_synced": true
+      }
+    }
+  ],
+  "seeds_unchanged": true,
+  "ordinary_default_changed": false,
+  "checks": "tools-v51 all11 focused cartridge/storage checks, warnings-denied workspace Clippy and formatting passed",
+  "source_boundary": [
+    "x87 cached translation temporaries were absent from canonical CPU state at an instruction that could restart.",
+    "The existing precise SMC path restores PC/condition codes, not those temporary values.",
+    "One existing gen_flush_fp call before each instruction boundary preserves completed x87 results.",
+    "The exact former flat reproducer and separate-page control now both pass through the product path with clean native returns."
+  ],
+  "remaining_limits": [
+    "No gameplay, audio, commercial saves/resume or mobile/performance qualification.",
+    "Retained state ABI/serializer code unchanged; candidate isolated by different core identity.",
+    "Corrected-core retained relaunch and one changed-core Fable observation still required."
+  ],
+  "phone_operation": false,
+  "paused_investigations_resumed": false
+}

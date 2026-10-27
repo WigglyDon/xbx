@@ -1,0 +1,12 @@
+--- a/target/i386/tcg/translate.c
++++ b/target/i386/tcg/translate.c
+@@ -4302,6 +4302,9 @@
+     DisasContext *dc = container_of(dcbase, DisasContext, base);
+     target_ulong pc_arg = dc->base.pc_next;
+ 
++    /* A memory access can restart this instruction after invalidating its TB.
++     * Keep earlier x87 results in CPU state before that precise boundary. */
++    gen_flush_fp(dc);
+     dc->prev_insn_start = dc->base.insn_start;
+     dc->prev_insn_end = tcg_last_op();
+     if (tb_cflags(dcbase->tb) & CF_PCREL) {

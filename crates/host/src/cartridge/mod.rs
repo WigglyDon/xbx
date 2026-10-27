@@ -23,6 +23,8 @@ pub mod resources;
 pub mod store;
 #[cfg(all(test, not(target_os = "android")))]
 mod tests;
+#[cfg(not(target_os = "android"))]
+mod x87_boundary;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{

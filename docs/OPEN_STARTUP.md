@@ -328,3 +328,56 @@ retained. All16 paused paths remain outside this slice. No phone operation,
 other-project change, proprietary code analysis or public binary release occurs.
 Neither diagnostic logging nor the synthetic repair claims gameplay, sound,
 saving, cold reload or a qualified shipping firmware/profile default.
+
+## Qualified NPX-port Fable observation — 2026-10-27
+
+The one changed-firmware observation used exact qualified8477c047, retainedB302,
+the fully verified read-only external game, matched fresh disk/EEPROM seeds,
+64MiB, Intel OpenGL, ControllerS, native FP and offline operation through the
+cartridge Player. The game import read and hashed media without copying it.
+It completed selection/handoff and returned from the title entry before the
+same terminal access-violation class outside the public kernel map. All four
+captures were opened: only the open-kernel splash, no Fable menu or gameplay.
+No scheduled input was delivered before the terminal result. The last terminal
+capture completed by26,327ms; total observation/retirement was81,829ms, including
+shutdown. QMP acknowledged, native exit0/reaped/synced; immutable inputs unchanged.
+Measured aggregate resident peak545,230,848bytes, maximum single-process virtual
+size5,033,115,648bytes; the stricter1GiB resident guard was not hit. The preceding
+request was refused before launch for memory admission and returned cleanly.
+No phone or healthy commercial checkpoint. The repair remains independently
+qualified; it did not earn Fable progression or identify its cause.
+
+The earlier original flat-layout result independently exposes native x87 state
+loss on a code-page-write restart. Retained public code caches x87 results across
+instructions; precise SMC restarts through CPU state without restoring those
+translation temporaries. A minimal canonicalization candidate is being prepared
+for the original failing image and working separate-page control, not an unchanged
+commercial repeat. It was subsequently built and qualified by the actual original checks below.
+No private-game code, live-register observer or prior diagnostic branch is used.
+
+## Native x87 precise-restart correction
+
+The original flat image's failure is a native state-boundary defect, separate
+from its suitability as an isolated kernel-owner test. A code-page write can
+restart the current instruction through the retained precise-SMC path. Completed
+x87 instructions still held values in translation temporaries, while the restart
+restored only canonical CPU state. The correction invokes existing gen_flush_fp
+before each instruction boundary. It changes no guest/game instruction, kernel
+ABI or machine serializer. No special case recognizes a title or fixture.
+
+One compiler job rebuilt target/i386/tcg/translate.c and relinked with accepted
+UI/HMP repairs and other retained objects. B8d9ce80 is separate from B302; the
+ordinary runtime, existing profiles and installed candidate stay unchanged. The
+6,034,895byte pinned compiler database uses its own bounded16MiB build reader;
+the initial wrapper's64KiB session-manifest reader refused it before compilation.
+The session-metadata bound remains unchanged and that preparation is preserved.
+
+Actual product-path regression: the exact former flat image now passes both
+checked child/parent results and clean native return in9,823ms. The separate-page
+control also passes both checks and clean return in20,189ms. Both use repaired8477
+firmware,64MiB, Intel OpenGL and fresh matched seeds; the old clean negative is
+reused. Ordinary and old logging resource constructors both reject this isolated
+candidate. Tools-v51 all11 focused cases, strict workspace Clippy and formatting
+pass. [Build and original results](evidence/cartridge-x87-boundary-20261027.json).
+This is an independent platform correction, not proof of a Fable cause. Next is
+exact-core retained relaunch, then one matched changed-core Fable observation.
