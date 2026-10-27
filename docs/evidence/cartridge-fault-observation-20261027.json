@@ -66,9 +66,64 @@
     "gate": "Original loaded-code word must match independently parsed original media before any commercial observation",
     "maximum_commands": 8,
     "maximum_words_per_command": 4,
-    "actual_original_word_control_passed": false,
-    "actual_Fable_memory_read_completed": false,
-    "status": "Prepared and awaiting existing workspace admission; not yet run"
+    "actual_original_word_control_passed": true,
+    "actual_Fable_memory_read_completed": true,
+    "status": "Completed through the existing product owner; both native returns clean",
+    "job": "66116206d0794c00b5471c156ec5a3ba",
+    "returned": true,
+    "children_retired": true,
+    "original": {
+      "elapsed_ms": 9380,
+      "debugger_completed": true,
+      "memory_reads_completed": true,
+      "stop_pc_matched": true,
+      "observation_error": null,
+      "native_clean": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 4,
+        "reap_ms": 1248,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "seeds_unchanged": true,
+      "healthy_checkpoint_published": false,
+      "commercial_acceptance": false
+    },
+    "fable": {
+      "elapsed_ms": 21373,
+      "debugger_completed": true,
+      "memory_reads_completed": true,
+      "stop_pc_matched": true,
+      "observation_error": null,
+      "native_clean": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 5,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 5,
+        "storage_synced": true
+      },
+      "seeds_unchanged": true,
+      "healthy_checkpoint_published": false,
+      "commercial_acceptance": false
+    }
   },
   "checks": {
     "completed_build": "tools-v55, one compiler, existing dependencies and retained native artifacts",
@@ -95,7 +150,7 @@
   "limits": [
     "Fable remains splash-only in the completed normal observation; no menu, gameplay, audio or commercial save/resume qualification.",
     "The private breakpoint reached the expected failing instruction and exposed a null lookup base; the causal public platform contract remains unattributed.",
-    "The first remote-debugger memory transfer failed; the corrected native word-read transport remains unqualified until its original control actually passes.",
+    "The replacement native word-read transport passed its original loaded-code control and completed the bounded commercial observation. Object/caller context is now available privately; no causal public runtime contract is established.",
     "No title code, raw registers, media identities, private firmware or raw owner output is published."
   ],
   "preservation": {
@@ -109,5 +164,15 @@
     "crates/host/src/cartridge/fault_context.rs": "33ce0b36ee1acdbdf0f1b94ae4da6bc05c300ec035ac4f1acdad77abc97bd587",
     "crates/host/src/cartridge/build.rs": "6d6603699f6e53da9ebe50bf06661e3edaef7b08d49e0980c7d44c8bc8768dc0",
     "crates/host/src/cartridge/mod.rs": "5412ddb68cd690eec373800629443081ca9288dc06559ff014da68f227eb2578"
+  },
+  "return_accounting": {
+    "utc": "2026-10-27T16:01:33Z",
+    "allocated_bytes": 15195955200,
+    "maximum_bytes": 17957126144,
+    "remaining_allowance_bytes": 2761170944,
+    "available_bytes": 65116999680,
+    "shared_floor_bytes": 12884901888,
+    "media_metadata_unchanged": true,
+    "native_processes_independently_absent": true
   }
 }
