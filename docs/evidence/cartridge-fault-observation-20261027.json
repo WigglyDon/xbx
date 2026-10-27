@@ -166,13 +166,13 @@
     "crates/host/src/cartridge/mod.rs": "5412ddb68cd690eec373800629443081ca9288dc06559ff014da68f227eb2578"
   },
   "return_accounting": {
-    "utc": "2026-10-27T17:51:13.411280+00:00",
-    "allocated_bytes": 15319416832,
+    "utc": "2026-10-27T17:58:01.809280+00:00",
+    "allocated_bytes": 15342022656,
     "maximum_bytes": 17957126144,
-    "remaining_allowance_bytes": 2637709312,
-    "available_bytes": 64445452288,
+    "remaining_allowance_bytes": 2615103488,
+    "available_bytes": 64422846464,
     "shared_floor_bytes": 12884901888,
-    "scope": "Completed archive query observation with clean native and supervised return. Subsequent observations need fresh admission.",
+    "scope": "Partial archive-open observation: debugger transport failed, native and supervised return clean. Following single-stop request needs its own admission.",
     "media_metadata_unchanged": true,
     "native_processes_independently_absent": true
   },
@@ -371,5 +371,40 @@
     "public_API_cause_established": false,
     "interpretation_limit": "This selected query succeeded; it does not qualify every file request or subsequent open/read. No missing file lookup defect was observed.",
     "next_step": "Inspect the following open-return and first archive-header comparison; preserve normal runtime until a causal public-platform mismatch is reproduced."
+  },
+  "partial_archive_open_observation": {
+    "elapsed_ms": 88379,
+    "debugger_completed": false,
+    "memory_reads_completed": false,
+    "stop_pc_matched": false,
+    "observation_error": null,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 28,
+      "reap_ms": 181,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 8,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "job": "0f5d6f14980e4c658c75d46e100d8842",
+    "returned": true,
+    "children_retired": true,
+    "native_pid_independently_absent": true,
+    "media_metadata_unchanged": true,
+    "actual_observation": "The expected file-interface method returned to the archive loader with the expected manager. Installing the following hardware stop failed with an invalid remote-protocol hex response; no header words were captured.",
+    "transport_error_class": "invalid remote-protocol hex response",
+    "interpretation_limit": "The file-interface return register is not established as a boolean status. This partial diagnostic proves neither successful data delivery nor a failing public API.",
+    "next_step": "Use the already-qualified single-stop route directly at the header comparison; no runtime patch or debugger campaign."
   }
 }
