@@ -161,18 +161,73 @@
     "healthy_commercial_checkpoint_published": false
   },
   "source_sha256": {
-    "crates/host/src/cartridge/fault_context.rs": "33ce0b36ee1acdbdf0f1b94ae4da6bc05c300ec035ac4f1acdad77abc97bd587",
+    "crates/host/src/cartridge/fault_context.rs": "5aa0e20947259f08fce52f4dce40a93b8a667b7db3cfd258fb9872bf0b2decbb",
     "crates/host/src/cartridge/build.rs": "6d6603699f6e53da9ebe50bf06661e3edaef7b08d49e0980c7d44c8bc8768dc0",
     "crates/host/src/cartridge/mod.rs": "5412ddb68cd690eec373800629443081ca9288dc06559ff014da68f227eb2578"
   },
   "return_accounting": {
-    "utc": "2026-10-27T16:01:33Z",
-    "allocated_bytes": 15195955200,
+    "utc": "2026-10-27T16:41:16Z",
+    "allocated_bytes": 15229706240,
     "maximum_bytes": 17957126144,
-    "remaining_allowance_bytes": 2761170944,
-    "available_bytes": 65116999680,
+    "remaining_allowance_bytes": 2727419904,
+    "available_bytes": 65025818624,
     "shared_floor_bytes": 12884901888,
     "media_metadata_unchanged": true,
-    "native_processes_independently_absent": true
+    "native_processes_independently_absent": true,
+    "scope": "Completed partial initialization job; subsequent observations require their own admission."
+  },
+  "initialization_followup": {
+    "elapsed_ms": 90357,
+    "debugger_completed": false,
+    "memory_reads_completed": false,
+    "stop_pc_matched": false,
+    "observation_error": "finite debugger deadline",
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 9,
+      "reap_ms": 221,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 4,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "job": "439ef274564c46f49d255c18000acc12",
+    "returned": true,
+    "children_retired": true,
+    "actual_observation": "Cached lookup returned failure for the same recorded object address; the expected later parent return was not observed before the finite deadline. No follow-up memory words were read.",
+    "classification": "partial diagnostic result, not a new normal compatibility failure",
+    "public_API_cause_established": false,
+    "next_step": "Inspect the actual failing lookup and its loading path; no direct attribute-query failure was observed in this attempt."
+  },
+  "named_observations": {
+    "source_change": "Optional restricted private observation name preserves earlier outputs and reuses the completed original native memory-read control. Result records the name and private plan digest. No runtime change.",
+    "build": "tools-v56, Rust only, retained dependencies, native core and open system reused",
+    "checks": "Exact changed source: offline workspace all-target Clippy with warnings denied and isolated workspace formatting passed. Prior12 policy cases reused; no storage-policy change.",
+    "check_peak_aggregate_resident_bytes": 343216128,
+    "resident_bound_bytes": 1073741824,
+    "address_space_bound_bytes": 8589934592,
+    "prior_check_refusal": "Initial linker thread/resource refusal under a smaller address-space cap; preserved separately. Serial retry under the existing8GiB address-space/1GiB resident envelope passed."
+  },
+  "build_flush_interruption": {
+    "job": "a3de79bffbad4b84a2822c3034421d9a",
+    "build_completed": true,
+    "guest_started": false,
+    "reason": "Storage flush exceeded its finite cleanup deadline at a safe-boundary handoff.",
+    "recovery_job": "275c4fa796b04fefaf59372ecfc11807",
+    "cleanup_only": true,
+    "recovery_returned": true,
+    "children_retired": true,
+    "recovered_flush_ms": 12,
+    "binaries_verified": true
   }
 }

@@ -65,7 +65,25 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool) -> Result<(), Er
     if !dir.exists() {
         c::mkdir(&dir)?;
     }
-    let name = if original { "original" } else { "fable" };
+    let name = if original {
+        "original".to_owned()
+    } else {
+        match std::env::var("XBX_PRIVATE_OBSERVATION_NAME") {
+            Ok(name)
+                if !name.is_empty()
+                    && name.len() <= 48
+                    && name != "original"
+                    && name
+                        .bytes()
+                        .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-') =>
+            {
+                name
+            }
+            Ok(_) => return Err("invalid private observation name".into()),
+            Err(std::env::VarError::NotPresent) => "fable".to_owned(),
+            Err(error) => return Err(error.into()),
+        }
+    };
     let result_path = dir.join(format!("{name}.result.json"));
     let log_path = dir.join(format!("{name}.gdb.log"));
     if result_path.exists() || log_path.exists() {
@@ -241,7 +259,7 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool) -> Result<(), Er
     c::write_new(
         &result_path,
         &c::json(
-            &json!({"original":original,"core":resources::X87_RESTART_CORE,"firmware":resources::NPX_LOGGING_OPEN,"app":app,"native_run":run,"debugger_completed":completed,"memory_reads_completed":memory_reads_completed,"stop_pc_matched":stop_pc_matched,"observation_error":observed.err().map(|e|e.to_string()),"native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),"seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"healthy_checkpoint_published":false,"commercial_acceptance":false,"private_commands_sha256":c::file_digest(&commands)?}),
+            &json!({"original":original,"observation":name,"core":resources::X87_RESTART_CORE,"firmware":resources::NPX_LOGGING_OPEN,"app":app,"native_run":run,"debugger_completed":completed,"memory_reads_completed":memory_reads_completed,"stop_pc_matched":stop_pc_matched,"observation_error":observed.err().map(|e|e.to_string()),"native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),"seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"healthy_checkpoint_published":false,"commercial_acceptance":false,"private_commands_sha256":c::file_digest(&commands)?,"private_read_plan_sha256":c::file_digest(&plan_path)?}),
         )?,
     )?;
     let _ = fs::remove_file(socket);
