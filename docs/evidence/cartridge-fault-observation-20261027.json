@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-27",
+  "scope": "Owner-authorized private fault context through the actual cartridge session owner; no commercial compatibility acceptance",
+  "authority": "Owner explicitly authorized targeted private inspection of the retained Fable fault; prior broader diagnostic campaigns remain paused",
+  "runtime": {
+    "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "open_system": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "reused_without_rebuild": true,
+    "ordinary_default_changed": false
+  },
+  "completed_original_control": {
+    "elapsed_ms": 4271,
+    "debugger_completed": true,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 2,
+      "reap_ms": 161,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 4,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "job": "17127f3506c84c2d857302e4690ec1d3"
+  },
+  "completed_private_fault_attempt": {
+    "elapsed_ms": 56478,
+    "debugger_completed": false,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 1165,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 2172,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "job": "17127f3506c84c2d857302e4690ec1d3",
+    "exact_fault_breakpoint_observed": true,
+    "memory_transfer_completed": false,
+    "transport_error_class": "invalid remote-protocol hex response",
+    "platform_cause_established": false
+  },
+  "native_memory_read_followup": {
+    "implementation": "Existing native QMP/HMP word reads after GDB disconnect, pause, and independent exact stopped-PC confirmation",
+    "gate": "Original loaded-code word must match independently parsed original media before any commercial observation",
+    "maximum_commands": 8,
+    "maximum_words_per_command": 4,
+    "actual_original_word_control_passed": false,
+    "actual_Fable_memory_read_completed": false,
+    "status": "Prepared and awaiting existing workspace admission; not yet run"
+  },
+  "checks": {
+    "completed_build": "tools-v55, one compiler, existing dependencies and retained native artifacts",
+    "current_cartridge_source_matches_built_snapshot": true,
+    "policy_tests": {
+      "passed": 12,
+      "failed": 0,
+      "temporary_fixture_filesystem": "tmpfs",
+      "native_continuity_claim": false
+    },
+    "strict_clippy": "xbx-host all targets, warnings denied, offline, passed",
+    "formatting": "isolated source workspace check passed",
+    "retained_external_test_timeout": {
+      "completed_cases": 10,
+      "timeout_seconds": 300,
+      "guest_started": false,
+      "job": "4b74ccda5486431d9a6f05fe0e920f18",
+      "returned": true,
+      "children_retired": true,
+      "test_failure_assertion_observed": false,
+      "cause_not_proven": "Same test binary completes on tmpfs; the external timeout does not establish a policy assertion failure"
+    }
+  },
+  "limits": [
+    "Fable remains splash-only in the completed normal observation; no menu, gameplay, audio or commercial save/resume qualification.",
+    "The private breakpoint reached the expected failing instruction and exposed a null lookup base; the causal public platform contract remains unattributed.",
+    "The first remote-debugger memory transfer failed; the corrected native word-read transport remains unqualified until its original control actually passes.",
+    "No title code, raw registers, media identities, private firmware or raw owner output is published."
+  ],
+  "preservation": {
+    "all_media_profiles_builds_and_failed_records_retained": true,
+    "sixteen_paused_source_paths_unchanged": true,
+    "phone_operations": false,
+    "sibling_changes": false,
+    "healthy_commercial_checkpoint_published": false
+  },
+  "source_sha256": {
+    "crates/host/src/cartridge/fault_context.rs": "33ce0b36ee1acdbdf0f1b94ae4da6bc05c300ec035ac4f1acdad77abc97bd587",
+    "crates/host/src/cartridge/build.rs": "6d6603699f6e53da9ebe50bf06661e3edaef7b08d49e0980c7d44c8bc8768dc0",
+    "crates/host/src/cartridge/mod.rs": "5412ddb68cd690eec373800629443081ca9288dc06559ff014da68f227eb2578"
+  }
+}

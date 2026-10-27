@@ -162,6 +162,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-npx-fable" => fable_logging(repo, &w, LoggingRuntime::Npx)?,
         "cartridge-x87-relaunch" => super::npx_followup::relaunch_with_core(repo, root, true)?,
         "cartridge-x87-fable" => fable_logging(repo, &w, LoggingRuntime::X87)?,
+        "cartridge-fault-original" => super::fault_context::observe(repo, root, true)?,
+        "cartridge-fault-fable" => super::fault_context::observe(repo, root, false)?,
         "cartridge-npx-values-build" => super::npx_port::values_fixture(repo, root)?,
         "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
         "cartridge-android-native" => super::android_build::native(repo, root)?,
