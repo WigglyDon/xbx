@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "original_generated_content_only": true,
+  "build": {
+    "Fable_cause_established": false,
+    "changed": [
+      "kernel/src/idex/channel.cpp",
+      "kernel/src/idex/disk.cpp"
+    ],
+    "compiler": "ad535f0b6fc303edba958b51636169ff0291c6e36463236c99ff8abcaa34247c",
+    "compiler_jobs": 1,
+    "cromwell": "86f547387184d1001d377cce97d3756c8acf91cc",
+    "firmware": "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a",
+    "functional_patch": "9e5103dfcafbcf3a15e869214f50117c95f0b9b241bba73f4386cc3bce6e387c",
+    "kernel": "bbcdcba2378da210e43060cb0129d071cdcff96af3c145a642a909179bf9639f",
+    "linker": "e056852f9ab38648c7eed62e29673998e038110641b36d84d5556b5ffc2ecc0d",
+    "map": "b77541856554947b76c452d7b728955df9feeedbc7d6be077921c727b41f2d1a",
+    "native_regression_passed": false,
+    "original_negative": "3e5f6805c69007b34ac8c654ace8b62648fa511f2548ab559a238d8dcee64bd0",
+    "retained_core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "serial": true,
+    "source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+    "trace_imports": false
+  },
+  "before": {
+    "runtime": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "cached_fixture": "3e5f6805c69007b34ac8c654ace8b62648fa511f2548ab559a238d8dcee64bd0",
+    "flush_status": "C0000185",
+    "data_verified": true,
+    "overall_passed": false
+  },
+  "after": [
+    {
+      "cache_file_control": true,
+      "commercial_acceptance": false,
+      "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+      "data_verified": true,
+      "elapsed_ms": 17057,
+      "fixture": "3e5f6805c69007b34ac8c654ace8b62648fa511f2548ab559a238d8dcee64bd0",
+      "guest_passed": true,
+      "native_clean": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 7,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 1187,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "open_system": "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a",
+      "original": true,
+      "return_error": null,
+      "seeds_unchanged": true,
+      "case": "cache-regression"
+    },
+    {
+      "cache_file_control": false,
+      "commercial_acceptance": false,
+      "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+      "data_verified": false,
+      "elapsed_ms": 7926,
+      "fixture": "6ad5f716fd4ae18e3d59db19a676b9f1338e0942e7ea8f00a99b50a25383a15d",
+      "guest_passed": true,
+      "native_clean": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 1052,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "open_system": "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a",
+      "original": true,
+      "return_error": null,
+      "seeds_unchanged": true,
+      "case": "disc-regression"
+    }
+  ],
+  "qualification": "Exact original cache negative now passes FLUSH STATUS=00000000 plus all data checks; exact accepted disc fixture still passes. Both native processes independently absent and job returned with no remaining children. Fable causality and gameplay not established."
+}

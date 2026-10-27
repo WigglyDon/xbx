@@ -329,3 +329,12 @@ original Rust build/qualification tooling and original guest fixture remain MIT.
 The composition retains the existing xemu/QEMU and dependency obligations. Only
 one C unit is rebuilt; accepted RAMHT, UI and paused-capture repairs are retained.
 [Source/build identities and scoped proof](docs/evidence/cartridge-x87-boundary-20261027.json).
+
+The targeted `patches/oxos-queued-flush.patch` modifies retained OXOS
+`kernel/src/idex/channel.cpp` and `kernel/src/idex/disk.cpp` at the same pinned
+`9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96` lineage. OXOS GPL-2.0 and applicable
+per-file terms apply. `cartridge-flush-io.lock.json` records the exact changed
+source and original negative. The original generated file controls and Rust
+build/session policy remain MIT. The retained public QEMU completion path and
+Linux v6.12 timeout table are behavioral references; no Linux implementation,
+game code, private firmware or console data is copied into this correction.

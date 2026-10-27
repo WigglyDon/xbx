@@ -1,0 +1,27 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+  "retained_corrected_source_objects_sha256": "93197f4fbbcc00073a9a52b2a34f40a4b0172d1dddbbd43fbd4ee9e8cee65b37",
+  "accepted_npx_after": "ed338066866cf592a58b1910e36a8cc2b2b7ffad552cd58889bd2b3514a59689",
+  "patch": "patches/oxos-queued-flush.patch",
+  "patch_sha256": "9e5103dfcafbcf3a15e869214f50117c95f0b9b241bba73f4386cc3bce6e387c",
+  "changed": {
+    "kernel/src/idex/channel.cpp": {
+      "before": "b5a194a3c07a4982a0d8cd3d7355901ebdee8abc62ede4013c8c8628358e9905",
+      "after": "f4023db94114496b642dfc726b483fe70917bb79fc6a92e30a2b8d77c985ef5c"
+    },
+    "kernel/src/idex/disk.cpp": {
+      "before": "16614c6bedb0e55f5e679c9cb089779776eef6b7cec57b14930475d279bd17be",
+      "after": "9a6f7dba28471432594e547846359ad0454f5b7270d9730890d3ebf6b2582821"
+    }
+  },
+  "public_completion_reference": "Retained xemu 03b988c9 hw/ide/core.c: ide_flush_cache and ide_flush_cb complete the asynchronous host flush through an ATA interrupt; no bus-master DMA completion is required.",
+  "timeout_reference": "https://github.com/torvalds/linux/blob/v6.12/drivers/ata/libata-eh.c",
+  "timeout_scope": "Finite 30-second command watchdog; no copied Linux implementation. Actual timeout path still reports error.",
+  "original_negative_fixture": "3e5f6805c69007b34ac8c654ace8b62648fa511f2548ab559a238d8dcee64bd0",
+  "original_negative": "Two NtFlushBuffersFile I/O errors after checked original writes; second observation verifies subsequent read data. Fable causality not established.",
+  "license": "OXOS GPL-2.0 and applicable per-file terms; original Rust policy MIT",
+  "qualified": false,
+  "ordinary_runtime_default_changed": false
+}

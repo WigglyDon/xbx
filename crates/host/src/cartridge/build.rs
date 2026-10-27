@@ -147,6 +147,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-fixture" => fixture(repo, &w)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
+        "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,
+        "cartridge-flush-disc" => super::file_read::flush_regression(repo, root, false)?,
+        "cartridge-flush-fable" => fable_logging(repo, &w, LoggingRuntime::Flush)?,
+        "cartridge-flush-build" => super::flush_io::build(repo, root)?,
         "cartridge-file-cache-build" => super::file_read::build(repo, root, true)?,
         "cartridge-file-cache-observe" => super::file_read::observe(repo, root, true)?,
         "cartridge-proof" => proof(&w)?,
@@ -247,10 +251,15 @@ enum LoggingRuntime {
     Corrected,
     Npx,
     X87,
+    Flush,
 }
 fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result<(), Error> {
     let npx = !matches!(runtime, LoggingRuntime::Corrected);
-    let x87 = matches!(runtime, LoggingRuntime::X87);
+    let flush = matches!(runtime, LoggingRuntime::Flush);
+    let x87 = matches!(runtime, LoggingRuntime::X87 | LoggingRuntime::Flush);
+    if flush {
+        super::flush_io::qualified(&w.root)?;
+    }
     let core = if x87 {
         resources::X87_RESTART_CORE
     } else {
@@ -259,7 +268,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     if x87 && !w.root.join("x87-boundary-v1/original.qualified").exists() {
         return Err("corrected-core original qualification required".into());
     }
-    let prefix = if x87 {
+    let prefix = if flush {
+        "fable-flush-logging"
+    } else if x87 {
         "fable-x87-logging"
     } else if npx {
         "fable-npx-logging"
@@ -285,7 +296,13 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         return Err("complete original continuity/storage-safety slice required".into());
     }
     let project = w.root.parent().ok_or("project")?;
-    let (logging, logging_pin, qualification) = if npx {
+    let (logging, logging_pin, qualification) = if flush {
+        (
+            w.root.join("flush-io-v1/build-logging/bios.bin"),
+            resources::FLUSH_LOGGING_OPEN,
+            w.root.join("flush-io-v1/build.identity.json"),
+        )
+    } else if npx {
         let port = w.root.join("npx-owner-port-v1");
         if !fs::read_to_string(port.join("regression.qualified"))?.contains("current release red;")
         {
@@ -307,11 +324,16 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             project.join("open-startup-v1/fixture-v3.qualified"),
         )
     };
-    if x87 && !fs::read_to_string(&qualification)?.contains(&format!("core_sha256={core}\n")) {
+    if x87
+        && !flush
+        && !fs::read_to_string(&qualification)?.contains(&format!("core_sha256={core}\n"))
+    {
         return Err("exact corrected-core relaunch qualification required".into());
     }
     if c::file_digest(&logging)? != logging_pin
-        || !fs::read_to_string(qualification)?.contains(&format!("bios_sha256={logging_pin}\n"))
+        || (!flush
+            && !fs::read_to_string(qualification)?
+                .contains(&format!("bios_sha256={logging_pin}\n")))
     {
         return Err(
             "this exact corrected logging input needs retained-fixture qualification".into(),
@@ -328,7 +350,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             }))?,
         )?;
     }
-    let dev = if x87 {
+    let dev = if flush {
+        super::flush_io::package(&w.root)?.root
+    } else if x87 {
         super::x87_boundary::package(repo, &w.root)?.root
     } else {
         w.root.join(if npx {
@@ -353,7 +377,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         manifest.core = core.into();
         c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
     }
-    let r = if x87 {
+    let r = if flush {
+        resources::Resources::flush_logging(&dev)?
+    } else if x87 {
         resources::Resources::x87_logging(&dev)?
     } else if npx {
         resources::Resources::npx_logging(&dev)?

@@ -83,6 +83,17 @@ _start:
     pushl handle
     call *thunks+4
     call success
+    movl $data_passed,%esi
+    call text
+    .if XBX_CACHE_TEST
+    movl flush_status,%eax
+    testl %eax,%eax
+    jz 3f
+    movl $15,stage
+    movl %eax,status
+    jmp fail
+3:
+    .endif
     movl $passed,%esi
     call text
     jmp done
@@ -126,7 +137,15 @@ prepare_cache:
     pushl $iosb
     pushl handle
     call *thunks+32             /* NtFlushBuffersFile */
-    call success
+    movl %eax,flush_status
+    /* Retain flush failure, but independently finish the requested read proof. */
+    pushl %eax
+    movl $flush_label,%esi
+    call text
+    popl %eax
+    call hex
+    movl $newline,%esi
+    call text
     pushl handle
     call *thunks+4
     call success
@@ -241,6 +260,8 @@ done:
     jmp done
 boot: .asciz "XBX FILE READ BOOT\n"
 passed: .asciz "XBX FILE READ PASS\n"
+data_passed: .asciz "XBX FILE READ DATA PASS\n"
+flush_label: .asciz "XBX FILE READ FLUSH STATUS="
 failed: .asciz "XBX FILE READ FAIL stage="
 status_label: .asciz " status="
 count_label: .asciz " count="
@@ -264,6 +285,7 @@ thunks:
 handle: .long 0
 stage: .long 0
 status: .long 0
+flush_status: .long 0
 iosb: .long 0,0
 position: .long 0,0
 cache_extent: .quad EXPECTED_BYTES

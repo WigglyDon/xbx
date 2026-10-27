@@ -15,7 +15,7 @@ fn put(b: &mut [u8], at: usize, value: u32) {
 }
 pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
     let dir = root.join(if cache {
-        "file-cache-v1"
+        "file-cache-v2"
     } else {
         "file-read-v1"
     });
@@ -151,7 +151,7 @@ pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> 
 }
 pub(super) fn observe(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
     let dir = root.join(if cache {
-        "file-cache-v1"
+        "file-cache-v2"
     } else {
         "file-read-v1"
     });
@@ -163,14 +163,54 @@ pub(super) fn observe(repo: &Path, root: &Path, cache: bool) -> Result<(), Error
     {
         return Err("original fixture bindings changed".into());
     }
+    let r = resources::Resources::x87_logging(&root.join("package-x87-npx-v1"))?;
+    observe_with(repo, root, &dir, &media, cache, r)
+}
+/// Reuse the exact original negative and accepted disc fixture. No rebuild or
+/// reinterpretation of prior receipts when the runtime changes.
+pub(super) fn flush_regression(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
+    let (fixture, pin) = if cache {
+        (
+            "file-cache-v2",
+            "3e5f6805c69007b34ac8c654ace8b62648fa511f2548ab559a238d8dcee64bd0",
+        )
+    } else {
+        (
+            "file-read-v1",
+            "6ad5f716fd4ae18e3d59db19a676b9f1338e0942e7ea8f00a99b50a25383a15d",
+        )
+    };
+    let media = root.join(fixture).join("original.iso");
+    if c::file_digest(&media)? != pin {
+        return Err("retained original image changed".into());
+    }
+    let r = super::flush_io::package(root)?;
+    let dir = root.join("flush-io-v1").join(if cache {
+        "cache-regression"
+    } else {
+        "disc-regression"
+    });
+    c::mkdir(&dir)?;
+    observe_with(repo, root, &dir, &media, cache, r)
+}
+fn observe_with(
+    repo: &Path,
+    root: &Path,
+    dir: &Path,
+    media: &Path,
+    cache: bool,
+    r: resources::Resources,
+) -> Result<(), Error> {
+    let fixture = c::file_digest(media)?;
+    let core = r.manifest.core.clone();
+    let open = r.manifest.open_system.clone();
     let result = dir.join("original.result.json");
     if result.exists() || dir.join("serial.log").exists() {
         return Err("preserve prior original observation".into());
     }
-    let r = resources::Resources::x87_logging(&root.join("package-x87-npx-v1"))?;
     let app = root.join(format!("file-read-{}", c::new_id()?));
     let mut player = c::desktop::Player::with_resources(&app, r)?;
-    let game = player.add(&media)?;
+    let game = player.add(media)?;
     let entry = c::library::Library::read(&app)?.resolve(&game)?;
     let disk = repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2");
     let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
@@ -189,8 +229,8 @@ pub(super) fn observe(repo: &Path, root: &Path, cache: bool) -> Result<(), Error
         .create_new(true)
         .write(true)
         .open(dir.join("serial.log"))?;
+    let mut output = String::new();
     let observed = (|| -> Result<bool, Error> {
-        let mut output = String::new();
         loop {
             let text = player.live.as_mut().ok_or("live")?.native.serial()?;
             log.write_all(text.as_bytes())?;
@@ -220,9 +260,9 @@ pub(super) fn observe(repo: &Path, root: &Path, cache: bool) -> Result<(), Error
     let clean = returned.is_ok() && native["clean"] == true && unchanged;
     c::write_new(
         &result,
-        &c::json(&json!({"original":true,"fixture":identity["fixture"],
-        "core":resources::X87_RESTART_CORE,"open_system":resources::NPX_LOGGING_OPEN,
-        "cache_file_control":cache,"app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
+        &c::json(&json!({"original":true,"fixture":fixture,
+        "core":core,"open_system":open,
+        "cache_file_control":cache,"data_verified":output.contains("XBX FILE READ DATA PASS"),"app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
         "native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),
         "seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"commercial_acceptance":false}))?,
     )?;

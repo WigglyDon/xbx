@@ -1,0 +1,87 @@
+--- a/kernel/src/idex/channel.cpp
++++ b/kernel/src/idex/channel.cpp
+@@ -62,7 +62,12 @@
+         return FALSE;
+     }
+     UCHAR bm = inb(IDE_BM_STATUS);
+-    if (!(bm & 4))
++    // A queued FLUSH CACHE completes by the ATA interrupt, without a DMA
++    // interrupt bit. Do not mistake an interrupt while it is still busy for
++    // completion; all commands remain serialized by CurrentIrp.
++    bool flush = ch->CurrentIrp &&
++                 IoGetCurrentIrpStackLocation(ch->CurrentIrp)->MajorFunction == IRP_MJ_FLUSH_BUFFERS;
++    if ((!(bm & 4) && !flush) || (flush && (inb(IDE_ALT_STATUS) & IDE_STATUS_BSY)))
+         return FALSE;
+     outb(IDE_BM_COMMAND, 0);
+     outb(IDE_BM_STATUS, bm | 6);
+--- a/kernel/src/idex/disk.cpp
++++ b/kernel/src/idex/disk.cpp
+@@ -166,9 +166,42 @@
+ 
+ static void NTAPI IdexDiskTimeout() { IdexDiskFinishIo(); }
+ 
++// Flush is a queued non-data command. Waiting for its interrupt lets the
++// scheduler and the asynchronous backing store make progress; a short spin at
++// interrupt IRQL neither serializes competing requests nor proves durability.
++static void NTAPI IdexDiskFinishFlush() {
++    PIRP irp = IdexChannelObject.CurrentIrp;
++    if (!irp)
++        return;
++    UCHAR bm, ata = IdexGetCompletionStatus(&bm);
++    IdexDiskCompleteIrp(irp, ((ata & (IDE_STATUS_ERR | IDE_STATUS_DF)) || (bm & 2))
++                                 ? STATUS_IO_DEVICE_ERROR : STATUS_SUCCESS);
++}
++
++static void IdexDiskStartFlush(PIRP Irp) {
++    PIDE_CHANNEL_OBJECT ch = &IdexChannelObject;
++    ch->FinishIoRoutine = IdexDiskFinishFlush;
++    ch->TimeoutExpiredRoutine = IdexDiskFinishFlush;
++    KIRQL old = KfRaiseIrql(ch->InterruptIrql);
++    outb(IDE_DRIVE, 0xE0);
++    if (!IdexWaitForStatus(IDE_STATUS_BSY | IDE_STATUS_DRDY, IDE_STATUS_DRDY, 1000000)) {
++        KfLowerIrql(old);
++        IdexDiskCompleteIrp(Irp, STATUS_IO_DEVICE_ERROR);
++        return;
++    }
++    outb(IDE_BM_COMMAND, 0);
++    outb(IDE_BM_STATUS, inb(IDE_BM_STATUS) | 6);
++    ch->Timeout = 30;
++    ch->ExpectingBusMasterInterrupt = TRUE; // the channel ISR recognizes this non-DMA command
++    outb(IDE_COMMAND, 0xE7); // FLUSH CACHE
++    KfLowerIrql(old);
++}
++
+ static void IdexDiskPassThrough(PIRP Irp);
+ 
+ static void NTAPI IdexDiskStartIo(PDEVICE_OBJECT, PIRP Irp) {
++    if (IoGetCurrentIrpStackLocation(Irp)->MajorFunction == IRP_MJ_FLUSH_BUFFERS)
++        return IdexDiskStartFlush(Irp);
+     if (IoGetCurrentIrpStackLocation(Irp)->MajorFunction == IRP_MJ_DEVICE_CONTROL)
+         return IdexDiskPassThrough(Irp);
+     IdexChannelObject.FinishIoRoutine = IdexDiskFinishIo;
+@@ -285,20 +318,11 @@
+     IdexChannelStartNextPacket();
+ }
+ 
+-static NTSTATUS NTAPI IdexDiskFlush(PDEVICE_OBJECT, PIRP Irp) {
+-    // The drive's write cache is flushed with FLUSH CACHE; the command is short, so it is polled.
+-    KIRQL old = KeRaiseIrqlToDpcLevel();
+-    NTSTATUS status = STATUS_SUCCESS;
+-    if (!IdexChannelObject.CurrentIrp) {
+-        KIRQL o2 = KfRaiseIrql(IdexChannelObject.InterruptIrql);
+-        outb(IDE_DRIVE, 0xE0);
+-        outb(IDE_COMMAND, 0xE7);
+-        if (!IdexWaitForStatus(IDE_STATUS_BSY, 0, 2000000) || (inb(IDE_ALT_STATUS) & IDE_STATUS_ERR))
+-            status = STATUS_IO_DEVICE_ERROR;
+-        KfLowerIrql(o2);
+-    }
+-    KfLowerIrql(old);
+-    return IdexCompleteWith(Irp, status, 0);
++static NTSTATUS NTAPI IdexDiskFlush(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
++    Irp->IoStatus.Information = 0;
++    IoMarkIrpPending(Irp);
++    IdexChannelStartPacket(DeviceObject, Irp);
++    return STATUS_PENDING;
+ }
+ 
+ DRIVER_OBJECT IdexDiskDriverObject = {
