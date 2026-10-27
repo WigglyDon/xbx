@@ -260,3 +260,86 @@ fn only_known_managed_storage_retires_after_replacement_is_durable() {
         assert_eq!(f.p.current().unwrap(), next);
     }
 }
+
+#[test]
+fn matched_seed_initialization_preserves_newer_storage_and_failed_partial_copy() {
+    let mut f = Fixture::new();
+    let source = f.p.current().unwrap();
+    let seed_disk = source.join("hdd.qcow2");
+    let seed_eeprom = source.join("eeprom.bin");
+    let original_seeds = (
+        file_digest(&seed_disk).unwrap(),
+        file_digest(&seed_eeprom).unwrap(),
+    );
+    // The seeded developer route must need no blank-disk generator at all.
+    f.r.root = f.root.join("no-disk-generator");
+    let app = f.root.join("seeded-app");
+    mkdir(&app).unwrap();
+    let mut entry = library::Entry {
+        id: "1".repeat(32),
+        profile: "2".repeat(32),
+        name: "original seeded storage".into(),
+        media: "unused".into(),
+        media_sha256: "3".repeat(64),
+        partition: 0,
+    };
+    let p = store::Profile::open_seeded(&app, &entry, &f.r, &seed_disk, &seed_eeprom).unwrap();
+    let current = p.current().unwrap();
+    assert!(!current.join("initial.raw").exists());
+    fs::write(current.join("hdd.qcow2"), b"newer synthetic ordinary save").unwrap();
+    fs::write(current.join("eeprom.bin"), b"current synthetic EEPROM").unwrap();
+    store::sync_files(&current).unwrap();
+    let pointer = fs::read(p.root.join("storage.json")).unwrap();
+    let profile_root = p.root.clone();
+    drop(p);
+    let p = store::Profile::open_seeded(&app, &entry, &f.r, &seed_disk, &seed_eeprom).unwrap();
+    assert_eq!(fs::read(p.root.join("storage.json")).unwrap(), pointer);
+    assert_eq!(
+        fs::read(p.current().unwrap().join("hdd.qcow2")).unwrap(),
+        b"newer synthetic ordinary save"
+    );
+    assert_eq!(
+        fs::read(p.current().unwrap().join("eeprom.bin")).unwrap(),
+        b"current synthetic EEPROM"
+    );
+    drop(p);
+    entry.profile = "4".repeat(32);
+    assert!(
+        store::Profile::open_seeded(
+            &app,
+            &entry,
+            &f.r,
+            &seed_disk,
+            &f.root.join("missing-eeprom")
+        )
+        .is_err()
+    );
+    let failed = app.join("profiles").join(&entry.profile);
+    assert!(failed.join("storage").is_dir());
+    assert!(!failed.join("storage.json").exists());
+    let partial: Vec<_> = fs::read_dir(failed.join("storage"))
+        .unwrap()
+        .map(|p| p.unwrap().path())
+        .collect();
+    assert_eq!(partial.len(), 1);
+    assert_eq!(
+        file_digest(&partial[0].join("hdd.qcow2")).unwrap(),
+        original_seeds.0
+    );
+    assert!(store::Profile::open_seeded(&app, &entry, &f.r, &seed_disk, &seed_eeprom).is_err());
+    assert_eq!(
+        file_digest(&partial[0].join("hdd.qcow2")).unwrap(),
+        original_seeds.0
+    );
+    assert_eq!(
+        fs::read(profile_root.join("storage.json")).unwrap(),
+        pointer
+    );
+    assert_eq!(
+        (
+            file_digest(&seed_disk).unwrap(),
+            file_digest(&seed_eeprom).unwrap()
+        ),
+        original_seeds
+    );
+}

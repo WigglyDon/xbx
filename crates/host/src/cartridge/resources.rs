@@ -5,6 +5,8 @@ pub const REFERENCE_CORE: &str = "eaefdb4f61d01133557374585383e531438e0341d11579
 pub const HEADLESS_CORE: &str = "554f6164155b673bd97be067d435f98bebe54c73dd0fa556e7480de9035e543f";
 pub const CORE: &str = "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6";
 pub const OPEN: &str = "c29e4f5edb36807ef497e0ad8a63a984bea26daa1c075285f496815501f079b8";
+pub const NPX_LOGGING_OPEN: &str =
+    "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b";
 pub const LOGGING_OPEN: &str = "8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e";
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
@@ -41,6 +43,11 @@ impl Resources {
     #[cfg(not(target_os = "android"))]
     pub(crate) fn logging(root: &Path) -> io::Result<Self> {
         Self::validated(root, LOGGING_OPEN, true)
+    }
+    /// Exact independently qualified functional-port candidate; developer only.
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn npx_logging(root: &Path) -> io::Result<Self> {
+        Self::validated(root, NPX_LOGGING_OPEN, true)
     }
     #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {

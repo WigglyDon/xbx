@@ -156,6 +156,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-lifetime-observe" => super::lifetime::observe(repo, root)?,
         "cartridge-npx-build" => super::npx_port::build(repo, root)?,
         "cartridge-npx-observe" => super::npx_port::observe(repo, root)?,
+        "cartridge-npx-relaunch" => super::npx_followup::relaunch(repo, root)?,
+        "cartridge-npx-fable" => fable_logging(repo, &w, true)?,
+        "cartridge-npx-values-build" => super::npx_port::values_fixture(repo, root)?,
+        "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
         "cartridge-android-native" => super::android_build::native(repo, root)?,
         "cartridge-android-link" => super::android_build::link_adapters(repo, root)?,
         "cartridge-android-helper" => super::android_build::image_helper(repo, root)?,
@@ -226,7 +230,18 @@ fn capability(w: &BuildPaths) -> Result<(), Error> {
 /// One evidence-selected, corrected logging observation. This developer-only
 /// resource route is never exposed by xbx-player or the ordinary manifest.
 fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
-    if w.root.join("fable-logging.native-started.json").exists() {
+    fable_logging(repo, w, false)
+}
+fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
+    let prefix = if npx {
+        "fable-npx-logging"
+    } else {
+        "fable-logging"
+    };
+    if w.root
+        .join(format!("{prefix}.native-started.json"))
+        .exists()
+    {
         return Err("the single corrected logging guest attempt already started; reconcile its actual result instead of repeating it".into());
     }
     let package = w.root.join("package-v3");
@@ -242,25 +257,47 @@ fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
         return Err("complete original continuity/storage-safety slice required".into());
     }
     let project = w.root.parent().ok_or("project")?;
-    let logging = project.join("open-startup-v1/build-basic-v3/bios.bin");
-    if c::file_digest(&logging)? != resources::LOGGING_OPEN
-        || !fs::read_to_string(project.join("open-startup-v1/fixture-v3.qualified"))?
-            .contains(&format!("bios_sha256={}\n", resources::LOGGING_OPEN))
+    let (logging, logging_pin, qualification) = if npx {
+        let port = w.root.join("npx-owner-port-v1");
+        if !fs::read_to_string(port.join("regression.qualified"))?.contains("current release red;")
+        {
+            return Err("functional-port original regression required".into());
+        }
+        (
+            port.join("build-logging/bios.bin"),
+            resources::NPX_LOGGING_OPEN,
+            port.join("relaunch.qualified"),
+        )
+    } else {
+        (
+            project.join("open-startup-v1/build-basic-v3/bios.bin"),
+            resources::LOGGING_OPEN,
+            project.join("open-startup-v1/fixture-v3.qualified"),
+        )
+    };
+    if c::file_digest(&logging)? != logging_pin
+        || !fs::read_to_string(qualification)?.contains(&format!("bios_sha256={logging_pin}\n"))
     {
-        return Err("accepted corrected logging qualification differs".into());
+        return Err(
+            "this exact corrected logging input needs retained-fixture qualification".into(),
+        );
     }
-    if !w.root.join("fable-logging.started.json").exists() {
+    if !w.root.join(format!("{prefix}.started.json")).exists() {
         c::write_new(
-            &w.root.join("fable-logging.started.json"),
+            &w.root.join(format!("{prefix}.started.json")),
             &c::json(&json!({
             "source":"Master6399143636 after XBX-CARTRIDGE-1 original proof",
-            "core":resources::CORE,"open_system":resources::LOGGING_OPEN,
+            "core":resources::CORE,"open_system":logging_pin,"accepted_npx_functional_port":npx,
             "ordinary_product_policy":true,"memory_mib":64,"network":"none",
             "fp":"native","graphics":"Intel OpenGL","audio":"dummy_unqualified"
             }))?,
         )?;
     }
-    let dev = w.root.join("package-logging-v1");
+    let dev = w.root.join(if npx {
+        "package-npx-logging-v1"
+    } else {
+        "package-logging-v1"
+    });
     if !dev.exists() {
         c::mkdir(&dev)?;
         fs::create_dir_all(dev.join("native/subprojects/slirp"))?;
@@ -273,11 +310,15 @@ fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
         }
         fs::copy(logging, dev.join("open.bin"))?;
         let mut manifest = normal.manifest.clone();
-        manifest.open_system = resources::LOGGING_OPEN.into();
+        manifest.open_system = logging_pin.into();
         c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
     }
-    let r = resources::Resources::logging(&dev)?;
-    let app = w.root.join(format!("fable-logging-{}", c::new_id()?));
+    let r = if npx {
+        resources::Resources::npx_logging(&dev)?
+    } else {
+        resources::Resources::logging(&dev)?
+    };
+    let app = w.root.join(format!("{prefix}-{}", c::new_id()?));
     let mut player = c::desktop::Player::with_resources(&app, r)?;
     let media = std::path::PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?);
     let admission_started = Instant::now();
@@ -287,6 +328,9 @@ fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
         json!({"stage":"game_imported_without_copy","elapsed_ms":admission_started.elapsed().as_millis()})
     );
     let entry = c::library::Library::read(&app)?.resolve(&game)?;
+    if npx && entry.media_sha256 != std::env::var("XBX_REFERENCE_MEDIA_SHA256")? {
+        return Err("matched reference media identity differs; no native launch".into());
+    }
     // The compatibility comparison retains its previously qualified seeds. This
     // is a fresh developer-control profile, never a firmware/storage migration.
     // The ordinary product path still generates its own empty storage.
@@ -298,15 +342,12 @@ fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
     let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
     let seed_before = (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
     {
-        let p = c::store::Profile::open(&app, &entry, &player.resources)?;
-        let dir = p.attempt()?;
-        c::store::copy_sparse(&disk, &dir.join("hdd.qcow2"))?;
-        c::store::copy_sparse(&eeprom, &dir.join("eeprom.bin"))?;
-        p.select(&dir)?;
+        let _profile =
+            c::store::Profile::open_seeded(&app, &entry, &player.resources, &disk, &eeprom)?;
     }
     let media_before = fs::metadata(&media)?;
     c::write_new(
-        &w.root.join("fable-logging.native-started.json"),
+        &w.root.join(format!("{prefix}.native-started.json")),
         &c::json(
             &json!({"app":app,"same_seed":true,"media_import_ms":admission_started.elapsed().as_millis()}),
         )?,

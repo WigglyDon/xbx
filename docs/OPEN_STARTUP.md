@@ -31,12 +31,74 @@ Tools-v37 compiled; its focused completion-policy test, warnings-denied workspac
 Clippy and formatting passed. The separate SERIAL1/TRACE_IMPORTS0/SELFTEST0 open
 image built with one compiler job. Exact source/patch/fixture and actual build
 identities are in [cartridge-npx-owner.lock.json](../cartridge-npx-owner.lock.json).
-Current-image before/after guest regression is prepared but not yet observed;
-the existing workspace custodian returned at its safe build boundary and its
-same request is waiting without a held lease. No current native regression or
-Fable result is claimed from the build. The next dependent steps are that
-original regression, retained relaunch-fixture qualification of this exact image,
-then one matched changed-firmware Fable observation if those gates pass.
+The first adapter flattened the original `.data` into its executable page.
+Both images then failed parent stage4, followed by the dependent child timeout;
+the retained private reference produced the same failure. Original-owned output
+showed x87 values already zero immediately after initial loads, even with an
+explicit FNINIT/FLD1 control, while integer constants and XMM checks were intact.
+These observations do **not** qualify a kernel restore or Fable failure. A bounded
+QEMU generated-code record for original addresses0x11000..0x11080 showed code-page
+stores causing translation restarts. No game/kernel instruction or live register
+capture was enabled. The reference is an execution control only.
+
+The adapter now preserves separate code and writable-data pages, as the original
+source does. Rust links text at0x11000 and data at0x12000, obtains the actual linked
+thunk address, emits separate executable/read-only and writable/non-executable
+XBE sections, and binds both section digests. Original source, checks, ordering,
+constants and existing UART adapter are unchanged. The original initial failure
+is not used as evidence for another kernel/core patch.
+
+With the corrected layout, the baseline reproduces the historical child-integrity
+failure BAD00302 and dependent parent BAD00205 with clean native return. The
+unchanged seven-line firmware candidate produces **both600DCAFE and4E505801**.
+Its first QMP return times out and requires SIGKILL/fsync; that dirty profile is
+retained. A single fresh native-return qualification, reusing the clean negative
+control, then produces both success markers and normal native exit0/QMP/sync in
+5,821ms. It changes no guest, firmware, core or timeout. The original red/green
+regression is qualified; the exact-image retained relaunch and changed-firmware
+Fable follow-through are next, with all previous failures preserved.
+
+The legacy retained-relaunch run also completed both loads before its3s QMP
+read timed out and it was forcibly retired. The qualification now uses the
+existing cartridge Player/Monitor/Native owners, without changing that paused
+launcher or any monitor timeout. Its first preparation attempt ended with
+SIGXFSZ before guest launch: Profile::open generated an unused8GiB sparse blank
+before substituting the matched seed, exceeding the finite per-file ceiling.
+The developer comparison now initializes fresh storage directly from the verified
+seeds under the same writer lease and durable pointer publication. Existing
+storage and incomplete profiles remain authoritative and are never replaced.
+The ordinary generated-storage default is unchanged. A new synthetic test checks
+no generator is needed, newer current disk/EEPROM survive reopening with seeds,
+and a partial seed copy stays retained/refused without modifying earlier data.
+
+Exact-image retained relaunch now passes through the actual product session in
+2,674ms: cold/quick boots and both successful load results, acknowledged native
+quit, exit0, reaped and synced, seeds unchanged. This is first-stage relaunch
+qualification; second-stage execution is not independently qualified. Tools-v48
+build, all11 focused cartridge/storage checks, warnings-denied workspace Clippy
+and formatting pass. Prior native, profile and preparation failures remain.
+
+Ordinary runner corrections preserve failed attempts in separate evidence/profile
+paths, keep QMP sockets within their actual Unix path limit, record missing native
+termination evidence as failure, and reuse a verified clean negative control
+without overwriting its raw receipt. The result parser rejects incomplete or
+mixed pass/fail output and requires both completion markers plus clean return.
+Tools-v45 focused checks, warnings-denied workspace Clippy and formatting pass.
+
+Early attempts failed before guest execution: a long QMP socket path, and
+insufficient virtual address space for retained JIT/graphics mappings. Task
+admission now distinguishes8GiB virtual space from aggregate resident memory.
+Original-only build/check/run phases measured below570MB; the later task applies
+a stricter1GiB RSS cap plus unchanged1GiB recovery headroom. The shared6GiB
+cumulative growth allowance and12GiB reserve never change. Two refused3GiB memory
+admissions ran no guest and returned their leases. No shared helper/guard, phone
+or sibling changed. All source, profiles, builds, evidence and paused edits remain.
+
+[Sanitized actual observations](evidence/cartridge-npx-owner-20261027.json) retain
+these limits. Only after complete original regression and exact-image retained
+relaunch qualification may this separately changed firmware receive its matched
+Fable observation. No ordinary runtime default or installed candidate changes
+from a build or guest sentinel alone.
 
 ## Cartridge continuation: corrected logging and initial-thread lifetime
 

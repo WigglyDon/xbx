@@ -1,0 +1,356 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-27",
+  "scope": "Original synthetic register-state check, not commercial compatibility",
+  "core_sha256": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+  "functional_port_qualified": true,
+  "fable_rerun": false,
+  "ordinary_runtime_changed": false,
+  "original_source_unchanged": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+  "cases": [
+    {
+      "case": "current_baseline",
+      "private_profile_relative": "np-efe668dc45b2-b",
+      "fixture_variant": "original_uart",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true
+    },
+    {
+      "case": "functional_port",
+      "private_profile_relative": "np-45fc55bd4153-a",
+      "fixture_variant": "original_uart",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true
+    },
+    {
+      "case": "stored_values",
+      "private_profile_relative": "nv-values-v1",
+      "fixture_variant": "values-v1",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true,
+      "original_owned_dwords": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB"
+      ]
+    },
+    {
+      "case": "initial_literal",
+      "private_profile_relative": "nv-values-v2",
+      "fixture_variant": "values-v2",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true,
+      "original_owned_dwords": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "00000000",
+        "00000000",
+        "00000000",
+        "3FF40000"
+      ]
+    },
+    {
+      "case": "private_reference_initial_literal",
+      "private_profile_relative": "nv-values-ref",
+      "fixture_variant": "values-v2",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true,
+      "original_owned_dwords": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "00000000",
+        "00000000",
+        "00000000",
+        "3FF40000"
+      ]
+    },
+    {
+      "case": "initialized_unit_control",
+      "private_profile_relative": "nv-values-v3",
+      "fixture_variant": "values-v3",
+      "boot_marker": true,
+      "guest_results": [
+        "BAD00204",
+        "BAD00301"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true,
+      "original_owned_dwords": [
+        "00000000",
+        "00000000",
+        "00000000",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "12345678",
+        "23456789",
+        "3456789A",
+        "456789AB",
+        "00000000",
+        "00000000",
+        "00000000",
+        "3FF40000",
+        "00000000",
+        "00000000"
+      ]
+    },
+    {
+      "case": "separate_layout_baseline",
+      "private_profile_relative": "np-7c0454eecc72-b",
+      "fixture_variant": "layout-v1",
+      "guest_results": [
+        "BAD00302",
+        "BAD00205"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true
+    },
+    {
+      "case": "separate_layout_candidate_first_return_failed",
+      "private_profile_relative": "np-7c0454eecc72-a",
+      "fixture_variant": "layout-v1",
+      "guest_results": [
+        "600DCAFE",
+        "4E505801"
+      ],
+      "native_exit_zero": false,
+      "forced": true,
+      "qmp_ok": false,
+      "storage_synced": true
+    },
+    {
+      "case": "separate_layout_candidate_clean_return",
+      "private_profile_relative": "np-68c937c3f2a1-a",
+      "fixture_variant": "layout-v1",
+      "guest_results": [
+        "600DCAFE",
+        "4E505801"
+      ],
+      "native_exit_zero": true,
+      "forced": false,
+      "qmp_ok": true,
+      "storage_synced": true
+    }
+  ],
+  "fixtures": {
+    "values-v1": {
+      "fields": [
+        "restore_return_status",
+        "parent_observed_low",
+        "parent_observed_high",
+        "observed_xmm0_0",
+        "observed_xmm0_1",
+        "observed_xmm0_2",
+        "observed_xmm0_3",
+        "original_parent_pattern_0",
+        "original_parent_pattern_1",
+        "original_parent_pattern_2",
+        "original_parent_pattern_3"
+      ],
+      "fixture_iso": "8e4251892f78afcd38a6968b2f5e271983d8892d08bd45745266b71d9e86b1fb",
+      "generated_source": "cd2b2826afc725e3135a46b0105b9c15600d68d1575615f106e54f4a62ff2a48",
+      "no_kernel_observer_or_game_memory_read": true,
+      "only_original_guest_owned_data": true,
+      "original_source": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+      "owned_value_output_adapter": "ef9b2cfa8850d302683bb3def6622b4d06b38eb130f4691511dc82fd5394c040",
+      "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5"
+    },
+    "values-v2": {
+      "fields": [
+        "restore_return_status",
+        "parent_observed_low",
+        "parent_observed_high",
+        "observed_xmm0_0",
+        "observed_xmm0_1",
+        "observed_xmm0_2",
+        "observed_xmm0_3",
+        "original_parent_pattern_0",
+        "original_parent_pattern_1",
+        "original_parent_pattern_2",
+        "original_parent_pattern_3",
+        "parent_initial_low",
+        "parent_initial_high",
+        "original_parent_constant_low",
+        "original_parent_constant_high"
+      ],
+      "fixture_iso": "48ec62f86f7d37c553585cfc8367a91b04a881bdebe0cee8832a1840b91f5dbe",
+      "generated_source": "e963b7e8e54674a39e1c135c0bcfd73ace9b1c25a009042b9299e4791120e419",
+      "initial_value_non_pop_store": true,
+      "no_kernel_observer_or_game_memory_read": true,
+      "only_original_guest_owned_data": true,
+      "original_source": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+      "owned_value_output_adapter": "b4aaeda6783a4ff87b7b2c5636162200c40430d5088c8d4f536f0c72b8c1e65d",
+      "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5"
+    },
+    "values-v3": {
+      "explicit_initialization_and_unit_control": true,
+      "fields": [
+        "restore_return_status",
+        "parent_observed_low",
+        "parent_observed_high",
+        "observed_xmm0_0",
+        "observed_xmm0_1",
+        "observed_xmm0_2",
+        "observed_xmm0_3",
+        "original_parent_pattern_0",
+        "original_parent_pattern_1",
+        "original_parent_pattern_2",
+        "original_parent_pattern_3",
+        "parent_initial_low",
+        "parent_initial_high",
+        "original_parent_constant_low",
+        "original_parent_constant_high",
+        "initialized_unit_low",
+        "initialized_unit_high"
+      ],
+      "fixture_iso": "8d3b54c394784c31a2b53aa55e2d8d5d2dc99a20c2b90a0851ff6f34e203b34b",
+      "generated_source": "cc8e517fce352eeef3f96d1e5be45a1ba683af82ab4f74f97f115be4d90a5881",
+      "initial_value_non_pop_store": true,
+      "no_kernel_observer_or_game_memory_read": true,
+      "only_original_guest_owned_data": true,
+      "original_source": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+      "owned_value_output_adapter": "3b6d09c59869cae97bb9092c17dbfc26ffa4d11949d9d463c679ada7c50d6150",
+      "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5"
+    },
+    "layout-v1": {
+      "clang": "ad535f0b6fc303edba958b51636169ff0291c6e36463236c99ff8abcaa34247c",
+      "core": "b302cafae4f049e6ec61294538acdded43346302322bc092deb8dbe69008ead6",
+      "firmware": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+      "fixture_generated_source": "d0d16069b164247650d1b9ddef7d3a6abf9c58ed74a6ac848e648a0adda335f0",
+      "fixture_iso": "372b08bfa9b9022b74985a088ecae10eeea7e25cf61823db6b0242f23b19123e",
+      "fixture_original_source": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+      "fixture_uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5",
+      "functional_patch": "86463b1ada31746ed652d1db88bede4e61c5b1acc5157979fe616669aa20291f",
+      "kernel": "6765bb6d11accd8a0302aa21d4d26f55843d6ed5e874eb4cfc9a74beb8931542",
+      "linker": "e056852f9ab38648c7eed62e29673998e038110641b36d84d5556b5ffc2ecc0d",
+      "map": "f71843f2b62aa67d74811485e8b150ca05b7ec0a8019721f08b8692adb7d048f",
+      "retained_firmware_identity": "6c36e13b78fcd51afba0474e2eb628f362e374907aeeb9c7ce5de1e63ea7b3fd",
+      "separate_code_and_writable_data_pages": true,
+      "serial": true,
+      "trace_imports": false
+    }
+  },
+  "observation_limits": [
+    "Separate original code/data pages reproduce the accepted displaced-child failure before and both completion markers after the seven-line repair.",
+    "The first repaired run passed guest assertions but required forced native retirement. Its profile stays retained and dirty.",
+    "One fresh repaired run passed both assertions and normal native return in5821ms, reusing the retained clean negative control.",
+    "Flat adapter failures are not kernel-restore or commercial compatibility results.",
+    "No Fable cause or visible progression is established by an original regression.",
+    "No private implementation, game instructions or saved game state inspected."
+  ],
+  "pre_guest_failures": [
+    "QMP Unix socket path too long",
+    "Retained JIT allocation exceeds initial2GiB virtual limit",
+    "Retained graphics allocation exceeds4GiB virtual limit",
+    "Two later requests refused before work for unavailable3GiB memory admission"
+  ],
+  "storage": {
+    "fixed_baseline_bytes": 11514675200,
+    "maximum_bytes": 17957126144,
+    "shared_reserve_bytes": 12884901888
+  },
+  "paused_paths_preserved": 16,
+  "phone_operation": false,
+  "sibling_operation": false,
+  "flat_fixture_results_not_kernel_qualification": true,
+  "checks": {
+    "tools_v45": "focused NPX tests, workspace Clippy warnings denied, formatting passed",
+    "native_core_rebuilt": false,
+    "firmware_rebuilt_for_fixture_correction": false,
+    "tools_v48": "11 focused cartridge/storage cases including seeded initialization preservation, workspace Clippy warnings denied, formatting passed"
+  },
+  "retained_relaunch": {
+    "firmware": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "elapsed_ms": 2674,
+    "first_stage_relaunch_completed": true,
+    "second_stage_execution_qualified": false,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "storage_synced": true
+    },
+    "fixture_unchanged": true,
+    "seeds_unchanged": true,
+    "product_session_path": true,
+    "prior_forced_profile_retained": true,
+    "paused_diagnostics": false
+  },
+  "seeded_initialization": {
+    "default_generated_storage_unchanged": true,
+    "fresh_developer_comparison_uses_verified_seeds": true,
+    "existing_and_partial_profiles_retained": true,
+    "first_SIGXFSZ_before_guest_due_discarded_blank_generation_preserved": true
+  },
+  "fable_state": "one prepared request waiting for workspace capacity, no guest launched"
+}

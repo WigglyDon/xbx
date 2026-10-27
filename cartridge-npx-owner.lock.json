@@ -24,5 +24,13 @@
   "compiler_jobs": 1,
   "paused_instrumentation": false,
   "ordinary_runtime_default_changed": false,
-  "fable_cause_established": false
+  "fable_cause_established": false,
+  "initial_flat_fixture_retained_unqualified": true,
+  "qualified_fixture_sha256": "372b08bfa9b9022b74985a088ecae10eeea7e25cf61823db6b0242f23b19123e",
+  "qualified_fixture_generated_source_sha256": "d0d16069b164247650d1b9ddef7d3a6abf9c58ed74a6ac848e648a0adda335f0",
+  "qualified_fixture_separate_code_data_pages": true,
+  "current_native_regression_qualified": true,
+  "qualification_receipt": "docs/evidence/cartridge-npx-owner-20261027.json",
+  "retained_relaunch_product_path_qualified": true,
+  "retained_relaunch_second_stage_execution_qualified": false
 }
