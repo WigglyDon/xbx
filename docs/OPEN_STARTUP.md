@@ -379,5 +379,38 @@ firmware,64MiB, Intel OpenGL and fresh matched seeds; the old clean negative is
 reused. Ordinary and old logging resource constructors both reject this isolated
 candidate. Tools-v51 all11 focused cases, strict workspace Clippy and formatting
 pass. [Build and original results](evidence/cartridge-x87-boundary-20261027.json).
-This is an independent platform correction, not proof of a Fable cause. Next is
-exact-core retained relaunch, then one matched changed-core Fable observation.
+This is an independent platform correction, not proof of a Fable cause. The
+exact-core follow-through below has now completed.
+
+
+## Corrected-core product follow-through
+
+The first exact-core relaunch completed both loads, but its five-second reap
+limit was reached. The OS ultimately reported exit zero while the old receipt
+had already set forced=true. That failed result and profile remain unchanged;
+Fable did not start in that job. The ordinary native owner now records actual
+signal status separately from a kill attempt/deadline and records quit, reap and
+sync durations. A reached deadline still fails qualification, even for exit zero;
+SIGKILL cannot count as clean. Its finite grace is15 seconds, with writer leases
+held through the actual wait and sync. A real child-process test distinguishes
+normal exit, missed acknowledgement, deadline and SIGKILL.
+
+One fresh original relaunch on B8/8477 completed in2,504ms: both loads, quit
+ack21ms, reap140ms, sync7ms, exit0, no kill attempt/deadline and unchanged seeds.
+This remains first-stage relaunch proof, not observed second-stage execution.
+Only then did the changed-core Fable observation run: same unchanged external
+input, fresh matched seeds,64MiB/Intel/ControllerS/nativeFP/offline. Both captured
+images were opened; at3,412ms and4,583ms they show only the open-kernel splash.
+Selection/handoff and entry return precede the same terminal access-violation
+class outside the public map. No scheduled input occurred before failure. Total
+observation/retirement10,282ms; QMP ack4ms, reap140ms, sync1,115ms, native exit0,
+no kill/deadline, unchanged immutable inputs. No healthy checkpoint was published.
+The x87 correction therefore earns its original proof but does not fix Fable.
+
+Tools-v53 all12 cartridge/storage cases, strict workspace Clippy and formatting
+pass; all cartridge Rust bytes match that checked snapshot. The ordinary runtime
+and installed Android candidate remain unchanged. The finite workspace job
+completed with verified child retirement/return. All earlier failed profiles,
+media, builds, paused work and evidence remain. Further game execution needs a
+supported functional correction; another unchanged splash observation supplies
+no new evidence.

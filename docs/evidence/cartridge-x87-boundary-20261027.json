@@ -63,7 +63,7 @@
   ],
   "seeds_unchanged": true,
   "ordinary_default_changed": false,
-  "checks": "tools-v51 all11 focused cartridge/storage checks, warnings-denied workspace Clippy and formatting passed",
+  "checks": "tools-v53 all12 focused cartridge/storage checks, warnings-denied workspace Clippy and formatting passed; all cartridge Rust source bytes match checked snapshot",
   "source_boundary": [
     "x87 cached translation temporaries were absent from canonical CPU state at an instruction that could restart.",
     "The existing precise SMC path restores PC/condition codes, not those temporary values.",
@@ -71,10 +71,88 @@
     "The exact former flat reproducer and separate-page control now both pass through the product path with clean native returns."
   ],
   "remaining_limits": [
+    "Fable still terminates after entry return with an access violation outside the public kernel map.",
     "No gameplay, audio, commercial saves/resume or mobile/performance qualification.",
     "Retained state ABI/serializer code unchanged; candidate isolated by different core identity.",
-    "Corrected-core retained relaunch and one changed-core Fable observation still required."
+    "The new shutdown receipt distinguishes deadline/kill attempt from actual OS status; deadlines and forced termination still fail qualification."
   ],
   "phone_operation": false,
-  "paused_investigations_resumed": false
+  "paused_investigations_resumed": false,
+  "corrected_core_relaunch": {
+    "elapsed_ms": 2504,
+    "first_stage_relaunch_completed": true,
+    "second_stage_execution_qualified": false,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 21,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 7,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "fixture_unchanged": true,
+    "observation_error": null,
+    "return_error": null
+  },
+  "prior_relaunch_return": {
+    "preserved_without_relabeling": true,
+    "first_stage_completed": true,
+    "QMP_acknowledged": true,
+    "native_exit_zero": true,
+    "old_five_second_deadline_reached": true,
+    "old_receipt_forced_true": true,
+    "qualified": false,
+    "Fable_not_started_in_that_job": true
+  },
+  "changed_core_Fable": {
+    "elapsed_ms": 10282,
+    "reason": "guest_terminal_startup_failure",
+    "captures_opened": 2,
+    "capture_elapsed_ms": [
+      3412,
+      4583
+    ],
+    "visible_result": "open-kernel splash only; no Fable menu or gameplay",
+    "input_before_terminal": false,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 1115,
+      "storage_synced": true
+    },
+    "immutable_inputs_unchanged": true,
+    "continuation_checkpoint_published": false,
+    "Fable_cause_established": false,
+    "same_matched_configuration": true
+  },
+  "workspace_return": {
+    "job": "c55bf899834744a6b06744de2eb8126c",
+    "state": "COMPLETED",
+    "returned": true,
+    "children_retired": true,
+    "verified_utc": "2026-10-27T06:51:53Z",
+    "xbx_allocated_bytes": 15119085568,
+    "maximum_bytes": 17957126144,
+    "remaining_bytes": 2838040576,
+    "available_bytes": 71826759680,
+    "shared_floor_bytes": 12884901888
+  }
 }

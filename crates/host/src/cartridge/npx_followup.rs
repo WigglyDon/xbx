@@ -10,12 +10,28 @@ use std::{
 };
 type Error = Box<dyn std::error::Error>;
 pub(super) fn relaunch(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("npx-owner-port-v1");
-    let identity: Value = c::read_json(&dir.join("build.identity.json"))?;
-    let firmware = dir.join("build-logging/bios.bin");
+    relaunch_with_core(repo, root, false)
+}
+pub(super) fn relaunch_with_core(repo: &Path, root: &Path, x87: bool) -> Result<(), Error> {
+    let port = root.join("npx-owner-port-v1");
+    let dir = if x87 {
+        root.join("x87-boundary-v1")
+    } else {
+        port.clone()
+    };
+    if x87 && !dir.join("original.qualified").exists() {
+        return Err("corrected-core original qualification required".into());
+    }
+    let core = if x87 {
+        resources::X87_RESTART_CORE
+    } else {
+        resources::CORE
+    };
+    let identity: Value = c::read_json(&port.join("build.identity.json"))?;
+    let firmware = port.join("build-logging/bios.bin");
     if identity["firmware"] != resources::NPX_LOGGING_OPEN
         || c::file_digest(&firmware)? != resources::NPX_LOGGING_OPEN
-        || !fs::read_to_string(dir.join("regression.qualified"))?.contains("current release red;")
+        || !fs::read_to_string(port.join("regression.qualified"))?.contains("current release red;")
     {
         return Err("exact original-regression-qualified functional port required".into());
     }
@@ -25,9 +41,12 @@ pub(super) fn relaunch(repo: &Path, root: &Path) -> Result<(), Error> {
     {
         return Err("retained original relaunch fixture differs".into());
     }
-    if dir.join("relaunch-product-v1.result.json").exists()
-        || dir.join("relaunch.qualified").exists()
-    {
+    let result_name = if x87 {
+        "relaunch-product-v2.result.json"
+    } else {
+        "relaunch-product-v1.result.json"
+    };
+    if dir.join(result_name).exists() || dir.join("relaunch.qualified").exists() {
         return Err(
             "this product qualification already attempted; preserve and reconcile it".into(),
         );
@@ -35,7 +54,11 @@ pub(super) fn relaunch(repo: &Path, root: &Path) -> Result<(), Error> {
     // Reuse the product's existing monitor, leases, importer and native owner.
     // The separate candidate resource remains developer-only; no default change.
     let normal = resources::Resources::open(&root.join("package-v3"))?;
-    let package = root.join("package-npx-logging-v1");
+    let package = if x87 {
+        super::x87_boundary::package(repo, root)?.root
+    } else {
+        root.join("package-npx-logging-v1")
+    };
     if !package.exists() {
         c::mkdir(&package)?;
         fs::create_dir_all(package.join("native/subprojects/slirp"))?;
@@ -52,8 +75,14 @@ pub(super) fn relaunch(repo: &Path, root: &Path) -> Result<(), Error> {
         c::write_new(&package.join("runtime.json"), &c::json(&manifest)?)?;
     }
     let app = root.join(format!("npx-relaunch-{}", c::new_id()?));
-    let mut player =
-        c::desktop::Player::with_resources(&app, resources::Resources::npx_logging(&package)?)?;
+    let mut player = c::desktop::Player::with_resources(
+        &app,
+        if x87 {
+            resources::Resources::x87_logging(&package)?
+        } else {
+            resources::Resources::npx_logging(&package)?
+        },
+    )?;
     let game = player.add(&fixture)?;
     let entry = c::library::Library::read(&app)?.resolve(&game)?;
     let disk = repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2");
@@ -104,23 +133,20 @@ pub(super) fn relaunch(repo: &Path, root: &Path) -> Result<(), Error> {
     let seeds_unchanged = seed_before == (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
     let clean = returned.is_ok() && native["clean"] == true && seeds_unchanged;
     let complete = observed.as_ref().is_ok_and(|v| *v);
-    let result = json!({"firmware":resources::NPX_LOGGING_OPEN,"first_stage_relaunch_completed":complete,
+    let result = json!({"firmware":resources::NPX_LOGGING_OPEN,"core":core,"first_stage_relaunch_completed":complete,
         "second_stage_execution_qualified":false,"native_clean":clean,"native_return":native,
         "elapsed_ms":start.elapsed().as_millis(),"fixture_unchanged":true,"seeds_unchanged":seeds_unchanged,
         "product_session_path":true,"app":app,"native_run":run,
         "observation_error":observed.err().map(|e|e.to_string()),"return_error":returned.err().map(|e|e.to_string()),
         "prior_forced_profile_retained":true,"paused_diagnostics":false});
-    c::write_new(
-        &dir.join("relaunch-product-v1.result.json"),
-        &c::json(&result)?,
-    )?;
+    c::write_new(&dir.join(result_name), &c::json(&result)?)?;
     println!("{result}");
     if !complete || !clean {
         return Err(
             "exact-image original product qualification failed; preserve actual result".into(),
         );
     }
-    c::write_new(&dir.join("relaunch.qualified"),format!("bios_sha256={}\nretained_original_first_stage_relaunch_completed=true\nsecond_stage_execution=unqualified\nproduct_session_path=true\n",resources::NPX_LOGGING_OPEN).as_bytes())?;
+    c::write_new(&dir.join("relaunch.qualified"),format!("bios_sha256={}\nretained_original_first_stage_relaunch_completed=true\nsecond_stage_execution=unqualified\nproduct_session_path=true\ncore_sha256={core}\n",resources::NPX_LOGGING_OPEN).as_bytes())?;
     Ok(())
 }
 fn completed(text: &str) -> bool {

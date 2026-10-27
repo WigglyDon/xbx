@@ -4,9 +4,12 @@
 use super::*;
 use serde_json::{Value, json};
 use std::{
-    os::{fd::AsRawFd, unix::net::UnixStream},
+    os::{
+        fd::AsRawFd,
+        unix::{net::UnixStream, process::ExitStatusExt},
+    },
     path::{Path, PathBuf},
-    process::{Child, Command, Stdio},
+    process::{Child, Command, ExitStatus, Stdio},
     time::{Duration, Instant},
 };
 
@@ -30,6 +33,21 @@ impl Drop for Process {
         }
     }
 }
+// The OS status distinguishes a kill attempt racing normal exit from SIGKILL.
+// A reached deadline still fails qualification even if the process exits zero.
+fn termination_status(
+    status: &ExitStatus,
+    acknowledged: bool,
+    deadline_reached: bool,
+) -> (bool, bool) {
+    let forced = status.signal() == Some(9);
+    (
+        forced,
+        acknowledged && !deadline_reached && !forced && status.success(),
+    )
+}
+const RETIRE_GRACE_SECONDS: u64 = 15;
+
 pub struct Native {
     child: Process,
     monitor: super::monitor::Monitor,
@@ -239,34 +257,45 @@ impl Native {
         if self.retired {
             return Ok(true);
         }
+        let quit_started = Instant::now();
         let quit = self.call("quit", json!({}));
+        let quit_ms = quit_started.elapsed().as_millis();
         let acknowledged = quit.is_ok();
-        let deadline = Instant::now() + Duration::from_secs(5);
-        let mut forced = false;
+        // Original relaunch exposed a5s grace racing an eventual native exit0.
+        // Retain a finite grace and report both the decision and actual outcome.
+        let reap_started = Instant::now();
+        let deadline = reap_started + Duration::from_secs(RETIRE_GRACE_SECONDS);
+        let mut deadline_reached = false;
         let status = loop {
             if let Some(s) = self.child.try_wait()? {
                 break s;
             }
             if Instant::now() > deadline {
-                forced = true;
+                deadline_reached = true;
                 self.child.kill()?;
                 break self.child.wait()?;
             }
             std::thread::sleep(Duration::from_millis(20));
         };
+        let reap_ms = reap_started.elapsed().as_millis();
+        let (forced, clean) = termination_status(&status, acknowledged, deadline_reached);
         self.retired = true;
+        let sync_started = Instant::now();
         store::sync_files(&self.directory)?;
+        let sync_ms = sync_started.elapsed().as_millis();
         write_new(
             &self.receipt,
             &super::json(&json!({
                 "qmp_acknowledged":acknowledged,"qmp_error":quit.err().map(|e|e.to_string()),
                 "native_exit":status.to_string(),"forced":forced,"native_reaped":true,
-                "storage_synced":true,"clean":acknowledged && !forced && status.success()
+                "kill_attempted":deadline_reached,"shutdown_deadline_reached":deadline_reached,
+                "shutdown_grace_seconds":RETIRE_GRACE_SECONDS,"quit_ack_ms":quit_ms,"reap_ms":reap_ms,"storage_sync_ms":sync_ms,
+                "storage_synced":true,"clean":clean
             }))?,
         )?;
         let _ = fs::remove_file(&self.socket_path);
         let _ = fs::remove_file(&self.serial_path);
-        Ok(acknowledged && !forced && status.success())
+        Ok(clean)
     }
 }
 impl Drop for Native {
@@ -374,4 +403,23 @@ pub fn original_partial_load_test(
     Ok(
         json!({"native_load_failed":true,"failure":failure,"native_return_clean":clean,"attempt_retained":dir,"authoritative_disk_eeprom_checkpoint_pointer_generation_unchanged":true}),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn normal_exit_deadline_and_forced_signal_are_distinct_actual_outcomes() {
+        let zero = Command::new("/usr/bin/true").status().unwrap();
+        assert_eq!(termination_status(&zero, true, false), (false, true));
+        // The observed original-case shape must retain its deadline failure.
+        assert_eq!(termination_status(&zero, true, true), (false, false));
+        assert_eq!(termination_status(&zero, false, false), (false, false));
+        let mut killed = Process(Command::new("/usr/bin/sleep").arg("30").spawn().unwrap());
+        killed.kill().unwrap();
+        let signal = killed.wait().unwrap();
+        assert_eq!(signal.signal(), Some(9));
+        assert_eq!(termination_status(&signal, true, true), (true, false));
+        assert_eq!(termination_status(&signal, true, false), (true, false));
+    }
 }

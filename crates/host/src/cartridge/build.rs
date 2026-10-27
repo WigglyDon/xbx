@@ -159,7 +159,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-x87-original" => super::x87_boundary::original(repo, root)?,
         "cartridge-npx-observe" => super::npx_port::observe(repo, root)?,
         "cartridge-npx-relaunch" => super::npx_followup::relaunch(repo, root)?,
-        "cartridge-npx-fable" => fable_logging(repo, &w, true)?,
+        "cartridge-npx-fable" => fable_logging(repo, &w, LoggingRuntime::Npx)?,
+        "cartridge-x87-relaunch" => super::npx_followup::relaunch_with_core(repo, root, true)?,
+        "cartridge-x87-fable" => fable_logging(repo, &w, LoggingRuntime::X87)?,
         "cartridge-npx-values-build" => super::npx_port::values_fixture(repo, root)?,
         "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
         "cartridge-android-native" => super::android_build::native(repo, root)?,
@@ -232,10 +234,28 @@ fn capability(w: &BuildPaths) -> Result<(), Error> {
 /// One evidence-selected, corrected logging observation. This developer-only
 /// resource route is never exposed by xbx-player or the ordinary manifest.
 fn fable(repo: &Path, w: &BuildPaths) -> Result<(), Error> {
-    fable_logging(repo, w, false)
+    fable_logging(repo, w, LoggingRuntime::Corrected)
 }
-fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
-    let prefix = if npx {
+#[derive(Clone, Copy)]
+enum LoggingRuntime {
+    Corrected,
+    Npx,
+    X87,
+}
+fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result<(), Error> {
+    let npx = !matches!(runtime, LoggingRuntime::Corrected);
+    let x87 = matches!(runtime, LoggingRuntime::X87);
+    let core = if x87 {
+        resources::X87_RESTART_CORE
+    } else {
+        resources::CORE
+    };
+    if x87 && !w.root.join("x87-boundary-v1/original.qualified").exists() {
+        return Err("corrected-core original qualification required".into());
+    }
+    let prefix = if x87 {
+        "fable-x87-logging"
+    } else if npx {
         "fable-npx-logging"
     } else {
         "fable-logging"
@@ -268,7 +288,11 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
         (
             port.join("build-logging/bios.bin"),
             resources::NPX_LOGGING_OPEN,
-            port.join("relaunch.qualified"),
+            if x87 {
+                w.root.join("x87-boundary-v1/relaunch.qualified")
+            } else {
+                port.join("relaunch.qualified")
+            },
         )
     } else {
         (
@@ -277,6 +301,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
             project.join("open-startup-v1/fixture-v3.qualified"),
         )
     };
+    if x87 && !fs::read_to_string(&qualification)?.contains(&format!("core_sha256={core}\n")) {
+        return Err("exact corrected-core relaunch qualification required".into());
+    }
     if c::file_digest(&logging)? != logging_pin
         || !fs::read_to_string(qualification)?.contains(&format!("bios_sha256={logging_pin}\n"))
     {
@@ -289,17 +316,21 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
             &w.root.join(format!("{prefix}.started.json")),
             &c::json(&json!({
             "source":"Master6399143636 after XBX-CARTRIDGE-1 original proof",
-            "core":resources::CORE,"open_system":logging_pin,"accepted_npx_functional_port":npx,
+            "core":core,"open_system":logging_pin,"accepted_npx_functional_port":npx,
             "ordinary_product_policy":true,"memory_mib":64,"network":"none",
             "fp":"native","graphics":"Intel OpenGL","audio":"dummy_unqualified"
             }))?,
         )?;
     }
-    let dev = w.root.join(if npx {
-        "package-npx-logging-v1"
+    let dev = if x87 {
+        super::x87_boundary::package(repo, &w.root)?.root
     } else {
-        "package-logging-v1"
-    });
+        w.root.join(if npx {
+            "package-npx-logging-v1"
+        } else {
+            "package-logging-v1"
+        })
+    };
     if !dev.exists() {
         c::mkdir(&dev)?;
         fs::create_dir_all(dev.join("native/subprojects/slirp"))?;
@@ -313,9 +344,12 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
         fs::copy(logging, dev.join("open.bin"))?;
         let mut manifest = normal.manifest.clone();
         manifest.open_system = logging_pin.into();
+        manifest.core = core.into();
         c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
     }
-    let r = if npx {
+    let r = if x87 {
+        resources::Resources::x87_logging(&dev)?
+    } else if npx {
         resources::Resources::npx_logging(&dev)?
     } else {
         resources::Resources::logging(&dev)?
@@ -430,7 +464,13 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
     };
     // An observed terminal machine is retained as diagnostic evidence, not
     // published as a healthy automatic-return checkpoint.
-    let returned = player.stop();
+    let continuation_checkpoint =
+        x87 && reason == "observation_budget_expired_requires_visual_review";
+    let returned = if continuation_checkpoint {
+        player.depart()
+    } else {
+        player.stop()
+    };
     let media_after = fs::metadata(&media)?;
     let immutable_inputs_unchanged = seed_before
         == (c::file_digest(&disk)?, c::file_digest(&eeprom)?)
@@ -441,7 +481,7 @@ fn fable_logging(repo: &Path, w: &BuildPaths, npx: bool) -> Result<(), Error> {
         &c::json(&json!({
             "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":600,
             "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
-            "return_error":returned.as_ref().err().map(ToString::to_string),"immutable_inputs_unchanged":immutable_inputs_unchanged,
+            "return_error":returned.as_ref().err().map(ToString::to_string),"continuation_checkpoint_published":continuation_checkpoint && returned.is_ok(),"immutable_inputs_unchanged":immutable_inputs_unchanged,
             "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
         }))?,
     )?;
