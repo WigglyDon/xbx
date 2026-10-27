@@ -5,6 +5,12 @@
  * Page-aligned 16 KiB read, reported byte count, data integrity, then a
  * non-page-aligned seek/read across a sector. Separate writable data pages.
  */
+.ifndef XBX_HIGH_VA
+.set XBX_HIGH_VA, 0
+.endif
+.if XBX_HIGH_VA
+.set buffer, 0x05000000
+.endif
 .if XBX_CACHE_TEST
 .set EXPECTED_BYTES, 0x1200004
 .else
@@ -17,6 +23,20 @@ _start:
     call serial_init
     movl $boot,%esi
     call text
+    .if XBX_HIGH_VA
+    movl $16,stage
+    pushl $4                    /* PAGE_READWRITE */
+    pushl $0x3000               /* MEM_RESERVE | MEM_COMMIT */
+    pushl $heap_bytes
+    pushl $0
+    pushl $heap_base
+    call *thunks+36             /* NtAllocateVirtualMemory */
+    call success
+    cmpl $buffer,heap_base
+    jne fail
+    cmpl $16384,heap_bytes
+    jne fail
+    .endif
     .if XBX_CACHE_TEST
     call prepare_cache
     .endif
@@ -250,8 +270,13 @@ fail:
     call hex
     movl $word_label,%esi
     call text
+    .if XBX_HIGH_VA
+    xorl %eax,%eax
+    cmpl $16,stage
+    je 8f                       /* Allocation failure must not read an unmapped buffer. */
+    .endif
     movl buffer,%eax
-    call hex
+8:  call hex
     movl $newline,%esi
     call text
 done:
@@ -281,7 +306,12 @@ thunks:
     .long 0x800000e9             /* 233 NtWaitForSingleObject */
     .long 0x800000ec             /* 236 NtWriteFile */
     .long 0x800000c6             /* 198 NtFlushBuffersFile */
+    .if XBX_HIGH_VA
+    .long 0x800000b8             /* 184 NtAllocateVirtualMemory */
+    .endif
     .long 0
+heap_base: .long 0x05000000
+heap_bytes: .long 16384
 handle: .long 0
 stage: .long 0
 status: .long 0
@@ -304,4 +334,6 @@ path:
 .endif
 path_end:
 .balign 4096
+.if !XBX_HIGH_VA
 buffer: .space 16384
+.endif

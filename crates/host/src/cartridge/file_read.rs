@@ -14,7 +14,15 @@ fn put(b: &mut [u8], at: usize, value: u32) {
     b[at..at + 4].copy_from_slice(&value.to_le_bytes());
 }
 pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
-    let dir = root.join(if cache {
+    build_variant(repo, root, cache, false)
+}
+pub(super) fn build_high_va(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_variant(repo, root, true, true)
+}
+fn build_variant(repo: &Path, root: &Path, cache: bool, high_va: bool) -> Result<(), Error> {
+    let dir = root.join(if high_va {
+        "file-cache-highva-v1"
+    } else if cache {
         "file-cache-v2"
     } else {
         "file-read-v1"
@@ -33,7 +41,8 @@ pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> 
         .1;
     let uart = uart.split_once(".balign 4\n").ok_or("original UART end")?.0;
     let generated = format!(
-        ".set XBX_CACHE_TEST, {}\n{}\n.text\nserial_init:\n{}",
+        ".set XBX_HIGH_VA, {}\n.set XBX_CACHE_TEST, {}\n{}\n.text\nserial_init:\n{}",
+        u8::from(high_va),
         u8::from(cache),
         fs::read_to_string(&source)?,
         uart
@@ -143,7 +152,7 @@ pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> 
             "source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,
             "fixture":c::file_digest(&dir.join("original.iso"))?,"payload":c::digest(&payload),
             "payload_bytes":payload.len(),"public_abi":"XboxDev/nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd",
-            "cache_file_control":cache,"cache_extent_bytes":if cache { Some(0x1200004u32) } else { None },
+            "heap_buffer_control":high_va,"heap_buffer_bytes":if high_va {Some(16384)} else {None},"cache_file_control":cache,"cache_extent_bytes":if cache { Some(0x1200004u32) } else { None },
             "code_data_pages_separate":true,"original_generated_content_only":true
         }))?,
     )?;
@@ -270,4 +279,29 @@ fn observe_with(
         return Err("original file-read contract or return failed; preserve evidence".into());
     }
     Ok(())
+}
+
+/// Same generated cached-file data at a normally allocated user VA above the
+/// console's physical RAM extent. This is a file-read buffer control, not a
+/// replacement allocator or a commercial compatibility claim.
+pub(super) fn observe_high_va(repo: &Path, root: &Path) -> Result<(), Error> {
+    super::flush_io::qualified(root)?;
+    let dir = root.join("file-cache-highva-v1");
+    let identity: serde_json::Value = c::read_json(&dir.join("build.json"))?;
+    let media = dir.join("original.iso");
+    if identity["heap_buffer_control"] != true
+        || identity["cache_file_control"] != true
+        || identity["fixture"] != c::file_digest(&media)?
+        || identity["source"] != c::file_digest(&repo.join("native/fixtures/file-read.S"))?
+    {
+        return Err("original heap-buffer control bindings changed".into());
+    }
+    observe_with(
+        repo,
+        root,
+        &dir,
+        &media,
+        true,
+        super::flush_io::package(root)?,
+    )
 }

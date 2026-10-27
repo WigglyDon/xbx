@@ -145,6 +145,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
     match action {
         "cartridge-package" => package(repo, &w)?,
         "cartridge-fixture" => fixture(repo, &w)?,
+        "cartridge-file-highva-build" => super::file_read::build_high_va(repo, root)?,
+        "cartridge-file-highva-observe" => super::file_read::observe_high_va(repo, root)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
         "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,
