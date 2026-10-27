@@ -17,6 +17,11 @@ type Error = Box<dyn std::error::Error>;
 struct ReadPlan {
     stop_pc: u32,
     commands: Vec<String>,
+    #[serde(default = "default_deadline")]
+    deadline_seconds: u64,
+}
+fn default_deadline() -> u64 {
+    90
 }
 fn hex_words(text: &str) -> Vec<u32> {
     text.split_whitespace()
@@ -111,7 +116,8 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool) -> Result<(), Er
     let fragment = fs::read_to_string(&commands)?;
     let plan_path = std::path::PathBuf::from(std::env::var("XBX_PRIVATE_HMP_PLAN")?);
     let plan: ReadPlan = c::read_json(&plan_path)?;
-    if !(0x10000..0x80000000).contains(&plan.stop_pc)
+    if !(30..=300).contains(&plan.deadline_seconds)
+        || !(0x10000..0x80000000).contains(&plan.stop_pc)
         || plan.commands.is_empty()
         || plan.commands.len() > 8
         || plan.commands.iter().any(|s| {
@@ -197,7 +203,7 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool) -> Result<(), Er
                     return Ok(status.success()
                         && fs::read_to_string(&log_path)?.contains("XBX-DEBUG-CAPTURE-COMPLETE"));
                 }
-                if started.elapsed() >= Duration::from_secs(90) {
+                if started.elapsed() >= Duration::from_secs(plan.deadline_seconds) {
                     return Err("finite debugger deadline".into());
                 }
                 std::thread::sleep(Duration::from_millis(50));
@@ -259,7 +265,7 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool) -> Result<(), Er
     c::write_new(
         &result_path,
         &c::json(
-            &json!({"original":original,"observation":name,"core":resources::X87_RESTART_CORE,"firmware":resources::NPX_LOGGING_OPEN,"app":app,"native_run":run,"debugger_completed":completed,"memory_reads_completed":memory_reads_completed,"stop_pc_matched":stop_pc_matched,"observation_error":observed.err().map(|e|e.to_string()),"native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),"seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"healthy_checkpoint_published":false,"commercial_acceptance":false,"private_commands_sha256":c::file_digest(&commands)?,"private_read_plan_sha256":c::file_digest(&plan_path)?}),
+            &json!({"original":original,"observation":name,"core":resources::X87_RESTART_CORE,"firmware":resources::NPX_LOGGING_OPEN,"app":app,"native_run":run,"debugger_completed":completed,"memory_reads_completed":memory_reads_completed,"stop_pc_matched":stop_pc_matched,"observation_error":observed.err().map(|e|e.to_string()),"native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),"seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"debugger_deadline_seconds":plan.deadline_seconds,"healthy_checkpoint_published":false,"commercial_acceptance":false,"private_commands_sha256":c::file_digest(&commands)?,"private_read_plan_sha256":c::file_digest(&plan_path)?}),
         )?,
     )?;
     let _ = fs::remove_file(socket);

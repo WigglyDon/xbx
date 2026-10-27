@@ -93,5 +93,32 @@
       "case": "disc-regression"
     }
   ],
-  "qualification": "Exact original cache negative now passes FLUSH STATUS=00000000 plus all data checks; exact accepted disc fixture still passes. Both native processes independently absent and job returned with no remaining children. Fable causality and gameplay not established."
+  "qualification": "Exact original cache negative now passes FLUSH STATUS=00000000 plus all data checks; exact accepted disc fixture still passes. Both native processes independently absent and job returned with no remaining children. Fable causality and gameplay not established.",
+  "matched_fable": {
+    "same_core_seed_and_unchanged_game": true,
+    "fresh_profile": true,
+    "visible_review": "Open-kernel splash remained; no Fable menu or gameplay. Terminal access violation after title handoff. No normal input reached before terminal failure.",
+    "native_observation_and_return_ms": 61666,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 3,
+      "reap_ms": 1167,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 1025,
+      "storage_synced": true
+    },
+    "media_and_seeds_unchanged": true,
+    "native_independently_absent": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "supervised_return_verified": true,
+    "children_retired": true
+  }
 }
