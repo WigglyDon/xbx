@@ -94,5 +94,36 @@
     "seeds_unchanged": true,
     "supervised_return_verified": true,
     "commercial_acceptance": false
+  },
+  "fable_read_buffer_followthrough": {
+    "both_stop_pcs_matched": true,
+    "io_status": "STATUS_SUCCESS",
+    "return_register": 0,
+    "returned_bytes": 16384,
+    "requested_bytes": 16384,
+    "buffer_header_obtained": false,
+    "buffer_response": "Cannot access memory",
+    "interpretation": "Debugger virtual read could not translate/access the destination. No conclusion yet about data, kernel mapping or debugger cause.",
+    "native_observation_and_return_ms": 62801,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 5,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 34,
+      "storage_synced": true
+    },
+    "native_independently_absent": true,
+    "seeds_unchanged": true,
+    "supervised_return_verified": true,
+    "children_retired": true,
+    "commercial_acceptance": false
   }
 }
