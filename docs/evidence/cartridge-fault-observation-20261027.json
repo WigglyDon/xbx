@@ -166,15 +166,15 @@
     "crates/host/src/cartridge/mod.rs": "5412ddb68cd690eec373800629443081ca9288dc06559ff014da68f227eb2578"
   },
   "return_accounting": {
-    "utc": "2026-10-27T16:41:16Z",
-    "allocated_bytes": 15229706240,
+    "utc": "2026-10-27T17:01:45.931678Z",
+    "allocated_bytes": 15274229760,
     "maximum_bytes": 17957126144,
-    "remaining_allowance_bytes": 2727419904,
-    "available_bytes": 65025818624,
+    "remaining_allowance_bytes": 2682896384,
+    "available_bytes": 64981262336,
     "shared_floor_bytes": 12884901888,
-    "media_metadata_unchanged": true,
     "native_processes_independently_absent": true,
-    "scope": "Completed partial initialization job; subsequent observations require their own admission."
+    "scope": "Completed no-sample archive-query attempt; native forced retirement and verified supervised return are distinct. Subsequent operations require fresh admission.",
+    "media_metadata_unchanged": true
   },
   "initialization_followup": {
     "elapsed_ms": 90357,
@@ -229,5 +229,78 @@
     "children_retired": true,
     "recovered_flush_ms": 12,
     "binaries_verified": true
+  },
+  "completed_cache_lookup_observation": {
+    "elapsed_ms": 14399,
+    "debugger_completed": true,
+    "memory_reads_completed": true,
+    "stop_pc_matched": true,
+    "observation_error": null,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 9,
+      "reap_ms": 181,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 1066,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "commercial_acceptance": false,
+    "job": "735e19fb21b1432c85eb293d164d3ee0",
+    "returned": true,
+    "children_retired": true,
+    "actual_observation": "Expected object identity and caller confirmed; lookup sentinel points to itself in both directions, so the list is empty before the failing lookup. The selected earlier file-API hooks produced no samples.",
+    "public_API_cause_established": false,
+    "interpretation_limit": "The selected loading-path hooks were not observed; this alone cannot prove that no file API ran.",
+    "next_step": "Follow the separate archive-admission path identified in the global setup and inspect its first public file-attribute query return."
+  },
+  "archive_query_no_sample": {
+    "job": "cfeae847eb344fbbb2436ecadae18acd",
+    "api_return_observed": false,
+    "memory_words_observed": false,
+    "completed_result_written": false,
+    "phase_deadline_seconds": 600,
+    "work_seconds": 607.8584005779703,
+    "native_return": {
+      "clean": false,
+      "forced": true,
+      "kill_attempted": true,
+      "native_exit": "signal: 9 (SIGKILL)",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 3,
+      "reap_ms": 29928,
+      "shutdown_deadline_reached": true,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 10,
+      "storage_synced": true
+    },
+    "supervised_return_verified": true,
+    "children_retired": true,
+    "native_pid_independently_absent": true,
+    "media_metadata_unchanged": true,
+    "hdd_seed_digest_unchanged": true,
+    "interpretation": "No selected API result was obtained. Conditional-stop/context behavior and the timeout are unresolved; this establishes neither a failing file API nor a new compatibility result.",
+    "next_step": "Previously qualified single unconditional stop shape at the selected entry, identifying actual owner and caller before attributing API behavior."
+  },
+  "custodian_maintenance_reconciliation": {
+    "prior_request": "54af324bd6674260ad1ba0ac8d51eec3",
+    "state": "INVALIDATED",
+    "admitted_runs": 0,
+    "guest_started": false,
+    "cause": "Installed custodian implementation and policy pins changed before admission during owner-authorized output-monitor maintenance.",
+    "same_prepared_request_resubmitted_after_reconciliation": true,
+    "current_job": "530ea505033d4562b5de3c1c0d2f4e0e",
+    "no_guard_or_lock_override": true
   }
 }
