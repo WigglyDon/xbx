@@ -30,7 +30,12 @@ fn default_deadline() -> u64 {
 pub(super) fn hex_words(text: &str) -> Vec<u32> {
     text.split_whitespace()
         .filter_map(|s| {
-            u32::from_str_radix(s.trim_end_matches([':', ',']).strip_prefix("0x")?, 16).ok()
+            let word = s.trim_end_matches([':', ',']);
+            if word == "0" {
+                Some(0) // HMP p /x uses C alternate formatting: zero has no 0x prefix.
+            } else {
+                u32::from_str_radix(word.strip_prefix("0x")?, 16).ok()
+            }
         })
         .collect()
 }
@@ -274,10 +279,10 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool, rsp: bool) -> Re
         }
         if rsp {
             let status = hmp(native, "p /x $eax")?;
+            memory_reads.push(json!({"command":"p /x $eax","response":status}));
             if hex_words(&status).len() != 1 {
                 return Err("public call return register unavailable".into());
             }
-            memory_reads.push(json!({"command":"p /x $eax","response":status}));
         }
         if let Some(command) = &plan.follow_word {
             let response = hmp(native, command)?;
@@ -330,4 +335,19 @@ pub(super) fn observe(repo: &Path, root: &Path, original: bool, rsp: bool) -> Re
         return Err("private observation/return incomplete; preserve actual evidence".into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn native_hmp_zero_and_memory_columns() {
+        assert_eq!(hex_words("0\r\n"), vec![0]);
+        assert_eq!(hex_words("0x4000\r\n"), vec![0x4000]);
+        assert_eq!(
+            memory_words("00011000: 0x00000000 0x00004000\r\n"),
+            vec![0, 0x4000]
+        );
+        assert!(hex_words("invalid expression").is_empty());
+    }
 }

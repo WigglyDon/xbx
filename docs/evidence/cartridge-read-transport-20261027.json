@@ -64,5 +64,35 @@
   "verified_native_absent": true,
   "supervised_return_verified": true,
   "children_retired": true,
-  "fable_playable": false
+  "fable_playable": false,
+  "fable_read_completion_partial": {
+    "both_stop_pcs_matched": true,
+    "caller_boundary_matched_privately": true,
+    "io_status": "STATUS_SUCCESS",
+    "returned_bytes": 16384,
+    "requested_bytes": 16384,
+    "return_register_and_buffer_header_not_captured": true,
+    "observation_error": "public call return register unavailable",
+    "observer_source_followthrough": "Native HMP p /x uses C alternate hex formatting, which emits bare 0 for zero. Accept that documented numeric result and record the raw response before validating it. No game/kernel change justified from this incomplete sample.",
+    "native_observation_and_return_ms": 89614,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 750,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 6,
+      "storage_synced": true
+    },
+    "native_independently_absent": true,
+    "seeds_unchanged": true,
+    "supervised_return_verified": true,
+    "commercial_acceptance": false
+  }
 }
