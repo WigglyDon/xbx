@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "purpose": "Complete the owner-authorized narrow public-read fault boundary after the general debugger repeatedly failed while transitioning between stops. Not a game compatibility result.",
+  "retained_core_source": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "public_protocol": [
+    "https://sourceware.org/gdb/current/onlinedocs/gdb.html/Overview.html",
+    "https://sourceware.org/gdb/current/onlinedocs/gdb.html/Packets.html"
+  ],
+  "original_first_party_implementation": true,
+  "bounds": {
+    "maximum_stops": 2,
+    "maximum_guest_seconds": 300,
+    "maximum_packet_bytes": 4096,
+    "maximum_transcript_bytes": 65536,
+    "maximum_fixed_word_commands": 8,
+    "optional_follow_bytes": 16,
+    "game_memory_or_register_writes": false
+  },
+  "prior_attempt": {
+    "entry_reached": true,
+    "read_completion_sample_obtained": false,
+    "diagnostic_error": "Invalid remote reply during stop transition; finite debugger deadline",
+    "guest_deadline_seconds": 300,
+    "native_observation_and_return_ms": 301883,
+    "native_clean": true,
+    "native_independently_absent": true,
+    "supervised_return_verified": true,
+    "seeds_unchanged": true
+  },
+  "original_control": {
+    "commercial_acceptance": false,
+    "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "debugger_completed": true,
+    "debugger_deadline_seconds": 90,
+    "elapsed_ms": 14822,
+    "firmware": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "healthy_checkpoint_published": false,
+    "memory_reads_completed": true,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 13,
+      "reap_ms": 421,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 5,
+      "storage_synced": true
+    },
+    "observation": "original-rsp-v1",
+    "observation_error": null,
+    "original": true,
+    "return_error": null,
+    "seeds_unchanged": true,
+    "stop_pc_matched": true,
+    "transport": "bounded-rsp-stops-hmp-reads"
+  },
+  "original_control_details": "Exact retained original image, two sequential hardware stops each independently checked through HMP, acknowledged breakpoint removal, code word checked against original image and bounded pointer-follow header checked against original XBE. No core/kernel rebuild.",
+  "verified_native_absent": true,
+  "supervised_return_verified": true,
+  "children_retired": true,
+  "fable_playable": false
+}

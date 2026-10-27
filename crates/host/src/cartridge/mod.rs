@@ -9,6 +9,8 @@ mod android_package;
 pub mod build;
 pub mod checkpoint;
 #[cfg(not(target_os = "android"))]
+mod debug_stop;
+#[cfg(not(target_os = "android"))]
 pub mod desktop;
 #[cfg(not(target_os = "android"))]
 mod fault_context;
