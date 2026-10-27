@@ -13,8 +13,12 @@ type Error = Box<dyn std::error::Error>;
 fn put(b: &mut [u8], at: usize, value: u32) {
     b[at..at + 4].copy_from_slice(&value.to_le_bytes());
 }
-pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("file-read-v1");
+pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
+    let dir = root.join(if cache {
+        "file-cache-v1"
+    } else {
+        "file-read-v1"
+    });
     c::mkdir(&dir)?;
     let template = root.join("fixtures-v2/a.iso");
     if c::file_digest(&template)? != resources::ORIGINAL_FIXTURES[0] {
@@ -29,7 +33,8 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         .1;
     let uart = uart.split_once(".balign 4\n").ok_or("original UART end")?.0;
     let generated = format!(
-        "{}\n.text\nserial_init:\n{}",
+        ".set XBX_CACHE_TEST, {}\n{}\n.text\nserial_init:\n{}",
+        u8::from(cache),
         fs::read_to_string(&source)?,
         uart
     );
@@ -138,16 +143,22 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             "source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,
             "fixture":c::file_digest(&dir.join("original.iso"))?,"payload":c::digest(&payload),
             "payload_bytes":payload.len(),"public_abi":"XboxDev/nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd",
+            "cache_file_control":cache,"cache_extent_bytes":if cache { Some(0x1200004u32) } else { None },
             "code_data_pages_separate":true,"original_generated_content_only":true
         }))?,
     )?;
     Ok(())
 }
-pub(super) fn observe(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("file-read-v1");
+pub(super) fn observe(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
+    let dir = root.join(if cache {
+        "file-cache-v1"
+    } else {
+        "file-read-v1"
+    });
     let identity: serde_json::Value = c::read_json(&dir.join("build.json"))?;
     let media = dir.join("original.iso");
-    if identity["fixture"] != c::file_digest(&media)?
+    if identity["cache_file_control"] != cache
+        || identity["fixture"] != c::file_digest(&media)?
         || identity["source"] != c::file_digest(&repo.join("native/fixtures/file-read.S"))?
     {
         return Err("original fixture bindings changed".into());
@@ -195,7 +206,7 @@ pub(super) fn observe(repo: &Path, root: &Path) -> Result<(), Error> {
                     return Ok(true);
                 }
             }
-            if started.elapsed() > Duration::from_secs(90) {
+            if started.elapsed() > Duration::from_secs(if cache { 180 } else { 90 }) {
                 return Err("original guest deadline".into());
             }
             std::thread::sleep(Duration::from_millis(50));
@@ -211,7 +222,7 @@ pub(super) fn observe(repo: &Path, root: &Path) -> Result<(), Error> {
         &result,
         &c::json(&json!({"original":true,"fixture":identity["fixture"],
         "core":resources::X87_RESTART_CORE,"open_system":resources::NPX_LOGGING_OPEN,
-        "app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
+        "cache_file_control":cache,"app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
         "native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),
         "seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"commercial_acceptance":false}))?,
     )?;

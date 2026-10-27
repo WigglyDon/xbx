@@ -437,7 +437,7 @@
     "children_retired": true,
     "native_pid_independently_absent": true,
     "media_metadata_unchanged": true,
-    "actual_observation": "The selected header comparison received zero instead of the expected nonzero signature. The buffered reader reported the expected nonzero file length and full initial buffered count. Manager and setup caller were independently confirmed.",
+    "actual_observation": "The selected header comparison received zero instead of the expected nonzero signature. The buffered reader reported the same nonzero length as the preceding attribute query and a full initial buffered count. Manager and setup caller were independently confirmed.",
     "public_API_cause_established": false,
     "interpretation_limit": "This local data mismatch does not yet identify whether the public read delivered incorrect data or later processing changed it.",
     "next_step": "Observe the immediate public NtReadFile status and returned byte count; qualify an original generated read-integrity fixture before any runtime correction."
@@ -475,5 +475,18 @@
     "interpretation": "The finite debugger deadline expired before the selected entry/read result. No API status or memory sample was obtained; this is not evidence of a public read failure or a new normal compatibility result.",
     "next_step": "Prepared original generated file-read integrity control through the actual cartridge session owner."
   },
-  "source_sha256_scope": "Tools-v56 source used by these completed private observations, before the separate original file-read adapter"
+  "source_sha256_scope": "Tools-v56 source used by these completed private observations, before the separate original file-read adapter",
+  "retained_cache_file_followup": {
+    "read_only": true,
+    "guest_started": false,
+    "scope": "Only cache partitions of the already-closed XBX diagnostic profile; save partitions excluded",
+    "compressed_asset_header_contains_observed_expanded_length": true,
+    "retained_cache_file_header_matches_expected_signature": true,
+    "profile_unchanged": true,
+    "profile_writer_exclusion_held": true,
+    "metadata_and_selected_header_bytes_read": 98380,
+    "disc_read_original_passed": true,
+    "public_API_cause_established": false,
+    "next_step": "Original fresh-storage write/flush/close/reopen/read regression; no speculative runtime patch."
+  }
 }

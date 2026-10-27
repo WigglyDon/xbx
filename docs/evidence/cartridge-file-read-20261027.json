@@ -51,8 +51,36 @@
     "external_writes": false,
     "native_runs": false
   },
-  "native_observation": "pending; no guest pass claimed",
-  "pending_job": "bdc7e8676c14409f84d25a22b547ff54",
+  "native_observation": {
+    "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "open_system": "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b",
+    "fixture": "6ad5f716fd4ae18e3d59db19a676b9f1338e0942e7ea8f00a99b50a25383a15d",
+    "guest_passed": true,
+    "elapsed_ms": 27408,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 3482,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 1927,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true,
+    "observation_error": null,
+    "return_error": null,
+    "job": "bdc7e8676c14409f84d25a22b547ff54",
+    "returned": true,
+    "children_retired": true,
+    "native_pid_independently_absent": true
+  },
   "commercial_acceptance": false,
   "ordinary_runtime_changed": false,
   "source_sha256": {
@@ -61,5 +89,96 @@
     "crates/host/src/cartridge/file_read.rs": "f562f43b650f6fa348748b6b043683360f9cc7816560360ce8012305f40ac771",
     "crates/host/src/cartridge/build.rs": "535cd4d3cbe877101cc844f39a0eb71f0678a21cbf93b6bef11ef18cf0351b47",
     "crates/host/src/cartridge/mod.rs": "9ed8fb039aff339fdf297d80c1b021d886d6afbee03e73ce420f5adc551785b1"
+  },
+  "native_memory": {
+    "resident_bound_bytes": 1073741824,
+    "address_space_bound_bytes": 8589934592,
+    "peak_resident_bytes": 457900032
+  },
+  "return_accounting": {
+    "utc": "2026-10-27T19:07:45.270775+00:00",
+    "available_bytes": 63397568512,
+    "xbx_allocated_bytes": 15397347328,
+    "xbx_total_bound": 17957126144,
+    "shared_floor": 12884901888,
+    "ext4_available_inodes": 7409468,
+    "remaining_xbx_bound": 2559778816
+  },
+  "limit": "This actual original disc-read pass does not qualify cached hard-disk reads or commercial gameplay.",
+  "source_sha256_scope": "Original disc-read control at 0135384; exact accepted source and native image retained.",
+  "cache_control_preparation": {
+    "reason": "Retained closed cache file has the expected header while the title consumed zero; original disc read passed.",
+    "scope": "Original file only in fresh Partition5 storage; FILE_CREATE rejects an existing path; no saved-data partition or existing game profile is modified.",
+    "sequence": [
+      "Set a larger logical file extent",
+      "Write generated pattern with checked status and byte counts",
+      "Flush and close",
+      "Reopen, query attributes and file size",
+      "Seek and verify every word of aligned read",
+      "Seek across sector boundary and verify bytes",
+      "Clean native return and seed preservation"
+    ],
+    "extent_bytes": 18874372,
+    "source_sha256": {
+      "native/fixtures/file-read.S": "29f780385541ad37c1f0f761d31319c510e5f11da09be9dce9f12a52edfe49be",
+      "crates/host/src/cartridge/file_read.rs": "5cb2d4202c69f6edac1033e50fee63c109fb677215a8b4d1c40de69a2af659f0",
+      "crates/host/src/cartridge/build.rs": "54cd83c4e6717f69245a2f61663bb94efcd189b67380e05571d210052bfc4772"
+    },
+    "checks": {
+      "results": [
+        {
+          "name": "fmt",
+          "exit": 0
+        },
+        {
+          "name": "clippy",
+          "exit": 0
+        }
+      ],
+      "host_available_before": 2979721216,
+      "peak_aggregate_resident_bytes": 331051008,
+      "elapsed_seconds": 6.272050797997508,
+      "address_space_bound": 8589934592,
+      "external_writes": false,
+      "native_runs": false
+    },
+    "build": {
+      "results": [
+        {
+          "name": "build",
+          "exit": 0
+        }
+      ],
+      "host_available_before": 2949754880,
+      "peak_aggregate_resident_bytes": 344440832,
+      "elapsed_seconds": 6.770833611022681,
+      "address_space_bound": 8589934592,
+      "external_writes": false,
+      "native_runs": false
+    },
+    "assembly": {
+      "results": [
+        {
+          "name": "assemble",
+          "exit": 0
+        },
+        {
+          "name": "link",
+          "exit": 0
+        }
+      ],
+      "host_available_before": 2432069632,
+      "peak_aggregate_resident_bytes": 352256,
+      "elapsed_seconds": 0.5609544140170328,
+      "address_space_bound": 8589934592,
+      "external_writes": false,
+      "native_runs": false
+    },
+    "native_observed": false,
+    "job": "cb089f436484497ea268388744573044",
+    "admitted_runs": 0,
+    "reason_pending": "Prior workspace job requires owner/custodian cleanup-only recovery; a free capacity lock is insufficient.",
+    "native_and_firmware_rebuilt": false,
+    "ordinary_runtime_changed": false
   }
 }

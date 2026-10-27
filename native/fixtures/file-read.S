@@ -1,9 +1,15 @@
 /* SPDX-License-Identifier: MIT
  * Original public file-read contract. Generated payload; no game code/data.
  * ABI: XboxDev/nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd.
+ * Optional cache control creates only its original file in fresh storage.
  * Page-aligned 16 KiB read, reported byte count, data integrity, then a
  * non-page-aligned seek/read across a sector. Separate writable data pages.
  */
+.if XBX_CACHE_TEST
+.set EXPECTED_BYTES, 0x1200004
+.else
+.set EXPECTED_BYTES, 32772
+.endif
 .text
 .globl _start
 _start:
@@ -11,12 +17,15 @@ _start:
     call serial_init
     movl $boot,%esi
     call text
+    .if XBX_CACHE_TEST
+    call prepare_cache
+    .endif
     movl $1,stage
     pushl $network_info
     pushl $attributes
     call *thunks+12
     call success
-    cmpl $32772,network_info+40
+    cmpl $EXPECTED_BYTES,network_info+40
     jne fail
     cmpl $0,network_info+44
     jne fail
@@ -40,7 +49,7 @@ _start:
     pushl handle
     call *thunks+16
     call success
-    cmpl $32772,standard_info+8
+    cmpl $EXPECTED_BYTES,standard_info+8
     jne fail
     cmpl $0,standard_info+12
     jne fail
@@ -77,6 +86,87 @@ _start:
     movl $passed,%esi
     call text
     jmp done
+/* Original data only. FILE_CREATE refuses an existing path. */
+.if XBX_CACHE_TEST
+prepare_cache:
+    movl $10,stage
+    pushl $0x64
+    pushl $2                    /* FILE_CREATE */
+    pushl $0
+    pushl $0
+    pushl $0
+    pushl $iosb
+    pushl $attributes
+    pushl $0xc0100080           /* read/write, synchronize, attributes */
+    pushl $handle
+    call *thunks+8
+    call success
+    movl $11,stage
+    pushl $20                   /* FileEndOfFileInformation */
+    pushl $8
+    pushl $cache_extent
+    pushl $iosb
+    pushl handle
+    call *thunks+20
+    call success
+    xorl %ebx,%ebx
+    movl $12,stage
+    call fill
+    movl $16384,%ecx
+    call write
+    movl $13,stage
+    call fill
+    movl $16384,%ecx
+    call write
+    movl $14,stage
+    call fill
+    movl $4,%ecx
+    call write
+    movl $15,stage
+    pushl $iosb
+    pushl handle
+    call *thunks+32             /* NtFlushBuffersFile */
+    call success
+    pushl handle
+    call *thunks+4
+    call success
+    ret
+fill:
+    movl $buffer,%edi
+    movl $4096,%ecx
+1:  imull $0x01020305,%ebx,%eax
+    xorl $0x6e000000,%eax
+    stosl
+    incl %ebx
+    loop 1b
+    ret
+write:
+    movl %ecx,requested
+    pushl $0
+    pushl %ecx
+    pushl $buffer
+    pushl $iosb
+    pushl $0
+    pushl $0
+    pushl $0
+    pushl handle
+    call *thunks+28             /* NtWriteFile */
+    cmpl $0x103,%eax
+    jne 2f
+    pushl $timeout
+    pushl $0
+    pushl handle
+    call *thunks+24
+    call success
+    movl iosb,%eax
+2:  call success
+    cmpl $0,iosb
+    jne fail
+    movl requested,%eax
+    cmpl %eax,iosb+4
+    jne fail
+    ret
+.endif
 seek:
     pushl $14                   /* FilePositionInformation */
     pushl $8
@@ -168,19 +258,28 @@ thunks:
     .long 0x800000d3             /* 211 NtQueryInformationFile */
     .long 0x800000e2             /* 226 NtSetInformationFile */
     .long 0x800000e9             /* 233 NtWaitForSingleObject */
+    .long 0x800000ec             /* 236 NtWriteFile */
+    .long 0x800000c6             /* 198 NtFlushBuffersFile */
     .long 0
 handle: .long 0
 stage: .long 0
 status: .long 0
 iosb: .long 0,0
 position: .long 0,0
+cache_extent: .quad EXPECTED_BYTES
+requested: .long 0
 timeout: .quad -300000000
 network_info: .space 56
 standard_info: .space 24
 attributes: .long 0,path_string,0x40
 path_string: .short path_end-path-1,path_end-path
     .long path
-path: .asciz "\\Device\\CdRom0\\payload.bin"
+path:
+.if XBX_CACHE_TEST
+    .asciz "\\Device\\Harddisk0\\Partition5\\xbx-original-read.bin"
+.else
+    .asciz "\\Device\\CdRom0\\payload.bin"
+.endif
 path_end:
 .balign 4096
 buffer: .space 16384
