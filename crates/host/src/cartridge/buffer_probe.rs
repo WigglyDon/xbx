@@ -339,6 +339,9 @@ pub(super) fn storage_proof(repo: &Path, root: &Path) -> Result<(), Error> {
             .depart()
             .err()
             .ok_or("publication injection did not fail")?;
+        if error.kind() != std::io::ErrorKind::AlreadyExists {
+            return Err(format!("expected publication refusal was not observed: {error}").into());
+        }
         if second.live.is_none() || second.live.as_mut().unwrap().native.exited()? {
             return Err("product must preserve the live session on save failure".into());
         }
