@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "purpose": "Original demand-committed user-buffer I/O regression before a functional correction",
+  "fixture": "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+  "source": "native/fixtures/file-read.S and file-demand-handler.S; original generated content only",
+  "public_abi_sha256": "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b",
+  "assembled_function_type_arity_checked": true,
+  "adjacent_header_handler_control_passed": true,
+  "destination_pages_untouched_before_io": true,
+  "expected_io_fault_commits": 4,
+  "actual_io_fault_commits": 0,
+  "io_status": "STATUS_SUCCESS",
+  "reported_bytes": 16384,
+  "data_verified": false,
+  "guest_passed": false,
+  "original_negative_qualified": true,
+  "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+  "open_system": "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a",
+  "native_return": {
+    "clean": true,
+    "forced": false,
+    "kill_attempted": false,
+    "native_exit": "exit status: 0",
+    "native_reaped": true,
+    "qmp_acknowledged": true,
+    "qmp_error": null,
+    "quit_ack_ms": 14,
+    "reap_ms": 182,
+    "shutdown_deadline_reached": false,
+    "shutdown_grace_seconds": 15,
+    "storage_sync_ms": 9,
+    "storage_synced": true
+  },
+  "elapsed_ms": 1884,
+  "seeds_unchanged": true,
+  "native_independently_absent": true,
+  "supervised_return_verified": true,
+  "all_children_retired": true,
+  "work_job": "7f78d5c728f84f8286978282a244e3bd",
+  "retained_allocated_buffer_binary_identical": true,
+  "prior_fixture_attempts": [
+    {
+      "attempt": "v1",
+      "result": "Missing page table fault before intended I/O boundary; not a qualified negative",
+      "native_clean": true
+    },
+    {
+      "attempt": "v2",
+      "result": "Fixture import ABI error called a data export; not a kernel-cause result",
+      "native_clean": true
+    }
+  ],
+  "candidate_patch": "patches/oxos-buffer-probe.patch",
+  "candidate_scope": "Probe caller pages before DISPATCH_LEVEL and page locking; do not probe completion-time unlock",
+  "candidate_built": false,
+  "regression_after_patch": false,
+  "fable_cause_established": false,
+  "fable_playable": false
+}

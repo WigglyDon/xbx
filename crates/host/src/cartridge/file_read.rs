@@ -14,13 +14,24 @@ fn put(b: &mut [u8], at: usize, value: u32) {
     b[at..at + 4].copy_from_slice(&value.to_le_bytes());
 }
 pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
-    build_variant(repo, root, cache, false)
+    build_variant(repo, root, cache, false, false)
 }
 pub(super) fn build_high_va(repo: &Path, root: &Path) -> Result<(), Error> {
-    build_variant(repo, root, true, true)
+    build_variant(repo, root, true, true, false)
 }
-fn build_variant(repo: &Path, root: &Path, cache: bool, high_va: bool) -> Result<(), Error> {
-    let dir = root.join(if high_va {
+pub(super) fn build_demand(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_variant(repo, root, true, true, true)
+}
+fn build_variant(
+    repo: &Path,
+    root: &Path,
+    cache: bool,
+    high_va: bool,
+    demand: bool,
+) -> Result<(), Error> {
+    let dir = root.join(if demand {
+        "file-cache-demand-v3"
+    } else if high_va {
         "file-cache-highva-v1"
     } else if cache {
         "file-cache-v2"
@@ -40,12 +51,20 @@ fn build_variant(repo: &Path, root: &Path, cache: bool, high_va: bool) -> Result
         .ok_or("original UART start")?
         .1;
     let uart = uart.split_once(".balign 4\n").ok_or("original UART end")?.0;
+    let handler = repo.join("native/fixtures/file-demand-handler.S");
+    let handler_source = if demand {
+        fs::read_to_string(&handler)?
+    } else {
+        String::new()
+    };
     let generated = format!(
-        ".set XBX_HIGH_VA, {}\n.set XBX_CACHE_TEST, {}\n{}\n.text\nserial_init:\n{}",
+        ".set XBX_HIGH_VA, {}\n.set XBX_CACHE_TEST, {}\n.set XBX_DEMAND_BUFFER, {}\n{}\n.text\nserial_init:\n{}\n{}",
         u8::from(high_va),
         u8::from(cache),
+        u8::from(demand),
         fs::read_to_string(&source)?,
-        uart
+        uart,
+        handler_source
     );
     c::write_new(&dir.join("original.S"), generated.as_bytes())?;
     let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
@@ -94,6 +113,36 @@ fn build_variant(repo: &Path, root: &Path, cache: bool, high_va: bool) -> Result
     if bytes.len() <= 4096 || bytes.len() > 24576 || !(0x12000..0x13000).contains(&thunk) {
         return Err("original code/data extent".into());
     }
+    let export_abi = if demand {
+        // Check the assembled imports against an independent pinned declaration,
+        // including function/data kind and stdcall argument bytes.
+        let exports = root.join("npx-owner-port-v1/source/kernel/exports.tsv");
+        let hash = c::file_digest(&exports)?;
+        if hash != "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b" {
+            return Err("original demand-control ABI declaration changed".into());
+        }
+        let table = fs::read_to_string(exports)?;
+        for (offset, ordinal, name, arguments) in [
+            (36, 184u32, "NtAllocateVirtualMemory", 20),
+            (40, 174, "MmIsAddressValid", 4),
+            (44, 103, "KeGetCurrentIrql", 0),
+        ] {
+            let at = (thunk - 0x11000) as usize + offset;
+            let value = u32::from_le_bytes(
+                bytes
+                    .get(at..at + 4)
+                    .ok_or("original import extent")?
+                    .try_into()?,
+            );
+            let row = format!("{ordinal}\t{name}\tstdcall\t{arguments}\tfunc");
+            if value != 0x80000000 | ordinal || !table.lines().any(|line| line == row) {
+                return Err("assembled original demand-control import ABI mismatch".into());
+            }
+        }
+        Some(hash)
+    } else {
+        None
+    };
     let original = fs::read(template)?;
     let mut xbe = original[34 * 2048..34 * 2048 + 4096].to_vec();
     let data_pages = (bytes.len() - 4096).div_ceil(4096) as u32 * 4096;
@@ -153,6 +202,8 @@ fn build_variant(repo: &Path, root: &Path, cache: bool, high_va: bool) -> Result
             "fixture":c::file_digest(&dir.join("original.iso"))?,"payload":c::digest(&payload),
             "payload_bytes":payload.len(),"public_abi":"XboxDev/nxdk a6c31ee90540710a3df26a0712b61492f2ea03dd",
             "heap_buffer_control":high_va,"heap_buffer_bytes":if high_va {Some(16384)} else {None},"cache_file_control":cache,"cache_extent_bytes":if cache { Some(0x1200004u32) } else { None },
+            "demand_committed_buffer_control":demand,"demand_header_page_control":demand,"handler_source":if demand {Some(c::file_digest(&handler)?)} else {None},
+            "export_abi_sha256":export_abi,
             "code_data_pages_separate":true,"original_generated_content_only":true
         }))?,
     )?;
@@ -247,6 +298,9 @@ fn observe_with(
             if output.len() > 65536 {
                 return Err("original output limit".into());
             }
+            if output.contains("*** bug check") {
+                return Ok(false);
+            }
             if output.contains("XBX FILE READ BOOT") {
                 if output.contains("XBX FILE READ FAIL") {
                     return Ok(false);
@@ -304,4 +358,44 @@ pub(super) fn observe_high_va(repo: &Path, root: &Path) -> Result<(), Error> {
         true,
         super::flush_io::package(root)?,
     )
+}
+
+/// This is an expected negative qualification, judged from the actual receipt.
+/// A false success or dirty native return cannot admit a functional correction.
+pub(super) fn demand_negative(repo: &Path, root: &Path) -> Result<(), Error> {
+    super::flush_io::qualified(root)?;
+    let dir = root.join("file-cache-demand-v3");
+    let identity: serde_json::Value = c::read_json(&dir.join("build.json"))?;
+    let media = dir.join("original.iso");
+    if identity["demand_committed_buffer_control"] != true
+        || identity["demand_header_page_control"] != true
+        || identity["fixture"] != c::file_digest(&media)?
+        || identity["source"] != c::file_digest(&repo.join("native/fixtures/file-read.S"))?
+        || identity["handler_source"]
+            != c::file_digest(&repo.join("native/fixtures/file-demand-handler.S"))?
+    {
+        return Err("original demand-commit control bindings changed".into());
+    }
+    let observed = observe_with(
+        repo,
+        root,
+        &dir,
+        &media,
+        true,
+        super::flush_io::package(root)?,
+    );
+    let result: serde_json::Value = c::read_json(&dir.join("original.result.json"))?;
+    let serial = fs::read_to_string(dir.join("serial.log"))?;
+    if observed.is_ok()
+        || result["guest_passed"] != false
+        || result["native_clean"] != true
+        || result["seeds_unchanged"] != true
+        || !serial.contains("XBX FILE READ DEMAND HEADER PASS")
+        || !serial.contains(
+            "FAIL stage=00000011 status=00000000 count=00004000 first=00000000 faults=00000000",
+        )
+    {
+        return Err("expected clean original unmapped-buffer negative not reproduced".into());
+    }
+    Ok(())
 }

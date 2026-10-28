@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: MIT
+//! Isolated original-regression-backed user-buffer residency correction.
+use super::{self as c, resources};
+use serde_json::{Value, json};
+use std::{fs, path::Path, process::Command};
+type Error = Box<dyn std::error::Error>;
+fn copy(source: &Path, dest: &Path) -> Result<(), Error> {
+    fs::create_dir_all(dest.parent().ok_or("source parent")?)?;
+    c::write_new(dest, &fs::read(source)?)?;
+    Ok(())
+}
+pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
+    let dir = root.join("buffer-probe-v1");
+    c::mkdir(&dir)?;
+    let lock: Value = c::read_json(&repo.join("cartridge-buffer-probe.lock.json"))?;
+    let negative: Value = c::read_json(&root.join("file-cache-demand-v3/original.result.json"))?;
+    if negative["guest_passed"] != false
+        || negative["data_verified"] != false
+        || negative["native_clean"] != true
+        || negative["seeds_unchanged"] != true
+        || negative["fixture"] != lock["original_negative_fixture"]
+        || c::file_digest(&root.join("file-cache-demand-v3/original.iso"))?
+            != lock["original_negative_fixture"]
+        || negative["core"] != resources::X87_RESTART_CORE
+        || negative["open_system"] != resources::FLUSH_LOGGING_OPEN
+        || !fs::read_to_string(root.join("file-cache-demand-v3/serial.log"))?.contains(
+            "FAIL stage=00000011 status=00000000 count=00004000 first=00000000 faults=00000000",
+        )
+    {
+        return Err("exact clean original negative required".into());
+    }
+    if !fs::read_to_string(root.join("file-cache-demand-v3/serial.log"))?
+        .contains("XBX FILE READ DEMAND HEADER PASS")
+    {
+        return Err("actual original handler control required".into());
+    }
+    super::flush_io::qualified(root)?;
+    let old = root.join("flush-io-v1/source");
+    let manifest = old.join("source.objects");
+    let patch = repo.join("patches/oxos-buffer-probe.patch");
+    if c::file_digest(&manifest)? != lock["retained_corrected_source_objects_sha256"]
+        || c::file_digest(&patch)? != lock["patch_sha256"]
+    {
+        return Err("retained source or functional patch differs".into());
+    }
+    let source = dir.join("source");
+    c::mkdir(&source)?;
+    let objects = fs::read_to_string(&manifest)?;
+    for line in objects.lines() {
+        let (metadata, name) = line.split_once('\t').ok_or("source manifest")?;
+        if name.starts_with('/') || name.split('/').any(|p| p == "..") {
+            return Err("source path".into());
+        }
+        let input = old.join(name);
+        if let Some(expected) = lock["accepted_source"].get(name).and_then(Value::as_str) {
+            if c::file_digest(&input)? != expected {
+                return Err("accepted functional source repair differs".into());
+            }
+        } else {
+            let got = Command::new("git")
+                .arg("hash-object")
+                .arg(&input)
+                .output()?;
+            if !got.status.success()
+                || String::from_utf8(got.stdout)?.trim()
+                    != metadata.split_whitespace().nth(2).ok_or("source blob")?
+            {
+                return Err("retained public source bytes differ".into());
+            }
+        }
+        copy(&input, &source.join(name))?;
+    }
+    copy(&manifest, &source.join("source.objects"))?;
+    let archive = root
+        .parent()
+        .ok_or("project")?
+        .join("open-startup-v1/cromwell-v3.tar");
+    if c::file_digest(&archive)?
+        != "280b2b1dce7d73ba40d9e4d027fb8f54624fa7db0724e2f431d813f85ef29dcb"
+    {
+        return Err("retained public boot archive differs".into());
+    }
+    fs::create_dir_all(source.join("third_party/cromwell"))?;
+    c::store::checked(
+        Command::new("tar")
+            .args(["-x", "--no-same-owner", "-f"])
+            .arg(&archive)
+            .arg("-C")
+            .arg(source.join("third_party/cromwell")),
+    )?;
+    c::store::checked(
+        Command::new("git")
+            .arg("-C")
+            .arg(&source)
+            .arg("apply")
+            .arg(&patch),
+    )?;
+    let mut changed = Vec::new();
+    for line in objects.lines() {
+        let (_, name) = line.split_once('\t').ok_or("source manifest")?;
+        if fs::read(old.join(name))? != fs::read(source.join(name))? {
+            if c::file_digest(&old.join(name))? != lock["changed"][name]["before"]
+                || c::file_digest(&source.join(name))? != lock["changed"][name]["after"]
+            {
+                return Err("functional source extent differs".into());
+            }
+            changed.push(name);
+        }
+    }
+    if changed != ["kernel/src/mm/memory.cpp"] {
+        return Err("unrelated source change".into());
+    }
+    let out = dir.join("build-logging");
+    c::mkdir(&out)?;
+    let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
+        .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
+    let mut paths = vec![llvm.clone()];
+    if let Some(path) = std::env::var_os("PATH") {
+        paths.extend(std::env::split_paths(&path));
+    }
+    c::store::checked(
+        Command::new("make")
+            .arg("-C")
+            .arg(source.join("kernel"))
+            .env("PATH", std::env::join_paths(paths)?)
+            .args([
+                "-j1",
+                "bios",
+                "IMAGE=open",
+                "SELFTEST=0",
+                "TRACE_IMPORTS=0",
+                "DEBUG=0",
+                "SPLASH=",
+                "MCPX16=0",
+                "BIOS_BASE=",
+                "MCPX_ROM=",
+                "STOCK_MCPX=",
+                "SERIAL=1",
+            ])
+            .arg(format!("BUILD={}", out.display()))
+            .arg(format!("CC={}", llvm.join("clang").display()))
+            .arg(format!(
+                "CXX={} -Wno-error=cast-function-type-mismatch",
+                llvm.join("clang++").display()
+            ))
+            .arg(format!("LD={}", llvm.join("lld-link").display()))
+            .arg(format!("OBJCOPY={}", llvm.join("llvm-objcopy").display())),
+    )?;
+    for name in ["bios.bin", "xboxkrnl.exe", "xboxkrnl.map"] {
+        fs::File::open(out.join(name))?.sync_all()?;
+    }
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "source":lock["commit"],"cromwell":lock["cromwell_commit"],"functional_patch":lock["patch_sha256"],"changed":changed,
+            "firmware":c::file_digest(&out.join("bios.bin"))?,"kernel":c::file_digest(&out.join("xboxkrnl.exe"))?,"map":c::file_digest(&out.join("xboxkrnl.map"))?,
+            "retained_core":resources::X87_RESTART_CORE,"compiler":c::file_digest(&llvm.join("clang"))?,"linker":c::file_digest(&llvm.join("lld-link"))?,
+            "compiler_jobs":1,"serial":true,"trace_imports":false,"original_negative":negative["fixture"],"native_regression_passed":false,"Fable_cause_established":false
+        }))?,
+    )?;
+    Ok(())
+}

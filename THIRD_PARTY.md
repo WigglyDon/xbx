@@ -338,3 +338,19 @@ source and original negative. The original generated file controls and Rust
 build/session policy remain MIT. The retained public QEMU completion path and
 Linux v6.12 timeout table are behavioral references; no Linux implementation,
 game code, private firmware or console data is copied into this correction.
+
+## User-buffer residency correction
+
+`patches/oxos-buffer-probe.patch` changes retained OXOS
+`kernel/src/mm/memory.cpp` from the pinned `9d8cd58c` lineage after the accepted
+read, NPX and queued-flush repairs. OXOS GPL-2.0 and applicable per-file terms
+continue to apply. The first-party Rust build policy and original demand-buffer
+fixture are MIT. The fixture reuses the exception-registration ABI of the
+existing original `nullcall.S`; no title implementation or data is included.
+
+Microsoft's public [MmProbeAndLockPages documentation](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmprobeandlockpages)
+is behavioral guidance for making pages resident before DMA and the IRQL limit
+for pageable probes. Xbox's API is distinct; no Microsoft implementation was
+copied. `cartridge-buffer-probe.lock.json` binds the source composition, small
+functional patch and exact original negative. Build success alone does not
+qualify the repair or establish a Fable cause.

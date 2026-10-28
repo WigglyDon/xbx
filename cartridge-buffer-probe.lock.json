@@ -1,0 +1,30 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+  "retained_corrected_source_objects_sha256": "93197f4fbbcc00073a9a52b2a34f40a4b0172d1dddbbd43fbd4ee9e8cee65b37",
+  "accepted_source": {
+    "kernel/src/idex/channel.cpp": "f4023db94114496b642dfc726b483fe70917bb79fc6a92e30a2b8d77c985ef5c",
+    "kernel/src/idex/disk.cpp": "9a6f7dba28471432594e547846359ad0454f5b7270d9730890d3ebf6b2582821",
+    "kernel/src/ke/npx.cpp": "ed338066866cf592a58b1910e36a8cc2b2b7ffad552cd58889bd2b3514a59689"
+  },
+  "parent_logging_firmware": "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a",
+  "patch": "patches/oxos-buffer-probe.patch",
+  "patch_sha256": "183256b8be87210bf248138d57e2ad80a74cd4d57630dc02934d9961b849aa4b",
+  "changed": {
+    "kernel/src/mm/memory.cpp": {
+      "before": "3ee10ae045cf05855994d423f9f8021496a555bdb9acf9e3286ae1232fe4f9a2",
+      "after": "232457fc89f3a048eb541262e74c33830373fc0c4ff286a050fb68dc73e8abe3"
+    }
+  },
+  "public_probe_reference": "https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-mmprobeandlockpages",
+  "reference_scope": "Behavioral guidance: pages must be resident before DMA; probe pageable addresses before DISPATCH_LEVEL. The Xbox API is distinct; no Microsoft implementation copied.",
+  "original_negative_fixture": "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+  "original_allocated_fixture": "da22e0e3ef9444f110a5961c2ae43ba795ba22c513823f230f02c3ed2091d951",
+  "license": "OXOS GPL-2.0 and applicable per-file terms; original Rust and fixture code MIT",
+  "compiler_jobs": 1,
+  "serial": true,
+  "trace_imports": false,
+  "ordinary_runtime_default_changed": false,
+  "fable_cause_established": false
+}

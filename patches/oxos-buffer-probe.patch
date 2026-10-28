@@ -1,0 +1,23 @@
+diff --git a/kernel/src/mm/memory.cpp b/kernel/src/mm/memory.cpp
+--- a/kernel/src/mm/memory.cpp
++++ b/kernel/src/mm/memory.cpp
+@@ -254,8 +254,17 @@
+     if (!NumberOfBytes || (va >= MM_SYSTEM_PHYSICAL_MAP && va < MM_SYSTEM_PHYSICAL_MAP + 0x10000000) ||
+         (*MiGetPdeAddress(va) & PTE_LARGE))
+         return;
+-    KIRQL old = KeRaiseIrqlToDpcLevel();
+-    for (ULONG *pte = MiGetPteAddress(va), *last = MiGetPteAddress(va + NumberOfBytes - 1); pte <= last; pte++) {
++    ULONG *first = MiGetPteAddress(va), *last = MiGetPteAddress(va + NumberOfBytes - 1);
++    // Resolve caller demand faults before raising IRQL or taking any page locks.
++    // Unlock can run in completion at DISPATCH_LEVEL and must never probe.
++    if (!UnlockPages) {
++        for (ULONG *pte = first; pte <= last; pte++) {
++            ULONG address = pte == first ? va : ((ULONG)pte << 10);
++            (void)*(volatile const UCHAR *)address;
++        }
++    }
++    KIRQL old = KeRaiseIrqlToDpcLevel();
++    for (ULONG *pte = first; pte <= last; pte++) {
+         ULONG pfn = *pte >> PAGE_SHIFT;
+         if ((*pte & PTE_PRESENT) && pfn < MM_PAGES && !(MiPteArray[pfn] & PTE_PRESENT))
+             ((USHORT *)&MiPteArray[pfn])[0] += UnlockPages ? -2 : 2;

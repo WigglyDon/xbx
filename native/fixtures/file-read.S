@@ -8,8 +8,18 @@
 .ifndef XBX_HIGH_VA
 .set XBX_HIGH_VA, 0
 .endif
+.ifndef XBX_DEMAND_BUFFER
+.set XBX_DEMAND_BUFFER, 0
+.endif
 .if XBX_HIGH_VA
+.if XBX_DEMAND_BUFFER
+.set buffer, 0x05001000
+.else
 .set buffer, 0x05000000
+.endif
+.endif
+.if !XBX_DEMAND_BUFFER
+.set write_buffer, buffer
 .endif
 .if XBX_CACHE_TEST
 .set EXPECTED_BYTES, 0x1200004
@@ -26,16 +36,43 @@ _start:
     .if XBX_HIGH_VA
     movl $16,stage
     pushl $4                    /* PAGE_READWRITE */
+    .if XBX_DEMAND_BUFFER
+    pushl $0x2000               /* MEM_RESERVE: the original handler commits on access. */
+    .else
     pushl $0x3000               /* MEM_RESERVE | MEM_COMMIT */
+    .endif
     pushl $heap_bytes
     pushl $0
     pushl $heap_base
     call *thunks+36             /* NtAllocateVirtualMemory */
     call success
+    .if XBX_DEMAND_BUFFER
+    cmpl $buffer-4096,heap_base
+    jne fail
+    cmpl $20480,heap_bytes
+    .else
     cmpl $buffer,heap_base
     jne fail
     cmpl $16384,heap_bytes
+    .endif
     jne fail
+    .endif
+    .if XBX_DEMAND_BUFFER
+    pushl $demand_handler
+    pushl %fs:0
+    movl %esp,%fs:0
+    movl %esp,seh_frame
+    movl $18,stage
+    movb $0xa5,buffer-4096       /* Validate the handler and create the shared page table. */
+    cmpl $1,demand_faults
+    jne fail
+    pushl $buffer-4096
+    call *thunks+40
+    testb %al,%al
+    jz fail
+    movl $0,demand_faults
+    movl $demand_header_passed,%esi
+    call text
     .endif
     .if XBX_CACHE_TEST
     call prepare_cache
@@ -75,15 +112,32 @@ _start:
     jne fail
     movl $4,stage
     call seek
+    .if !XBX_DEMAND_BUFFER
     movl $buffer,%edi
     movl $4096,%ecx
     movl $0xa5a5a5a5,%eax
     rep stosl
+    .endif
     movl $5,stage
     movl $16384,%ecx
     call read
     cmpl $16384,iosb+4
     jne fail
+    .if XBX_DEMAND_BUFFER
+    movl $17,stage
+    cmpl $4,demand_faults       /* All four pages must become resident during I/O. */
+    jne fail
+    movl $buffer,%ebx
+1:  pushl %ebx
+    call *thunks+40             /* MmIsAddressValid, without touching the buffer. */
+    testb %al,%al
+    jz fail
+    addl $4096,%ebx
+    cmpl $buffer+16384,%ebx
+    jb 1b
+    movl $demand_passed,%esi
+    call text
+    .endif
     movl $6,stage
     xorl %ebx,%ebx
     movl $4096,%ecx
@@ -171,7 +225,7 @@ prepare_cache:
     call success
     ret
 fill:
-    movl $buffer,%edi
+    movl $write_buffer,%edi
     movl $4096,%ecx
 1:  imull $0x01020305,%ebx,%eax
     xorl $0x6e000000,%eax
@@ -183,7 +237,7 @@ write:
     movl %ecx,requested
     pushl $0
     pushl %ecx
-    pushl $buffer
+    pushl $write_buffer
     pushl $iosb
     pushl $0
     pushl $0
@@ -270,16 +324,35 @@ fail:
     call hex
     movl $word_label,%esi
     call text
+    .if XBX_DEMAND_BUFFER
+    xorl %eax,%eax             /* A failed observation must not fault in its own data. */
+    .else
     .if XBX_HIGH_VA
     xorl %eax,%eax
     cmpl $16,stage
     je 8f                       /* Allocation failure must not read an unmapped buffer. */
     .endif
     movl buffer,%eax
+    .endif
 8:  call hex
+    .if XBX_DEMAND_BUFFER
+    movl $fault_label,%esi
+    call text
+    movl demand_faults,%eax
+    call hex
+    .endif
     movl $newline,%esi
     call text
 done:
+    .if XBX_DEMAND_BUFFER
+    movl seh_frame,%eax
+    testl %eax,%eax
+    jz 7f
+    movl (%eax),%edx
+    movl %edx,%fs:0
+    movl $0,seh_frame
+7:
+    .endif
     sti
     hlt
     jmp done
@@ -292,6 +365,11 @@ status_label: .asciz " status="
 count_label: .asciz " count="
 word_label: .asciz " first="
 newline: .asciz "\n"
+.if XBX_DEMAND_BUFFER
+demand_passed: .asciz "XBX FILE READ DEMAND PAGES PASS\n"
+demand_header_passed: .asciz "XBX FILE READ DEMAND HEADER PASS\n"
+fault_label: .asciz " faults="
+.endif
 superio: .byte 7,4,0x60,3,0x61,0xf8,0x70,4,0x30,1
 .data
 .balign 4
@@ -309,9 +387,22 @@ thunks:
     .if XBX_HIGH_VA
     .long 0x800000b8             /* 184 NtAllocateVirtualMemory */
     .endif
+    .if XBX_DEMAND_BUFFER
+    .long 0x800000ae             /* 174 MmIsAddressValid */
+    .long 0x80000067             /* 103 KeGetCurrentIrql */
+    .endif
     .long 0
 heap_base: .long 0x05000000
-heap_bytes: .long 16384
+heap_bytes:
+.if XBX_DEMAND_BUFFER
+    .long 20480
+.else
+    .long 16384
+.endif
+.if XBX_DEMAND_BUFFER
+seh_frame: .long 0
+demand_faults: .long 0
+.endif
 handle: .long 0
 stage: .long 0
 status: .long 0
@@ -336,4 +427,7 @@ path_end:
 .balign 4096
 .if !XBX_HIGH_VA
 buffer: .space 16384
+.endif
+.if XBX_DEMAND_BUFFER
+write_buffer: .space 16384
 .endif
