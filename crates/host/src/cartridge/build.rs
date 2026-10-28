@@ -156,6 +156,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         }
         "cartridge-buffer-probe-fable" => fable_logging(repo, &w, LoggingRuntime::BufferProbe)?,
         "cartridge-bounded-storage-proof" => super::buffer_probe::storage_proof(repo, root)?,
+        "cartridge-io-errors-build" => super::buffer_probe::build_io_errors(repo, root)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
         "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,

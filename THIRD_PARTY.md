@@ -354,3 +354,16 @@ for pageable probes. Xbox's API is distinct; no Microsoft implementation was
 copied. `cartridge-buffer-probe.lock.json` binds the source composition, small
 functional patch and exact original negative. Build success alone does not
 qualify the repair or establish a Fable cause.
+
+## Public I/O failure reporting
+
+`patches/oxos-read-errors.patch` adds bounded negative open/read/completion
+reporting to retained `kernel/src/io/file.cpp` and `kernel/src/io/irp.cpp`,
+after the accepted user-buffer correction in the same `9d8cd58c` lineage.
+OXOS GPL-2.0 and applicable per-file terms apply. The Rust build policy is MIT.
+`cartridge-io-errors.lock.json` binds the parent, accepted repairs, two changed
+files and patch. Reported fields are public status, byte-count and flag values;
+each failure class has32 lines and one limit marker. Paths, payloads, caller
+instructions and stacks are excluded. This is diagnostic source for the newly
+observed disc-error boundary, with game acceptance still requiring actual
+visible results and an independently supported correction.

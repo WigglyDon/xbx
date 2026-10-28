@@ -1,0 +1,101 @@
+diff --git a/kernel/src/io/file.cpp b/kernel/src/io/file.cpp
+--- a/kernel/src/io/file.cpp
++++ b/kernel/src/io/file.cpp
+@@ -2,11 +2,25 @@
+ #include <xk/io.h>
+ #include <xk/ps.h>
+ #include <xk/rtl.h>
++#include <xk/serial.h>
+ 
+ void IopQueueThreadIrp(PIRP Irp);
+ void IopLockUserBuffer(PIRP Irp, ULONG Length);
+ void IopCompleteRequestInline(PIRP Irp, PFILE_OBJECT FileObject);
+ void IopDereferenceDevice(PDEVICE_OBJECT DeviceObject);
++
++// Bounded public I/O failure reporting only: no paths, payloads, caller PCs or stacks.
++// Separate limits keep optional open probes from hiding a later read error.
++void XkLogIoFailure(ULONG Kind, NTSTATUS Status, ULONG Bytes, ULONG Flags) {
++    if (NT_SUCCESS(Status))
++        return;
++    static ULONG counts[3];
++    ULONG line = __atomic_add_fetch(&counts[Kind], 1u, __ATOMIC_RELAXED);
++    if (line <= 32)
++        XK_SERIAL("xbxio: kind=%lu status=%08lx bytes=%lu flags=%08lx\n", Kind, (ULONG)Status, Bytes, Flags);
++    else if (line == 33)
++        XK_SERIAL("xbxio: kind=%lu failure reporting limit reached\n", Kind);
++}
+ 
+ // Carried through the object manager from IoCreateFile to IopParseDevice.
+ struct OPEN_PACKET {
+@@ -271,7 +285,7 @@
+ 
+ // --- Opening
+ 
+-XBAPI NTSTATUS NTAPI IoCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes,
++static NTSTATUS NTAPI IopCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes,
+                                   PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes,
+                                   ULONG ShareAccess, ULONG Disposition, ULONG CreateOptions, ULONG Options) {
+     if (Options & IO_CHECK_CREATE_PARAMETERS) {
+@@ -324,6 +338,15 @@
+     IoStatusBlock->Information = op.Information;
+     ObfDereferenceObject(op.FileObject);
+     return op.FinalStatus;
++}
++
++XBAPI NTSTATUS NTAPI IoCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes,
++                                  PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes,
++                                  ULONG ShareAccess, ULONG Disposition, ULONG CreateOptions, ULONG Options) {
++    NTSTATUS status = IopCreateFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, AllocationSize,
++                                    FileAttributes, ShareAccess, Disposition, CreateOptions, Options);
++    XkLogIoFailure(0, status, 0, CreateOptions);
++    return status;
+ }
+ 
+ XBAPI NTSTATUS NTAPI NtCreateFile(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes,
+@@ -466,8 +489,10 @@
+ XBAPI NTSTATUS NTAPI NtReadFile(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext,
+                                 PIO_STATUS_BLOCK IoStatusBlock, PVOID Buffer, ULONG Length,
+                                 PLARGE_INTEGER ByteOffset) {
+-    return IopReadWrite(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, nullptr,
+-                        IRP_MJ_READ);
++    NTSTATUS status = IopReadWrite(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, nullptr,
++                                    IRP_MJ_READ);
++    XkLogIoFailure(1, status, Length, (ApcRoutine ? 1u : 0u) | (Event ? 2u : 0u));
++    return status;
+ }
+ 
+ XBAPI NTSTATUS NTAPI NtWriteFile(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext,
+@@ -480,8 +505,10 @@
+ XBAPI NTSTATUS NTAPI NtReadFileScatter(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext,
+                                        PIO_STATUS_BLOCK IoStatusBlock, PFILE_SEGMENT_ELEMENT SegmentArray,
+                                        ULONG Length, PLARGE_INTEGER ByteOffset) {
+-    return IopReadWrite(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, nullptr, Length, ByteOffset,
+-                        SegmentArray, IRP_MJ_READ);
++    NTSTATUS status = IopReadWrite(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, nullptr, Length, ByteOffset,
++                                    SegmentArray, IRP_MJ_READ);
++    XkLogIoFailure(1, status, Length, 4u | (ApcRoutine ? 1u : 0u) | (Event ? 2u : 0u));
++    return status;
+ }
+ 
+ XBAPI NTSTATUS NTAPI NtWriteFileGather(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext,
+diff --git a/kernel/src/io/irp.cpp b/kernel/src/io/irp.cpp
+--- a/kernel/src/io/irp.cpp
++++ b/kernel/src/io/irp.cpp
+@@ -2,6 +2,8 @@
+ #include <xk/io.h>
+ #include <xk/ps.h>
+ #include <xk/rtl.h>
++
++void XkLogIoFailure(ULONG Kind, NTSTATUS Status, ULONG Bytes, ULONG Flags);
+ 
+ XBAPI void NTAPI IoInitializeIrp(PIRP Irp, USHORT PacketSize, CCHAR StackSize) {
+     RtlZeroMemory(Irp, PacketSize);
+@@ -73,6 +75,8 @@
+     PIRP irp = CONTAINING_RECORD(Apc, IRP, Tail.Apc);
+     auto fo = (PFILE_OBJECT)*SystemArgument1;
+     NTSTATUS status = irp->IoStatus.Status;
++    if (irp->Flags & IRP_READ_OPERATION)
++        XkLogIoFailure(2, status, irp->IoStatus.Information, irp->Flags);
+     bool syncApi = irp->Flags & IRP_SYNCHRONOUS_API;
+ 
+     if (((ULONG)status & 0xC0000000) == 0xC0000000 &&

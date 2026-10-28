@@ -10,9 +10,24 @@ fn copy(source: &Path, dest: &Path) -> Result<(), Error> {
     Ok(())
 }
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("buffer-probe-v1");
+    build_child(repo, root, false)
+}
+pub(super) fn build_io_errors(repo: &Path, root: &Path) -> Result<(), Error> {
+    qualified(root)?;
+    build_child(repo, root, true)
+}
+fn build_child(repo: &Path, root: &Path, io_errors: bool) -> Result<(), Error> {
+    let dir = root.join(if io_errors {
+        "io-errors-v1"
+    } else {
+        "buffer-probe-v1"
+    });
     c::mkdir(&dir)?;
-    let lock: Value = c::read_json(&repo.join("cartridge-buffer-probe.lock.json"))?;
+    let lock: Value = c::read_json(&repo.join(if io_errors {
+        "cartridge-io-errors.lock.json"
+    } else {
+        "cartridge-buffer-probe.lock.json"
+    }))?;
     let negative: Value = c::read_json(&root.join("file-cache-demand-v3/original.result.json"))?;
     if negative["guest_passed"] != false
         || negative["data_verified"] != false
@@ -35,9 +50,21 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         return Err("actual original handler control required".into());
     }
     super::flush_io::qualified(root)?;
-    let old = root.join("flush-io-v1/source");
+    let parent = root.join(if io_errors {
+        "buffer-probe-v1"
+    } else {
+        "flush-io-v1"
+    });
+    if c::file_digest(&parent.join("build-logging/bios.bin"))? != lock["parent_logging_firmware"] {
+        return Err("retained parent kernel identity changed".into());
+    }
+    let old = parent.join("source");
     let manifest = old.join("source.objects");
-    let patch = repo.join("patches/oxos-buffer-probe.patch");
+    let patch = repo.join(
+        lock["patch"]
+            .as_str()
+            .ok_or("pinned functional or diagnostic patch")?,
+    );
     if c::file_digest(&manifest)? != lock["retained_corrected_source_objects_sha256"]
         || c::file_digest(&patch)? != lock["patch_sha256"]
     {
@@ -107,7 +134,13 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             changed.push(name);
         }
     }
-    if changed != ["kernel/src/mm/memory.cpp"] {
+    let expected: Vec<_> = lock["changed"]
+        .as_object()
+        .ok_or("exact changed source extent")?
+        .keys()
+        .map(String::as_str)
+        .collect();
+    if changed != expected {
         return Err("unrelated source change".into());
     }
     let out = dir.join("build-logging");
@@ -155,7 +188,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             "source":lock["commit"],"cromwell":lock["cromwell_commit"],"functional_patch":lock["patch_sha256"],"changed":changed,
             "firmware":c::file_digest(&out.join("bios.bin"))?,"kernel":c::file_digest(&out.join("xboxkrnl.exe"))?,"map":c::file_digest(&out.join("xboxkrnl.map"))?,
             "retained_core":resources::X87_RESTART_CORE,"compiler":c::file_digest(&llvm.join("clang"))?,"linker":c::file_digest(&llvm.join("lld-link"))?,
-            "compiler_jobs":1,"serial":true,"trace_imports":false,"original_negative":negative["fixture"],"native_regression_passed":false,"Fable_cause_established":false
+            "compiler_jobs":1,"serial":true,"trace_imports":false,"original_negative":negative["fixture"],"native_regression_passed":false,"Fable_cause_established":false,"public_io_failure_diagnostics_only":io_errors
         }))?,
     )?;
     Ok(())

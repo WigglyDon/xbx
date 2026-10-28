@@ -1,0 +1,37 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "cromwell_commit": "86f547387184d1001d377cce97d3756c8acf91cc",
+  "retained_corrected_source_objects_sha256": "93197f4fbbcc00073a9a52b2a34f40a4b0172d1dddbbd43fbd4ee9e8cee65b37",
+  "accepted_source": {
+    "kernel/src/idex/channel.cpp": "f4023db94114496b642dfc726b483fe70917bb79fc6a92e30a2b8d77c985ef5c",
+    "kernel/src/idex/disk.cpp": "9a6f7dba28471432594e547846359ad0454f5b7270d9730890d3ebf6b2582821",
+    "kernel/src/ke/npx.cpp": "ed338066866cf592a58b1910e36a8cc2b2b7ffad552cd58889bd2b3514a59689",
+    "kernel/src/mm/memory.cpp": "232457fc89f3a048eb541262e74c33830373fc0c4ff286a050fb68dc73e8abe3"
+  },
+  "parent_logging_firmware": "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46",
+  "patch": "patches/oxos-read-errors.patch",
+  "patch_sha256": "30b49113fe312a0922640d2dae5f5e37c9a33dddc4e81d6a2a4c147e8de16996",
+  "changed": {
+    "kernel/src/io/file.cpp": {
+      "before": "b941b1a96139395c7a4a4b3c9a1b43d622e79ce5ac84f8b428e4e9045ef1231b",
+      "after": "dc205da63c6833d712099cbb26f17e61282507fac517398255e1fc5d15e3af15"
+    },
+    "kernel/src/io/irp.cpp": {
+      "before": "09faaaf7c6d7dd4d086c5bc0a1944fdacad4f3cdb2c7cca89a57b527dcc5f9d9",
+      "after": "ec08f1c07202cd0eac1f367ebc196784654ce8d65b72e61b4d915478053fb7d6"
+    }
+  },
+  "original_negative_fixture": "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+  "original_allocated_fixture": "da22e0e3ef9444f110a5961c2ae43ba795ba22c513823f230f02c3ed2091d951",
+  "license": "OXOS GPL-2.0 and applicable per-file terms; original Rust and fixture code MIT",
+  "compiler_jobs": 1,
+  "serial": true,
+  "trace_imports": false,
+  "ordinary_runtime_default_changed": false,
+  "fable_cause_established": false,
+  "diagnostic_only": true,
+  "diagnostic_scope": "At most32 failure lines plus one limit marker for each of open/create return, ordinary/scatter read return and final read completion; statuses/lengths/flags only, no paths, data, caller PCs or stacks",
+  "diagnostic_failure_lines_bound": 99,
+  "functional_game_repair_claimed": false
+}
