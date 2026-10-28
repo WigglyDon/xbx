@@ -65,8 +65,14 @@ destroying unsaved state. A finite qualification owner that must finally exit
 explicitly retires its failed observation through the native owner, retaining
 the checkpoint error and all current/failed data. This does not convert failed
 publication into successful departure or clear a session for recovery. The
-new native original-only restore/publication-failure proof is prepared; its
-result remains unqualified until actually executed.
+new original-only native proof passes: unsaved2/save1 restores in a fresh
+native process, a new action reaches3, an injected publication refusal keeps
+the live session, and explicit finite-owner cleanup exits normally. Current
+logical saves, the old checkpoint/reference and failure evidence are unchanged.
+Both native exits are independently absent and custody return is verified.
+This slice creates fresh native processes; the earlier full Rust-process proof
+remains separately retained. It does not qualify Fable or erase its prior forced
+return. See [actual source and results](evidence/cartridge-bounded-storage-20261028.json).
 
 ## Actual original-program proof
 

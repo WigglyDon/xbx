@@ -21,8 +21,75 @@
     "checks_peak_resident_bytes": 355233792,
     "build_peak_resident_bytes": 355561472
   },
-  "actual_native_proof_completed": false,
+  "actual_native_proof_completed": true,
   "commercial_acceptance": false,
   "ordinary_runtime_default_changed": false,
-  "paused_paths_preserved": true
+  "paused_paths_preserved": true,
+  "native_proof": {
+    "commercial_acceptance": false,
+    "core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "current_saves_old_checkpoint_pointer_and_failure_evidence_unchanged": true,
+    "expected_publication_error": "File exists (os error 17)",
+    "explicit_failed_observation_cleanup": {
+      "attempted": true,
+      "native_clean": true
+    },
+    "first_native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 12,
+      "reap_ms": 200,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 6,
+      "storage_synced": true
+    },
+    "fixture": "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 6,
+      "reap_ms": 1207,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 6,
+      "storage_synced": true
+    },
+    "open_system": "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46",
+    "original_only": true,
+    "passed": true,
+    "product_keeps_live_session_on_publication_failure": true,
+    "seeds_unchanged": true,
+    "unsaved2_save1_fresh_native_restore_then_action3": true,
+    "source_commit": "99899cdfa9d4d963b58eed29769251441a3d5526",
+    "tools_sha256": "90e59aafd91412643bab361e70f1583ae8149f54ccfbabe9b0ce2e9730979a98",
+    "both_natives_independently_absent": true,
+    "fresh_native_process": true,
+    "fresh_Rust_player_process_in_this_slice": false,
+    "prior_fresh_Rust_process_proof_reused": true,
+    "work_job": "5193b49115ea46b5b2733d454ac0bd09",
+    "work_seconds": 402.38616604101844,
+    "supervised_return_verified": true,
+    "all_children_retired": true,
+    "peak_aggregate_resident_bytes": 467558400
+  },
+  "resource_return": {
+    "utc": "2026-10-28T23:39:46.775972+00:00",
+    "xbx_allocated_bytes": 16058130432,
+    "xbx_total_bound": 17957126144,
+    "remaining_xbx_bound": 1898995712,
+    "available_bytes": 50711199744,
+    "shared_floor": 12884901888
+  },
+  "prior_Fable_forced_return_reclassified": false
 }
