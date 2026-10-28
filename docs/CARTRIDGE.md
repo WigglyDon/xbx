@@ -45,12 +45,28 @@ or changed ordinary save refuses automatic stale resume, preserving both sides;
 explicit restart uses current saves. Newer disk contents are never spliced into
 older RAM. Explicit user Pause differs from interruption and is checkpointed.
 
-The current desktop logical-content check uses a sparse read-only raw conversion
-and hashes canonical nonzero logical blocks. It does not hash qcow2 metadata as
-ordinary progress. Android uses a separate packaged Rust executable and a narrow read-only adapter
+The desktop logical-content check validates the retained backend's complete
+allocation map, then reads potentially nonzero ranges through read-only raw
+views of at most64MiB. It hashes the same canonical64KiB blocks, offsets and
+logical length without creating a full-size raw temporary file. A sparse8GiB
+conversion exceeded a finite qualification job's file-size guard; sparsity
+alone does not exempt a logical file length from that guard. The original-data
+regression reproduces that failure under a16MiB file limit, then verifies the
+bounded route against the old canonical identity with the source unchanged,
+including a large hole, a block boundary and a partial final block. Existing
+metadata-only and newer-save checks remain in place. It does not hash qcow2
+metadata as ordinary progress. Android uses a separate packaged Rust executable and a narrow read-only adapter
 to the retained native qcow2 backend, hashing the same logical blocks. Its device
 execution and timing remain unqualified. Host reflinks and ephemeral `-snapshot`
 are not used.
+
+Failed product departure keeps the only live session available instead of
+destroying unsaved state. A finite qualification owner that must finally exit
+explicitly retires its failed observation through the native owner, retaining
+the checkpoint error and all current/failed data. This does not convert failed
+publication into successful departure or clear a session for recovery. The
+new native original-only restore/publication-failure proof is prepared; its
+result remains unqualified until actually executed.
 
 ## Actual original-program proof
 

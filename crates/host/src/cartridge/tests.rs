@@ -84,6 +84,96 @@ impl Drop for Fixture {
 }
 
 #[test]
+#[cfg(target_os = "linux")]
+fn logical_identity_survives_file_size_limit_without_full_raw_conversion() {
+    use std::os::unix::process::{CommandExt, ExitStatusExt};
+    const LIMIT: u64 = 16 * 1024 * 1024;
+    fn bounded(command: &mut Command) {
+        unsafe extern "C" {
+            fn setrlimit(resource: i32, limits: *const [u64; 2]) -> i32;
+        }
+        unsafe {
+            command.pre_exec(|| {
+                if setrlimit(1, &[LIMIT, LIMIT]) != 0 {
+                    return Err(io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+    }
+    if let Some(dir) = std::env::var_os("XBX_TEST_SIGNATURE_DIR") {
+        let f = Fixture::new();
+        let dir = PathBuf::from(dir);
+        let result = store::signature(&dir, &f.r).unwrap();
+        assert_eq!(
+            result.disk,
+            std::env::var("XBX_TEST_SIGNATURE_EXPECTED").unwrap()
+        );
+        assert_eq!(result.eeprom, file_digest(&dir.join("eeprom.bin")).unwrap());
+        assert!(!fs::read_dir(dir).unwrap().any(|e| {
+            e.unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with("logical-chunk-")
+        }));
+        return;
+    }
+    let f = Fixture::new();
+    let dir = f.p.current().unwrap();
+    let raw = dir.join("seed.raw");
+    {
+        use std::io::{Seek, SeekFrom};
+        let mut file = OpenOptions::new().write(true).open(&raw).unwrap();
+        file.set_len(1024 * 1024 * 1024 + 512).unwrap();
+        file.seek(SeekFrom::Start(65530)).unwrap();
+        file.write_all(b"crossing canonical block boundary")
+            .unwrap();
+        file.seek(SeekFrom::End(-512)).unwrap();
+        file.write_all(b"synthetic progress after a large logical hole")
+            .unwrap();
+        file.sync_all().unwrap();
+    }
+    let expected = store::logical_digest(&raw).unwrap();
+    store::checked(
+        Command::new("/usr/bin/qemu-img")
+            .args(["convert", "-f", "raw", "-O", "qcow2", "-S", "4096"])
+            .arg(&raw)
+            .arg(dir.join("hdd.qcow2")),
+    )
+    .unwrap();
+    let disk_before = file_digest(&dir.join("hdd.qcow2")).unwrap();
+    let partial = dir.join("old-full-conversion.raw");
+    let mut old = Command::new("/usr/bin/qemu-img");
+    old.args(["convert", "-U", "-f", "qcow2", "-O", "raw", "-S", "4096"])
+        .arg(dir.join("hdd.qcow2"))
+        .arg(&partial);
+    bounded(&mut old);
+    let negative = old.output().unwrap();
+    assert!(!negative.status.success());
+    assert!(
+        negative.status.signal() == Some(25)
+            || String::from_utf8_lossy(&negative.stderr).contains("File too large")
+    );
+    let mut child = Command::new(std::env::current_exe().unwrap());
+    child.args(["--exact", "cartridge::tests::logical_identity_survives_file_size_limit_without_full_raw_conversion", "--nocapture"])
+        .env("XBX_TEST_SIGNATURE_DIR", &dir)
+        .env("XBX_TEST_SIGNATURE_EXPECTED", expected);
+    bounded(&mut child);
+    let output = child.output().unwrap();
+    assert!(
+        output.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(file_digest(&dir.join("hdd.qcow2")).unwrap(), disk_before);
+    assert!(
+        partial.exists(),
+        "retain the original failed conversion until synthetic fixture cleanup"
+    );
+}
+
+#[test]
 fn newer_write_epoch_refuses_stale_resume_before_any_disk_mutation() {
     let f = Fixture::new();
     let id = f.publish();

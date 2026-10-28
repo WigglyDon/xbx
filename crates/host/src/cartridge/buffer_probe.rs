@@ -220,3 +220,169 @@ pub(super) fn qualified(root: &Path) -> Result<(), Error> {
     }
     Ok(())
 }
+
+fn original_state(player: &mut c::desktop::Player, expected: &str) -> Result<String, Error> {
+    let started = std::time::Instant::now();
+    let mut text = String::new();
+    while started.elapsed().as_secs() < 20 {
+        text.push_str(
+            &player
+                .live
+                .as_mut()
+                .ok_or("no original runtime")?
+                .native
+                .serial()?,
+        );
+        if text.len() > 65536 {
+            return Err("original output bound".into());
+        }
+        if text.contains(expected) {
+            return Ok(text);
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    Err("original state response deadline".into())
+}
+
+/// Real native original-only proof of bounded disk identity and finite-owner
+/// cleanup. The product keeps its live session on publication failure; only
+/// this explicitly failed qualification attempt is then retired.
+pub(super) fn storage_proof(repo: &Path, root: &Path) -> Result<(), Error> {
+    qualified(root)?;
+    let dir = root.join("bounded-storage-v1");
+    c::mkdir(&dir)?;
+    let app = dir.join("original-app");
+    let media = root.join("fixtures-v2/a.iso");
+    if c::file_digest(&media)? != resources::ORIGINAL_FIXTURES[0] {
+        return Err("retained original cartridge differs".into());
+    }
+    let disk = repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2");
+    let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
+    let seeds = (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
+    let mut first = c::desktop::Player::with_resources(&app, package(root)?)?;
+    let game = first.add(&media)?;
+    let entry = c::library::Library::read(&app)?.resolve(&game)?;
+    {
+        let _profile =
+            c::store::Profile::open_seeded(&app, &entry, &first.resources, &disk, &eeprom)?;
+    }
+    let first_result = (|| -> Result<_, Error> {
+        first.launch(&game)?;
+        let run = first
+            .live
+            .as_ref()
+            .ok_or("original live")?
+            .native
+            .run
+            .clone();
+        original_state(&mut first, "CART A state=00000000 save=00000000")?;
+        first.live.as_mut().unwrap().native.fixture_input("as a")?;
+        let state = original_state(
+            &mut first,
+            "CART A state=00000002 save=00000001 cookie=57F090E4",
+        )?;
+        c::write_new(&dir.join("first-state.log"), state.as_bytes())?;
+        first.depart()?;
+        let returned: Value = c::read_json(&run.join("native-return.json"))?;
+        if returned["clean"] != true {
+            return Err("original first native return".into());
+        }
+        Ok((run, returned))
+    })();
+    if let Err(e) = first_result {
+        let cleanup = super::build::retire_failed_observation(&mut first);
+        c::write_new(
+            &dir.join("first-failure.json"),
+            &c::json(&json!({"error":e.to_string(),"cleanup":cleanup}))?,
+        )?;
+        return Err(e);
+    }
+    let (first_run, first_return) = first_result?;
+    drop(first);
+    let mut second = c::desktop::Player::with_resources(&app, package(root)?)?;
+    let observed = (|| -> Result<_, Error> {
+        if !second.launch(&game)? {
+            return Err("original checkpoint was not restored".into());
+        }
+        let run = second
+            .live
+            .as_ref()
+            .ok_or("restored live")?
+            .native
+            .run
+            .clone();
+        if fs::read(first_run.join("native.pid"))? == fs::read(run.join("native.pid"))? {
+            return Err("native process must be genuinely fresh".into());
+        }
+        second.live.as_mut().unwrap().native.fixture_input("?a")?;
+        let state = original_state(
+            &mut second,
+            "CART A state=00000003 save=00000001 cookie=6B482CC3",
+        )?;
+        if !state.contains("CART A state=00000002 save=00000001 cookie=57F090E4") {
+            return Err("restored unsaved state not observed before new action".into());
+        }
+        c::write_new(&dir.join("restored-state.log"), state.as_bytes())?;
+        second.pause(false)?;
+        let live = second.live.as_ref().unwrap();
+        let profile = live.profile.root.clone();
+        let before = c::store::signature(&live.profile.current()?, &second.resources)?;
+        let pointer = fs::read(profile.join("session.json"))?;
+        let session: c::checkpoint::Session = serde_json::from_slice(&pointer)?;
+        let old_checkpoint = profile
+            .join("checkpoints")
+            .join(session.checkpoint)
+            .join("hdd.qcow2");
+        let old_digest = c::file_digest(&old_checkpoint)?;
+        c::mkdir(&profile.join("session.pending"))?;
+        let error = second
+            .depart()
+            .err()
+            .ok_or("publication injection did not fail")?;
+        if second.live.is_none() || second.live.as_mut().unwrap().native.exited()? {
+            return Err("product must preserve the live session on save failure".into());
+        }
+        Ok((
+            run,
+            profile,
+            before,
+            pointer,
+            old_checkpoint,
+            old_digest,
+            error.to_string(),
+        ))
+    })();
+    let cleanup = super::build::retire_failed_observation(&mut second);
+    let checked = (|| -> Result<Value, Error> {
+        let (run, profile, before, pointer, old_checkpoint, old_digest, error) = observed?;
+        let live = second.live.as_ref().ok_or("failed session retained")?;
+        let returned: Value = c::read_json(&run.join("native-return.json"))?;
+        let safe = before == c::store::signature(&live.profile.current()?, &second.resources)?
+            && pointer == fs::read(profile.join("session.json"))?
+            && old_digest == c::file_digest(&old_checkpoint)?
+            && profile.join("session.pending").is_dir();
+        let unchanged = seeds == (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
+        let pass = safe
+            && unchanged
+            && returned["clean"] == true
+            && cleanup.as_ref().is_some_and(|v| v["native_clean"] == true);
+        Ok(
+            json!({"passed":pass,"original_only":true,"fixture":resources::ORIGINAL_FIXTURES[0],"core":resources::X87_RESTART_CORE,"open_system":resources::BUFFER_PROBE_LOGGING_OPEN,
+            "unsaved2_save1_fresh_native_restore_then_action3":true,"product_keeps_live_session_on_publication_failure":true,
+            "current_saves_old_checkpoint_pointer_and_failure_evidence_unchanged":safe,"seeds_unchanged":unchanged,
+            "expected_publication_error":error,"first_native_run":first_run,"first_native_return":first_return,
+            "native_run":run,"native_return":returned,"explicit_failed_observation_cleanup":cleanup,"commercial_acceptance":false}),
+        )
+    })();
+    let result = match checked {
+        Ok(v) => v,
+        Err(e) => json!({"passed":false,"error":e.to_string(),"cleanup":cleanup}),
+    };
+    c::write_new(&dir.join("original.result.json"), &c::json(&result)?)?;
+    if result["passed"] != true {
+        return Err(
+            "bounded storage or native failure cleanup proof failed; preserve evidence".into(),
+        );
+    }
+    Ok(())
+}

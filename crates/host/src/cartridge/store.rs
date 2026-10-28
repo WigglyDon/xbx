@@ -220,7 +220,7 @@ pub struct SaveSignature {
     pub disk: String,
     pub eeprom: String,
 }
-/// Hash logical disk sectors, ignoring qcow2 snapshot metadata. Conversion is
+/// Hash logical disk sectors, ignoring qcow2 snapshot metadata. Inspection is
 /// read-only and only admitted while native execution/storage is quiesced.
 pub fn signature(dir: &Path, r: &resources::Resources) -> io::Result<SaveSignature> {
     #[cfg(target_os = "android")]
@@ -246,20 +246,129 @@ pub fn signature(dir: &Path, r: &resources::Resources) -> io::Result<SaveSignatu
     }
     #[cfg(not(target_os = "android"))]
     {
-        let raw = dir.join(format!("logical-{}.raw", new_id()?));
-        checked(
-            Command::new(r.image_tool())
-                .args(["convert", "-U", "-f", "qcow2", "-O", "raw", "-S", "4096"])
-                .arg(dir.join("hdd.qcow2"))
-                .arg(&raw),
-        )?;
-        let hash = logical_digest(&raw)?;
-        fs::remove_file(&raw)?;
         Ok(SaveSignature {
-            disk: hash,
+            disk: qcow_digest(dir, &r.image_tool())?,
             eeprom: file_digest(&dir.join("eeprom.bin"))?,
         })
     }
+}
+
+#[cfg(not(target_os = "android"))]
+fn disk_metadata(command: &mut Command) -> io::Result<Vec<u8>> {
+    // Bound the allocation-map response and always reap its read-only helper.
+    const LIMIT: u64 = 64 * 1024 * 1024;
+    let mut child = command.stdout(std::process::Stdio::piped()).spawn()?;
+    let mut bytes = Vec::new();
+    let read = child
+        .stdout
+        .take()
+        .unwrap()
+        .take(LIMIT + 1)
+        .read_to_end(&mut bytes);
+    if read.is_err() || bytes.len() as u64 > LIMIT {
+        let _ = child.kill();
+    }
+    let status = child.wait()?;
+    read?;
+    if !status.success() || bytes.len() as u64 > LIMIT {
+        return Err(io::Error::other(
+            "logical storage inspection failed; progress retained",
+        ));
+    }
+    Ok(bytes)
+}
+
+#[cfg(not(target_os = "android"))]
+fn qcow_digest(dir: &Path, tool: &Path) -> io::Result<String> {
+    #[derive(Deserialize)]
+    struct Extent {
+        start: u64,
+        length: u64,
+        zero: bool,
+    }
+    let disk = dir.join("hdd.qcow2");
+    let info: serde_json::Value = serde_json::from_slice(&disk_metadata(
+        Command::new(tool)
+            .args(["info", "-U", "-f", "qcow2", "--output=json"])
+            .arg(&disk),
+    )?)?;
+    let len = info["virtual-size"]
+        .as_u64()
+        .filter(|n| *n > 0 && *n <= i64::MAX as u64)
+        .ok_or_else(|| io::Error::other("invalid logical storage length"))?;
+    let extents: Vec<Extent> = serde_json::from_slice(&disk_metadata(
+        Command::new(tool)
+            .args(["map", "-U", "-f", "qcow2", "--output=json"])
+            .arg(&disk),
+    )?)?;
+    const BLOCK: u64 = 65536;
+    const CHUNK: u64 = 64 * 1024 * 1024;
+    let mut ranges: Vec<(u64, u64)> = Vec::new();
+    let mut cursor = 0;
+    for e in extents {
+        let end = e
+            .start
+            .checked_add(e.length)
+            .filter(|end| *end <= len)
+            .ok_or_else(|| io::Error::other("invalid logical allocation extent"))?;
+        if e.start != cursor || e.length == 0 {
+            return Err(io::Error::other("incomplete logical allocation map"));
+        }
+        cursor = end;
+        if !e.zero {
+            let start = e.start / BLOCK * BLOCK;
+            let end = end.div_ceil(BLOCK).saturating_mul(BLOCK).min(len);
+            if let Some(last) = ranges.last_mut().filter(|last| last.1 >= start) {
+                last.1 = last.1.max(end);
+            } else {
+                ranges.push((start, end));
+            }
+        }
+    }
+    if cursor != len {
+        return Err(io::Error::other("incomplete logical allocation map"));
+    }
+    let mut hash = Sha256::new();
+    hash.update(len.to_le_bytes());
+    let mut bytes = [0; BLOCK as usize];
+    for (mut offset, end) in ranges {
+        while offset < end {
+            let count = (end - offset).min(CHUNK);
+            let raw = dir.join(format!("logical-chunk-{}.raw", new_id()?));
+            write_new(&raw, &[])?;
+            // A raw view bounds the helper's input length without depending on
+            // version-specific dd count/skip semantics. No full-size raw file.
+            let view = serde_json::json!({"driver":"raw","offset":offset,"size":count,
+                "file":{"driver":"qcow2","file":{"driver":"file","filename":disk}}});
+            checked(
+                Command::new(tool)
+                    .args(["dd", "-U", "-O", "raw", "bs=65536"])
+                    .arg(format!("count={}", count.div_ceil(BLOCK)))
+                    .arg(format!("if=json:{view}"))
+                    .arg(format!("of={}", raw.display())),
+            )?;
+            let mut file = File::open(&raw)?;
+            if file.metadata()?.len() != count {
+                return Err(io::Error::other(
+                    "incomplete logical storage read; partial retained",
+                ));
+            }
+            let stop = offset + count;
+            while offset < stop {
+                let size = (stop - offset).min(BLOCK) as usize;
+                file.read_exact(&mut bytes[..size])?;
+                if bytes[..size].iter().any(|b| *b != 0) {
+                    hash.update(offset.to_le_bytes());
+                    hash.update((size as u64).to_le_bytes());
+                    hash.update(&bytes[..size]);
+                }
+                offset += size as u64;
+            }
+            drop(file);
+            fs::remove_file(raw)?;
+        }
+    }
+    Ok(format!("{:x}", hash.finalize()))
 }
 /// Canonical 64KiB nonzero logical blocks plus their offsets. Sparse allocation
 /// layout does not affect identity. SEEK_DATA is an optimization, not a reliance

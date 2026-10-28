@@ -155,6 +155,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
             super::file_read::probe_regression(repo, root, false)?
         }
         "cartridge-buffer-probe-fable" => fable_logging(repo, &w, LoggingRuntime::BufferProbe)?,
+        "cartridge-bounded-storage-proof" => super::buffer_probe::storage_proof(repo, root)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
         "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,
@@ -536,6 +537,14 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     } else {
         player.stop()
     };
+    // Product departure deliberately keeps the only live session when saving
+    // fails. This finite qualification owner must explicitly retire its failed
+    // attempt before returning an error, without clearing current saves/state.
+    let failed_operation_cleanup = if returned.is_err() {
+        retire_failed_observation(&mut player)
+    } else {
+        None
+    };
     let media_after = fs::metadata(&media)?;
     let immutable_inputs_unchanged = seed_before
         == (c::file_digest(&disk)?, c::file_digest(&eeprom)?)
@@ -547,6 +556,7 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":600,
             "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
             "return_error":returned.as_ref().err().map(ToString::to_string),"continuation_checkpoint_published":continuation_checkpoint && returned.is_ok(),"immutable_inputs_unchanged":immutable_inputs_unchanged,
+            "failed_operation_cleanup":failed_operation_cleanup,
             "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
         }))?,
     )?;
@@ -559,6 +569,15 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         return Err("immutable inputs changed".into());
     }
     Ok(())
+}
+pub(super) fn retire_failed_observation(player: &mut c::desktop::Player) -> Option<Value> {
+    player
+        .live
+        .as_mut()
+        .map(|live| match c::player::Engine::retire(&mut live.native) {
+            Ok(clean) => json!({"attempted":true,"native_clean":clean}),
+            Err(e) => json!({"attempted":true,"error":e.to_string()}),
+        })
 }
 pub(super) fn section_digest(bytes: &[u8]) -> Result<[u8; 20], Error> {
     use std::process::Stdio;

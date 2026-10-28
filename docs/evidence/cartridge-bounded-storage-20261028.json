@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "purpose": "Ordinary bounded logical-storage inspection and finite-observation failure cleanup",
+  "trigger": "Fable observation reached intro then a separate disc-error screen; later checkpoint full-size sparse raw conversion exceeded per-file guard, followed by forced native scope-exit",
+  "parent_actual_results": "037632cdab6a7251445905f38c7d2e41cb574a17",
+  "implementation": "Rust validates full logical allocation-map coverage; reads only potentially nonzero ranges using retained backend raw views of at most64MiB; canonical nonzero64KiB block identity unchanged; successful owned chunks retired, failed/older files preserved",
+  "source_disk_mutated": false,
+  "file_size_guard_reduced": false,
+  "native_or_firmware_rebuilt": false,
+  "android_reader_changed": false,
+  "product_departure_keeps_live_state_on_failure": true,
+  "finite_runner_explicit_failure_retirement_added": true,
+  "tests": {
+    "scope": "10 original cartridge/storage cases",
+    "all_passed": true,
+    "new_regression": "Old full raw conversion fails under16MiB RLIMIT_FSIZE; new digest matches canonical identity of1GiB+512byte original image with block boundary, large hole and partial tail; source image unchanged",
+    "test_warning_in_first_run_corrected": true,
+    "formatting_passed": true,
+    "strict_all_target_clippy_passed": true,
+    "offline_locked_single_job_build_passed": true,
+    "checks_peak_resident_bytes": 355233792,
+    "build_peak_resident_bytes": 355561472
+  },
+  "actual_native_proof_completed": false,
+  "commercial_acceptance": false,
+  "ordinary_runtime_default_changed": false,
+  "paused_paths_preserved": true
+}
