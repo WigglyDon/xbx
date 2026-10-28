@@ -70,5 +70,45 @@
   "all_children_retired": true,
   "work_job": "963fd90b523f4227b5c6bcc45ee263fc",
   "job_outcome": "Diagnostic incomplete because buffer memory unreadable; original pass and partial mapping evidence preserved",
-  "fable_playable": false
+  "fable_playable": false,
+  "fable_allocation_followthrough": {
+    "selected_constructor_and_allocator_stops_matched": true,
+    "caller_chain_matched": true,
+    "requested_bytes": 16384,
+    "nonnull_buffer_returned": true,
+    "destination_page_directory_present": true,
+    "destination_page_entries": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "mapping_state": "Already unmapped at selected allocator return, before the file read",
+    "public_contract_cause_established": false,
+    "debugger_completed": true,
+    "memory_reads_completed": true,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 13,
+      "reap_ms": 160,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 5,
+      "storage_synced": true
+    },
+    "elapsed_ms": 7618,
+    "seeds_unchanged": true,
+    "native_independently_absent": true,
+    "supervised_return_verified": true,
+    "all_children_retired": true,
+    "work_job": "8d63028d31fd45208da2aced6e4b4898",
+    "commercial_acceptance": false
+  }
 }
