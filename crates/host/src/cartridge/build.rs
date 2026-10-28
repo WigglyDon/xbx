@@ -150,6 +150,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-file-demand-build" => super::file_read::build_demand(repo, root)?,
         "cartridge-file-demand-negative" => super::file_read::demand_negative(repo, root)?,
         "cartridge-buffer-probe-build" => super::buffer_probe::build(repo, root)?,
+        "cartridge-buffer-probe-demand" => super::file_read::probe_regression(repo, root, true)?,
+        "cartridge-buffer-probe-allocated" => {
+            super::file_read::probe_regression(repo, root, false)?
+        }
+        "cartridge-buffer-probe-fable" => fable_logging(repo, &w, LoggingRuntime::BufferProbe)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
         "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,
@@ -259,11 +264,20 @@ enum LoggingRuntime {
     Npx,
     X87,
     Flush,
+    BufferProbe,
 }
 fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result<(), Error> {
     let npx = !matches!(runtime, LoggingRuntime::Corrected);
     let flush = matches!(runtime, LoggingRuntime::Flush);
-    let x87 = matches!(runtime, LoggingRuntime::X87 | LoggingRuntime::Flush);
+    let probe = matches!(runtime, LoggingRuntime::BufferProbe);
+    let functional = flush || probe;
+    let x87 = matches!(
+        runtime,
+        LoggingRuntime::X87 | LoggingRuntime::Flush | LoggingRuntime::BufferProbe
+    );
+    if probe {
+        super::buffer_probe::qualified(&w.root)?;
+    }
     if flush {
         super::flush_io::qualified(&w.root)?;
     }
@@ -275,7 +289,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     if x87 && !w.root.join("x87-boundary-v1/original.qualified").exists() {
         return Err("corrected-core original qualification required".into());
     }
-    let prefix = if flush {
+    let prefix = if probe {
+        "fable-buffer-probe-logging"
+    } else if flush {
         "fable-flush-logging"
     } else if x87 {
         "fable-x87-logging"
@@ -303,7 +319,13 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         return Err("complete original continuity/storage-safety slice required".into());
     }
     let project = w.root.parent().ok_or("project")?;
-    let (logging, logging_pin, qualification) = if flush {
+    let (logging, logging_pin, qualification) = if probe {
+        (
+            w.root.join("buffer-probe-v1/build-logging/bios.bin"),
+            resources::BUFFER_PROBE_LOGGING_OPEN,
+            w.root.join("buffer-probe-v1/build.identity.json"),
+        )
+    } else if flush {
         (
             w.root.join("flush-io-v1/build-logging/bios.bin"),
             resources::FLUSH_LOGGING_OPEN,
@@ -332,13 +354,13 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         )
     };
     if x87
-        && !flush
+        && !functional
         && !fs::read_to_string(&qualification)?.contains(&format!("core_sha256={core}\n"))
     {
         return Err("exact corrected-core relaunch qualification required".into());
     }
     if c::file_digest(&logging)? != logging_pin
-        || (!flush
+        || (!functional
             && !fs::read_to_string(qualification)?
                 .contains(&format!("bios_sha256={logging_pin}\n")))
     {
@@ -357,7 +379,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             }))?,
         )?;
     }
-    let dev = if flush {
+    let dev = if probe {
+        super::buffer_probe::package(&w.root)?.root
+    } else if flush {
         super::flush_io::package(&w.root)?.root
     } else if x87 {
         super::x87_boundary::package(repo, &w.root)?.root
@@ -384,7 +408,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         manifest.core = core.into();
         c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
     }
-    let r = if flush {
+    let r = if probe {
+        resources::Resources::buffer_probe_logging(&dev)?
+    } else if flush {
         resources::Resources::flush_logging(&dev)?
     } else if x87 {
         resources::Resources::x87_logging(&dev)?

@@ -335,6 +335,32 @@ fn observe_with(
     Ok(())
 }
 
+/// Reuse the preserved negative and allocated-buffer image without rebuilding
+/// their game-independent data or reinterpreting earlier results.
+pub(super) fn probe_regression(repo: &Path, root: &Path, demand: bool) -> Result<(), Error> {
+    let (source, name, pin) = if demand {
+        (
+            "file-cache-demand-v3",
+            "demand-regression",
+            "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+        )
+    } else {
+        (
+            "file-cache-highva-v1",
+            "allocated-regression",
+            "da22e0e3ef9444f110a5961c2ae43ba795ba22c513823f230f02c3ed2091d951",
+        )
+    };
+    let media = root.join(source).join("original.iso");
+    if c::file_digest(&media)? != pin {
+        return Err("retained original buffer image changed".into());
+    }
+    let r = super::buffer_probe::package(root)?;
+    let dir = root.join("buffer-probe-v1").join(name);
+    c::mkdir(&dir)?;
+    observe_with(repo, root, &dir, &media, true, r)
+}
+
 /// Same generated cached-file data at a normally allocated user VA above the
 /// console's physical RAM extent. This is a file-read buffer control, not a
 /// replacement allocator or a commercial compatibility claim.

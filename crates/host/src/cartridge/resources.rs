@@ -11,6 +11,8 @@ pub const NPX_LOGGING_OPEN: &str =
     "8477c0477e1e9bac6ba9446dcd020293e46c5cb1fe5320449ae10f4c486dc11b";
 pub const FLUSH_LOGGING_OPEN: &str =
     "c94bfdb0aefa127e62d91d0377b55f75cf0023e485b5be3931727490cd595b0a";
+pub const BUFFER_PROBE_LOGGING_OPEN: &str =
+    "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46";
 pub const LOGGING_OPEN: &str = "8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e";
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
@@ -62,6 +64,11 @@ impl Resources {
     #[cfg(not(target_os = "android"))]
     pub(crate) fn flush_logging(root: &Path) -> io::Result<Self> {
         Self::validated_core(root, X87_RESTART_CORE, FLUSH_LOGGING_OPEN, true)
+    }
+    /// Exact original-backed buffer-residency development candidate.
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn buffer_probe_logging(root: &Path) -> io::Result<Self> {
+        Self::validated_core(root, X87_RESTART_CORE, BUFFER_PROBE_LOGGING_OPEN, true)
     }
     #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {

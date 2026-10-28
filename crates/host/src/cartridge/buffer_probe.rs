@@ -160,3 +160,63 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     )?;
     Ok(())
 }
+
+pub(super) fn package(root: &Path) -> Result<resources::Resources, Error> {
+    let base = super::flush_io::package(root)?;
+    let firmware = root.join("buffer-probe-v1/build-logging/bios.bin");
+    if c::file_digest(&firmware)? != resources::BUFFER_PROBE_LOGGING_OPEN {
+        return Err("buffer-probe build identity changed".into());
+    }
+    let dir = root.join("package-buffer-probe-v1");
+    if !dir.exists() {
+        c::mkdir(&dir)?;
+        fs::create_dir_all(dir.join("native/subprojects/slirp"))?;
+        for name in [
+            "native/core",
+            "native/qemu-img",
+            "native/subprojects/slirp/libslirp.so.0",
+        ] {
+            fs::hard_link(base.root.join(name), dir.join(name))?;
+        }
+        fs::hard_link(firmware, dir.join("open.bin"))?;
+        let mut manifest = base.manifest.clone();
+        manifest.open_system = resources::BUFFER_PROBE_LOGGING_OPEN.into();
+        c::write_new(&dir.join("runtime.json"), &c::json(&manifest)?)?;
+    }
+    Ok(resources::Resources::buffer_probe_logging(&dir)?)
+}
+
+pub(super) fn qualified(root: &Path) -> Result<(), Error> {
+    for (name, fixture) in [
+        (
+            "demand-regression",
+            "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+        ),
+        (
+            "allocated-regression",
+            "da22e0e3ef9444f110a5961c2ae43ba795ba22c513823f230f02c3ed2091d951",
+        ),
+    ] {
+        let dir = root.join("buffer-probe-v1").join(name);
+        let r: Value = c::read_json(&dir.join("original.result.json"))?;
+        if r["guest_passed"] != true
+            || r["data_verified"] != true
+            || r["native_clean"] != true
+            || r["seeds_unchanged"] != true
+            || r["fixture"] != fixture
+            || r["core"] != resources::X87_RESTART_CORE
+            || r["open_system"] != resources::BUFFER_PROBE_LOGGING_OPEN
+        {
+            return Err("exact original buffer-residency regressions required".into());
+        }
+        if name == "demand-regression" {
+            let serial = fs::read_to_string(dir.join("serial.log"))?;
+            if !serial.contains("XBX FILE READ DEMAND HEADER PASS")
+                || !serial.contains("XBX FILE READ DEMAND PAGES PASS")
+            {
+                return Err("actual demand commits during I/O required".into());
+            }
+        }
+    }
+    Ok(())
+}

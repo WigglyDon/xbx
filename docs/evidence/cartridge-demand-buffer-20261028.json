@@ -52,8 +52,29 @@
   ],
   "candidate_patch": "patches/oxos-buffer-probe.patch",
   "candidate_scope": "Probe caller pages before DISPATCH_LEVEL and page locking; do not probe completion-time unlock",
-  "candidate_built": false,
+  "candidate_built": true,
   "regression_after_patch": false,
   "fable_cause_established": false,
-  "fable_playable": false
+  "fable_playable": false,
+  "candidate_build": {
+    "source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+    "cromwell": "86f547387184d1001d377cce97d3756c8acf91cc",
+    "functional_patch": "183256b8be87210bf248138d57e2ad80a74cd4d57630dc02934d9961b849aa4b",
+    "changed": [
+      "kernel/src/mm/memory.cpp"
+    ],
+    "firmware": "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46",
+    "kernel": "04e134d340cfc3f31d7ca57574b39c936e55ffa28be2e129cd341abff4adcc85",
+    "map": "61829b6fc383ec7bf1e02cf77deed22ca782dd7be7966d15ca14279aee191297",
+    "retained_core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "compiler": "ad535f0b6fc303edba958b51636169ff0291c6e36463236c99ff8abcaa34247c",
+    "linker": "e056852f9ab38648c7eed62e29673998e038110641b36d84d5556b5ffc2ecc0d",
+    "compiler_jobs": 1,
+    "serial": true,
+    "trace_imports": false,
+    "work_job": "490cddad714a4d408404873ba464bcc3",
+    "supervised_return_verified": true,
+    "all_children_retired": true,
+    "regression_qualified": false
+  }
 }
