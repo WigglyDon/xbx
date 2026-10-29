@@ -48,6 +48,17 @@ fn termination_status(
 }
 const RETIRE_GRACE_SECONDS: u64 = 15;
 
+fn cache_directory(path: &Path) -> io::Result<()> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.is_dir() => Ok(()),
+        Ok(_) => Err(io::Error::other(
+            "host cache path is not an owned directory",
+        )),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => mkdir(path),
+        Err(error) => Err(error),
+    }
+}
+
 pub struct Native {
     child: Process,
     monitor: super::monitor::Monitor,
@@ -129,14 +140,35 @@ impl Native {
         if !r.window {
             c.args(["-display", "none"]);
         }
-        for (key, name) in [
-            ("XDG_DATA_HOME", "data"),
-            ("XDG_CONFIG_HOME", "config"),
-            ("XDG_CACHE_HOME", "cache"),
-            ("MESA_SHADER_CACHE_DIR", "mesa"),
-            ("XDG_STATE_HOME", "state"),
+        // Derived host shader caches survive native process replacement. The
+        // profile lease owns their writer; the exact runtime identity separates
+        // incompatible builds. They are neither guest saves nor checkpoint RAM.
+        let host = p.root.join("host-cache");
+        cache_directory(&host)?;
+        let cache = host.join(&r.identity);
+        cache_directory(&cache)?;
+        write_new(
+            &run.join("host-cache.json"),
+            &super::json(
+                &json!({"runtime":r.identity,"root":cache,"scope":"derived host caches; not guest storage or checkpoint state"}),
+            )?,
+        )?;
+        for (key, name, persistent) in [
+            ("XDG_DATA_HOME", "data", true),
+            ("XDG_CONFIG_HOME", "config", false),
+            ("XDG_CACHE_HOME", "cache", true),
+            ("MESA_SHADER_CACHE_DIR", "mesa", true),
+            ("XDG_STATE_HOME", "state", false),
         ] {
-            c.env(key, run.join(name));
+            let path = if persistent {
+                cache.join(name)
+            } else {
+                run.join(name)
+            };
+            if persistent {
+                cache_directory(&path)?;
+            }
+            c.env(key, path);
         }
         if with_uart {
             c.args(["-device", "lpc47m157"]);
@@ -408,6 +440,30 @@ pub fn original_partial_load_test(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn host_cache_preserves_existing_files_and_refuses_symlink_targets() {
+        let root = std::env::temp_dir().join(format!("xbx-host-cache-{}", new_id().unwrap()));
+        mkdir(&root).unwrap();
+        let cache = root.join("cache");
+        cache_directory(&cache).unwrap();
+        fs::write(cache.join("existing"), b"preserve derived data").unwrap();
+        cache_directory(&cache).unwrap();
+        let link = root.join("link");
+        std::os::unix::fs::symlink(&cache, &link).unwrap();
+        assert!(cache_directory(&link).is_err());
+        assert!(
+            fs::symlink_metadata(&link)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            fs::read(cache.join("existing")).unwrap(),
+            b"preserve derived data"
+        );
+        assert_eq!(fs::read_dir(&cache).unwrap().count(), 1);
+        fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn normal_exit_deadline_and_forced_signal_are_distinct_actual_outcomes() {
         let zero = Command::new("/usr/bin/true").status().unwrap();

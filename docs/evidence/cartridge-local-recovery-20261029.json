@@ -8,7 +8,8 @@
     "paused_source_paths_byte_equal": 16,
     "existing_user_data_preserved": true,
     "ordinary_runtime_default_changed": false,
-    "installed_candidate_changed": false
+    "installed_candidate_changed": false,
+    "installed_candidate_and_resource_selection_unchanged": true
   },
   "build": {
     "kernel_source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
@@ -37,7 +38,11 @@
     "final_current_observation_builder_codegen_pending": false,
     "original_native_conformance_passed": true,
     "ordinary_media_alias_and_finite_play_runner_strict_clippy_passed": true,
-    "ordinary_play_runner_codegen_passed": true
+    "ordinary_play_runner_codegen_passed": true,
+    "host_cache_preservation_symlink_test_passed": 1,
+    "host_cache_first_test_filter_selected_zero": true,
+    "latest_cartridge_source_strict_all_target_clippy_passed": true,
+    "latest_runner_codegen_passed": true
   },
   "preserved_build_attempts": [
     "Source-composition refusal before native execution; standalone Git application corrected the ignored-directory context.",
@@ -52,9 +57,11 @@
     "device_operation_performed": true,
     "sibling_source_modified": false,
     "public_binary_release": false,
-    "current_Fable_visible_result": "Reporting build reaches Press START, main menu after Start, then profile-name keyboard after A. No gameplay, sound, ordinary save/reload or full-session restoration qualified."
+    "current_Fable_visible_result": "Non-reporting open build: opening village, tutorial dismissal and visible forward left-stick movement. Owner reports unbearable lag. Complete menu checkpoint written; fresh-process return aborts in public native APU DSP program-memory read.",
+    "controlled_desktop_gameplay_observed": true,
+    "phone_Fable_qualified": false
   },
-  "continuation": "The focused reporting observation is complete with a clean native return. Continue finite visible gameplay qualification on the already-qualified non-reporting baseline in fresh storage; existing profiles and paused investigations remain preserved.",
+  "continuation": "Preserve the first controlled open-runtime gameplay and coherent checkpoint. Independently qualify the observed public APU reset/quiescence boundary with original generated DSP state before any targeted core correction. No repeated unchanged Fable fault trial, private instruction campaign, firmware rebuild, phone trial or sibling mutation.",
   "actual_original_conformance": [
     {
       "control": "baseline",
@@ -231,5 +238,78 @@
     "healthy_checkpoint_published": false,
     "gameplay_sound_save_and_unsaved_return_qualified": false,
     "followup": "Fresh non-reporting baseline play qualification, with normal manually reviewed controller input and a finite owner; existing reporting profile preserved."
+  },
+  "ordinary_Fable_actual": {
+    "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+    "open_image": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+    "io_failure_reporter": false,
+    "unchanged_read_only_game_and_existing_profile": true,
+    "controlled_play": {
+      "new_game_loading_observed": true,
+      "story_subtitles_observed": true,
+      "opening_village_and_tutorial_observed": true,
+      "A_dismisses_tutorial": true,
+      "left_stick_forward_response_observed": true,
+      "evidence": "Character advanced along village path; world/camera view and minimap position changed after mapped E input. W is a trigger and Up is D-pad; they do not prove left-stick movement.",
+      "scope": "Opening village and one forward movement only",
+      "maximum_seconds": 1200,
+      "elapsed_ms_including_retirement": 1200514,
+      "normal_native_return": true,
+      "qmp_acknowledged": true,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "storage_synced": true,
+      "immutable_inputs_unchanged": true,
+      "checkpoint_published": false,
+      "limit": "The early finite budget expired before the departure request; preserve this completed gameplay observation."
+    },
+    "cold_launch_profile_recognition": {
+      "Continue_Game_visible": true,
+      "profile_load_executed": false,
+      "ordinary_manual_save_reload_qualified": false
+    },
+    "complete_checkpoint": {
+      "scope": "Main menu with noninitial Extras selection; not gameplay restoration",
+      "published_through_product_departure": true,
+      "elapsed_ms_including_retirement": 2380560,
+      "native_exit": "exit status: 0",
+      "qmp_acknowledged": true,
+      "native_reaped": true,
+      "storage_synced": true,
+      "quit_ack_ms": 12,
+      "reap_ms": 301,
+      "storage_sync_ms": 379
+    },
+    "fresh_process_return": {
+      "attempted": true,
+      "visible_restoration_qualified": false,
+      "native_exit": "signal 6 (SIGABRT)",
+      "qmp_quit_acknowledged": false,
+      "native_reaped": true,
+      "native_absent_verified": true,
+      "native_scope_exit_receipt_forced_flag_is_not_SIGKILL_evidence": true,
+      "boundary": "Public native APU C interpreter read_memory_p rejects program word outside 24 bits during return.",
+      "cause_independently_reproduced": false,
+      "authoritative_disk_logically_equal_to_checkpoint": true,
+      "checkpoint_complete_bytes_unchanged": true,
+      "current_eeprom_matches_checkpoint": true,
+      "current_generation_matches_checkpoint": true,
+      "current_pointer_and_session_reference_preserved": true
+    },
+    "frontend_corrections": {
+      "finite_operator_session": "At most100 whitelisted controller/capture/pause/resume/depart commands; foreground terminal mode; ordinary one-hour budget uses product departure, with explicit finite failure cleanup.",
+      "prior_background_terminal_attempt": "Confirmed SIGTTIN stop; exact owned job group retired, no live owned processes, current storage synced; not a clean native-return result.",
+      "short_menu_tap_helper": "Separate180ms helper prepared; old read-only helper preserved. Actual one-row response remains unqualified.",
+      "derived_host_cache": "Profile/runtime-scoped persistent cache paths implemented; existing-file preservation and symlink-refusal test passes; new native directory creation observed. No old cache removed.",
+      "cache_reuse_or_performance_benefit_qualified": false
+    },
+    "performance": {
+      "owner_reports_unbearable_lag": true,
+      "frame_rate_measured": false,
+      "playable_pacing_qualified": false
+    },
+    "audible_sound_qualified": false,
+    "ordinary_save_reload_qualified": false,
+    "unsaved_fresh_process_restore_qualified": false
   }
 }

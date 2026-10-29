@@ -3,7 +3,11 @@
 use super::{self as c, resources};
 use serde_json::{Value, json};
 use std::io::Write;
-use std::{fs, path::Path, process::Command};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 use std::{
     io::{BufRead, BufReader},
     process::{Child, ChildStdin, ChildStdout, Stdio},
@@ -153,6 +157,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-local-io-demand" => super::local_io::control(repo, root, true, true)?,
         "cartridge-local-io-fable" => super::local_io::fable(repo, root)?,
         "cartridge-local-fable-play" => super::local_io::play(repo, root)?,
+        "cartridge-local-fable-continue" => super::local_io::continue_play(repo, root)?,
+        "cartridge-local-fable-return" => super::local_io::return_play(repo, root)?,
         "cartridge-file-highva-build" => super::file_read::build_high_va(repo, root)?,
         "cartridge-file-highva-observe" => super::file_read::observe_high_va(repo, root)?,
         "cartridge-file-demand-build" => super::file_read::build_demand(repo, root)?,
@@ -478,6 +484,8 @@ pub(super) fn observe_logging_fable(
             checkpoint_on_budget: x87 && !io_errors,
             io_errors,
             interactive: false,
+            existing_app: None,
+            restore_existing: false,
         },
     )
 }
@@ -487,6 +495,8 @@ pub(super) fn observe_local_play(
     root: &Path,
     r: resources::Resources,
     prefix: &str,
+    existing_app: Option<PathBuf>,
+    restore_existing: bool,
 ) -> Result<(), Error> {
     observe_fable(
         repo,
@@ -495,9 +505,11 @@ pub(super) fn observe_local_play(
         prefix,
         FableObservation {
             matched_media: true,
-            checkpoint_on_budget: false,
+            checkpoint_on_budget: true,
             io_errors: false,
             interactive: true,
+            existing_app,
+            restore_existing,
         },
     )
 }
@@ -507,6 +519,8 @@ struct FableObservation {
     checkpoint_on_budget: bool,
     io_errors: bool,
     interactive: bool,
+    existing_app: Option<PathBuf>,
+    restore_existing: bool,
 }
 
 fn observe_fable(
@@ -517,14 +531,22 @@ fn observe_fable(
     recipe: FableObservation,
 ) -> Result<(), Error> {
     let w = BuildPaths { root: root.into() };
-    let app = w.root.join(format!("{prefix}-{}", c::new_id()?));
+    let continuing = recipe.existing_app.is_some();
+    let app = match &recipe.existing_app {
+        Some(app) => app.clone(),
+        None => w.root.join(format!("{prefix}-{}", c::new_id()?)),
+    };
     let mut player = c::desktop::Player::with_resources(&app, r)?;
     let media = std::path::PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?);
     let admission_started = Instant::now();
-    let game = player.add(&media)?;
+    let game = if continuing {
+        player.last_game()?.ok_or("existing ordinary game target")?
+    } else {
+        player.add(&media)?
+    };
     println!(
         "{}",
-        json!({"stage":"game_imported_without_copy","elapsed_ms":admission_started.elapsed().as_millis()})
+        json!({"stage":if continuing {"existing_collection_target"} else {"game_imported_without_copy"},"elapsed_ms":admission_started.elapsed().as_millis()})
     );
     let entry = c::library::Library::read(&app)?.resolve(&game)?;
     if recipe.matched_media && entry.media_sha256 != std::env::var("XBX_REFERENCE_MEDIA_SHA256")? {
@@ -540,7 +562,7 @@ fn observe_fable(
     }
     let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
     let seed_before = (c::file_digest(&disk)?, c::file_digest(&eeprom)?);
-    {
+    if !continuing {
         let _profile =
             c::store::Profile::open_seeded(&app, &entry, &player.resources, &disk, &eeprom)?;
     }
@@ -551,16 +573,35 @@ fn observe_fable(
             &json!({"app":app,"same_seed":true,"media_import_ms":admission_started.elapsed().as_millis()}),
         )?,
     )?;
-    player.launch(&game)?;
+    if continuing && !recipe.restore_existing {
+        // The finite prior owner explicitly stopped without a checkpoint. Use
+        // the product's explicit restart against current storage, never reset
+        // that storage to its original seed or silently bypass dirty recovery.
+        player.restart(&game)?;
+    }
+    let restored = if recipe.restore_existing {
+        let restored = player.launch_quiesced(&game)?;
+        if !restored {
+            player.stop()?;
+            return Err("a validated complete checkpoint is required for return".into());
+        }
+        if !player.live.as_ref().ok_or("restored live session")?.paused {
+            player.resume()?;
+        }
+        true
+    } else {
+        player.launch(&game)?
+    };
     let run = player.live.as_ref().ok_or("live")?.native.run.clone();
     println!(
         "{}",
-        json!({"fresh_product_app":app,"native_run":run,"same_seed":true,"controller_attachment":"verified_native_inventory"})
+        json!({"product_app":app,"fresh_app":!continuing,"native_run":run,"same_seed":true,"restored":restored,"controller_attachment":"verified_native_inventory"})
     );
+    let observation_dir = if continuing { &run } else { &app };
     let mut log = fs::OpenOptions::new()
         .write(true)
         .create_new(true)
-        .open(app.join("kernel.log"))?;
+        .open(observation_dir.join("kernel.log"))?;
     let started = Instant::now();
     let mut text = String::new();
     let mut events = Vec::new();
@@ -570,10 +611,10 @@ fn observe_fable(
     let mut captures = vec![
         3, 10, 25, 75, 115, 145, 180, 240, 300, 330, 360, 390, 420, 480, 510, 550, 585,
     ];
-    let maximum_seconds = if recipe.interactive { 1200 } else { 600 };
+    let maximum_seconds = if recipe.interactive { 3600 } else { 600 };
     if recipe.interactive {
         captures.retain(|second| *second < 300);
-        captures.extend((300..1200).step_by(15));
+        captures.extend((300..3600).step_by(30));
     }
     let mut next_input = 0;
     let mut inputs = vec![
@@ -586,8 +627,72 @@ fn observe_fable(
     if recipe.interactive {
         inputs.clear();
     }
+    // One admitted finite operator session can send normal commands without
+    // launching another owner or waiting for per-key host admission. The task
+    // owner remains responsible for native cleanup after client EOF/timeouts.
+    let (operator_tx, operator_rx) = std::sync::mpsc::sync_channel(4);
+    if recipe.interactive {
+        std::thread::spawn(move || {
+            for line in std::io::stdin().lock().lines().take(100) {
+                let Ok(line) = line else { break };
+                if line.len() > 4096 || operator_tx.send(line).is_err() {
+                    break;
+                }
+            }
+        });
+    }
     let observe = (|| -> Result<&str, Error> {
         loop {
+            let mut operator_capture = false;
+            if let Ok(line) = operator_rx.try_recv() {
+                let command: Value = serde_json::from_str(&line)?;
+                match command["op"].as_str() {
+                    Some("capture") => operator_capture = true,
+                    Some("depart") => return Ok("operator_requested_product_departure"),
+                    Some("stop") => return Ok("operator_requested_stop"),
+                    Some("pause") => player.pause(true)?,
+                    Some("resume") => player.resume()?,
+                    Some("key") => {
+                        let key = command["key"].as_str().ok_or("normal controller key")?;
+                        if ![
+                            "Return",
+                            "BackSpace",
+                            "Up",
+                            "Down",
+                            "Left",
+                            "Right",
+                            "a",
+                            "b",
+                            "x",
+                            "y",
+                            "w",
+                            "s",
+                            "d",
+                            "q",
+                            "e",
+                            "i",
+                            "j",
+                            "k",
+                            "l",
+                        ]
+                        .contains(&key)
+                        {
+                            return Err("unsupported normal controller key".into());
+                        }
+                        let result = Command::new("python3")
+                            .arg(repo.join(".local/ramht-window-input-v2.py"))
+                            .arg(&run)
+                            .arg(player.resources.core())
+                            .arg(key)
+                            .output()?;
+                        let event = json!({"elapsed_ms":started.elapsed().as_millis(),"normal_key":key,"operator_exit":result.status.code(),"visible_response_unqualified":true});
+                        println!("{event}");
+                        events.push(event);
+                        operator_capture = true;
+                    }
+                    _ => return Err("unsupported finite operator command".into()),
+                }
+            }
             let native = &mut player.live.as_mut().ok_or("live")?.native;
             let new = native.serial()?;
             log.write_all(new.as_bytes())?;
@@ -607,14 +712,22 @@ fn observe_fable(
             let terminal =
                 text.contains("*** bug check") || text.contains("*** unexpected exception ");
             let elapsed = started.elapsed().as_secs();
-            if terminal || next_capture < captures.len() && elapsed >= captures[next_capture] {
+            let scheduled_capture =
+                next_capture < captures.len() && elapsed >= captures[next_capture];
+            if terminal || operator_capture || scheduled_capture {
                 let result = Command::new("python3")
                     .arg(repo.join(".local/capture-ramht-window-v2.py"))
                     .arg(&run)
                     .arg(player.resources.core())
                     .output()?;
                 events.push(json!({"elapsed_ms":started.elapsed().as_millis(),"capture_exit":result.status.code(),"output":String::from_utf8_lossy(&result.stdout),"error":String::from_utf8_lossy(&result.stderr),"visible_review_required":true}));
-                next_capture += 1;
+                if operator_capture {
+                    println!(
+                        "{}",
+                        json!({"capture":String::from_utf8_lossy(&result.stdout).trim(),"exit":result.status.code(),"visible_review_required":true})
+                    );
+                }
+                next_capture += usize::from(scheduled_capture);
             }
             if terminal {
                 return Ok("guest_terminal_startup_failure");
@@ -635,7 +748,7 @@ fn observe_fable(
             }
             // Private finite-task operator request after actual visible review.
             // The product owner still performs the complete durable departure.
-            if recipe.interactive && app.join("operator-depart").is_file() {
+            if recipe.interactive && observation_dir.join("operator-depart").is_file() {
                 return Ok("operator_requested_product_departure");
             }
             if elapsed >= maximum_seconds {
@@ -651,9 +764,9 @@ fn observe_fable(
     };
     // An observed terminal machine is retained as diagnostic evidence, not
     // published as a healthy automatic-return checkpoint.
-    // Reporting and unreviewed budget expiry stop with ordinary storage retained.
-    // Only the interactive operator's reviewed departure requests a checkpoint;
-    // publication itself does not establish a gameplay/continuity milestone.
+    // Reporting stops with ordinary storage retained. Ordinary interactive
+    // expiry uses product departure to preserve unsaved state. Publication
+    // itself does not establish a healthy gameplay/continuity milestone.
     let continuation_checkpoint = reason == "operator_requested_product_departure"
         || recipe.checkpoint_on_budget
             && reason == "observation_budget_expired_requires_visual_review";
@@ -676,7 +789,7 @@ fn observe_fable(
         && media_before.len() == media_after.len()
         && media_before.modified()? == media_after.modified()?;
     c::write_new(
-        &app.join("observation.json"),
+        &observation_dir.join("observation.json"),
         &c::json(&json!({
             "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":maximum_seconds,
             "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
@@ -684,13 +797,15 @@ fn observe_fable(
             "failed_operation_cleanup":failed_operation_cleanup,
             "public_io_error_diagnostics_only":recipe.io_errors,
             "interactive_visible_review_recipe":recipe.interactive,
+            "explicit_restart_of_preserved_profile":continuing && !recipe.restore_existing,
+            "complete_checkpoint_restored":restored,
             "public_io_failure_messages":io_messages,
             "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
         }))?,
     )?;
     println!(
         "{}",
-        json!({"result":app.join("observation.json"),"reason":reason,"normal_retirement":returned.is_ok()})
+        json!({"result":observation_dir.join("observation.json"),"reason":reason,"normal_retirement":returned.is_ok()})
     );
     returned?;
     if !immutable_inputs_unchanged {

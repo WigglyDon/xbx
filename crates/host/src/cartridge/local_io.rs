@@ -178,10 +178,46 @@ pub(super) fn play(repo: &Path, root: &Path) -> Result<(), Error> {
             "prior_reporting_result":c::file_digest(&app.join("observation.json"))?,
             "actual_original_conformance_passed":true,"ordinary_product_policy":true,
             "memory_mib":64,"network":"none","fp":"native","graphics":"Intel OpenGL",
-            "public_io_failure_diagnostics":false,"maximum_seconds":1200,
+            "public_io_failure_diagnostics":false,"maximum_seconds":3600,
             "input":"manual normal controller, actual visible review required",
-            "departure":"operator-depart requests product checkpoint; budget expiry stops and preserves ordinary storage"
+            "departure":"operator-depart or ordinary budget expiry requests the product checkpoint; actual healthy restoration remains separately unqualified"
         }))?,
     )?;
-    super::build::observe_local_play(repo, root, r, prefix)
+    super::build::observe_local_play(repo, root, r, prefix, None, false)
+}
+
+pub(super) fn continue_play(repo: &Path, root: &Path) -> Result<(), Error> {
+    qualified(root)?;
+    let prior: Value = c::read_json(&root.join("fable-local-play.native-started.json"))?;
+    let app = Path::new(prior["app"].as_str().ok_or("prior ordinary app")?);
+    let result: Value = c::read_json(&app.join("observation.json"))?;
+    if result["normal_retirement"] != true
+        || result["immutable_inputs_unchanged"] != true
+        || result["continuation_checkpoint_published"] != false
+    {
+        return Err("reconcile the preserved ordinary attempt before explicit restart".into());
+    }
+    let returned: Value = c::read_json(
+        &Path::new(result["native_run"].as_str().ok_or("prior native run")?)
+            .join("native-return.json"),
+    )?;
+    if returned["clean"] != true || returned["native_reaped"] != true {
+        return Err("prior ordinary native return is incomplete".into());
+    }
+    // Each ordinary restart retains its own run receipt. The actual app/profile
+    // leases still refuse a second live owner; no prior attempt is overwritten.
+    let prefix = format!("fable-local-play-continue-{}", c::new_id()?);
+    let r = package(root, false)?;
+    super::build::observe_local_play(repo, root, r, &prefix, Some(app.into()), false)
+}
+
+/// Continue the same ordinary cartridge only through its actual coherent saved
+/// machine. Exclusive product/profile leases and checkpoint validation apply.
+pub(super) fn return_play(repo: &Path, root: &Path) -> Result<(), Error> {
+    qualified(root)?;
+    let prior: Value = c::read_json(&root.join("fable-local-play.native-started.json"))?;
+    let app = Path::new(prior["app"].as_str().ok_or("ordinary cartridge app")?);
+    let prefix = format!("fable-local-play-return-{}", c::new_id()?);
+    let r = package(root, false)?;
+    super::build::observe_local_play(repo, root, r, &prefix, Some(app.into()), true)
 }

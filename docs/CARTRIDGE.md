@@ -31,12 +31,40 @@ record the exact scope. Historical paths and receipts grant no storage use.
 requires the accepted original gates and a reconciled clean reporting return,
 then reuses the qualified baseline without the I/O reporter. It accepts normal
 controller input through the owned window, with actual frame review and a
-1,200-second budget. An operator-created `operator-depart` file in that fresh app
+3,600-second budget. An operator-created `operator-depart` file in that fresh app
 directory requests the existing product checkpoint/departure policy after review;
-unreviewed budget expiry stops the machine and preserves ordinary storage. A
+ordinary budget expiry uses the same product departure policy. A
 failed departure is retained and explicitly retired by the finite owner. Neither
 a delivered key nor a published checkpoint is itself a gameplay or resume proof.
 This adds no user firmware choice and changes no installed/default runtime.
+
+The non-reporting baseline subsequently reached the opening village. A dismissed
+tutorial prompt revealed the gameplay HUD, and the mapped left-stick-forward
+input visibly advanced the character, camera/world view and minimap position.
+This is first controlled desktop Fable gameplay, limited to that opening action.
+The owner reports unbearable lag; frame rate and usable pacing remain unmeasured.
+Dummy audio qualifies no sound. A later cold launch displayed Continue Game,
+but an ordinary save/load has not yet been exercised.
+
+A complete menu-state checkpoint was published through the product departure
+path with native exit0, acknowledged quit, reap and storage sync. Its genuinely
+fresh-process return aborted in the public APU interpreter's24-bit program-word
+check. The child is absent; read-only comparison verifies unchanged authoritative
+disk contents, EEPROM, generation, checkpoint bytes and current/session pointers.
+A written checkpoint therefore earns no visible Fable restoration. The current
+public APU reset/quiescence boundary needs an original reproducer before repair.
+
+The finite interactive owner now accepts up to100 whitelisted normal commands in
+one foreground terminal session. An earlier background-terminal attempt stopped
+on SIGTTIN and was explicitly retired with its failed receipt preserved. The
+ordinary one-hour budget uses product departure to retain unsaved state; snapshot
+publication remains separate from successful restoration or playable performance.
+A separate180ms menu-tap helper preserves the old read-only input helper. Its
+one-row behavior is not yet qualified. Derived host shader caches now belong to
+the profile and exact runtime identity, rather than each transient native run.
+A synthetic filesystem test verifies existing-file preservation and refusal of
+symlink targets. Prior caches remain intact. Native directory creation is
+observed; actual warm reuse and any performance benefit remain unqualified.
 
 The Rust cartridge path imports a local XDVDFS image once, assigns stable game
 and profile identities, supports exact-media relinking and generates isolated
@@ -626,7 +654,7 @@ profiles, checkpoints, builds, rollback artifacts and sixteen paused paths remai
 Fable's completed observations were not repeated; its compatibility is still
 unqualified. This earns the scoped original-cartridge Android continuity milestone.
 
-The remaining Fable boundary is the retained corrected-logging observation:
+At that earlier Android milestone, the Fable boundary was the corrected-logging observation:
 selection/handoff returns, then a terminal access violation outside the public
 kernel map. The two original startup-thread lifetime cases already pass on both
 reference and open implementations. Under Master6399143636's pass branch,
