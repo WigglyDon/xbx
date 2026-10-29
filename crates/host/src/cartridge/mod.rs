@@ -6,6 +6,8 @@ mod android_build;
 #[cfg(not(target_os = "android"))]
 mod android_package;
 #[cfg(not(target_os = "android"))]
+mod apu_quiesce;
+#[cfg(not(target_os = "android"))]
 mod buffer_probe;
 #[cfg(not(target_os = "android"))]
 pub mod build;

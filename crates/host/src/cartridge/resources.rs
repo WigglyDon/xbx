@@ -25,6 +25,10 @@ pub const LOCAL_IO_CORE: &str = match option_env!("XBX_LOCAL_IO_CORE_SHA256") {
 pub const LOCAL_BASE_OPEN: &str =
     "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c";
 pub const LOCAL_IO_OPEN: &str = "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e";
+pub const APU_QUIESCENT_CORE: &str = match option_env!("XBX_APU_QUIESCENT_CORE_SHA256") {
+    Some(value) => value,
+    None => "unqualified-apu-build",
+};
 pub const LOGGING_OPEN: &str = "8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e";
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
@@ -98,6 +102,10 @@ impl Resources {
             },
             true,
         )
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn apu_quiescent(root: &Path) -> io::Result<Self> {
+        Self::validated_core(root, APU_QUIESCENT_CORE, LOCAL_BASE_OPEN, true)
     }
     #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {

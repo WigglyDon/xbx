@@ -367,3 +367,9 @@ each failure class has32 lines and one limit marker. Paths, payloads, caller
 instructions and stacks are excluded. This is diagnostic source for the newly
 observed disc-error boundary, with game acceptance still requiring actual
 visible results and an independently supported correction.
+
+The targeted `patches/xemu-apu-paused-reset.patch` modifies the retained xemu
+APU reset hook under that file's LGPL-2.0-or-later terms, preserving upstream
+notices and lineage. The generated-data Rust QTest control is original MIT code.
+See `docs/evidence/cartridge-apu-quiescence-20261029.json` for the exact source,
+patch/candidate identities and actual red/green/active-control scope.

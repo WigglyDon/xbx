@@ -1,0 +1,28 @@
+Subject: [xbx] Keep the APU worker quiesced through a stopped-machine reset
+
+Target: xemu 03b988c9d76553b33ed712ba00822ffdf49f0e7d with retained repairs.
+The modified file retains its LGPL-2.0-or-later terms and upstream notices.
+Original generated-DSP control independently reproduces execution and the
+program-word assertion after reset while QMP reports the VM stopped.
+
+diff --git a/hw/xbox/mcpx/apu/apu.c b/hw/xbox/mcpx/apu/apu.c
+--- a/hw/xbox/mcpx/apu/apu.c
++++ b/hw/xbox/mcpx/apu/apu.c
+@@ -332,11 +332,16 @@ static void mcpx_apu_reset_hold(Object *obj, ResetType type)
+ {
+     MCPXAPUState *d = MCPX_APU_DEVICE(obj);
++    bool running = runstate_is_running();
+ 
+     bql_unlock();
+     qemu_mutex_lock(&d->lock);
+     mcpx_apu_wait_for_idle(d);
+     mcpx_apu_reset_locked(d);
+-    mcpx_apu_resume(d);
++    /* Snapshot loading resets devices while stopped. Keep the worker idle
++     * until the running-state handler synchronizes the loaded DSP backend. */
++    if (running) {
++        mcpx_apu_resume(d);
++    }
+     qemu_mutex_unlock(&d->lock);
+     bql_lock();
+ }
