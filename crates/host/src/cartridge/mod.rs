@@ -23,12 +23,16 @@ mod flush_io;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;
+#[cfg(not(target_os = "android"))]
+mod local_io;
 pub(crate) mod monitor;
 #[cfg(not(target_os = "android"))]
 mod npx_followup;
 #[cfg(not(target_os = "android"))]
 mod npx_port;
 pub mod player;
+#[cfg(not(target_os = "android"))]
+mod rebuild;
 pub mod resources;
 pub mod store;
 #[cfg(all(test, not(target_os = "android")))]

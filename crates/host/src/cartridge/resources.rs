@@ -15,6 +15,16 @@ pub const BUFFER_PROBE_LOGGING_OPEN: &str =
     "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46";
 pub const IO_ERRORS_LOGGING_OPEN: &str =
     "7f58744b2c2a875e403f06a650d52c687f44ce4ef5b44a3d8228e8fd4f131aae";
+// Private desktop qualification rebuilds bind their actual executable at build
+// time, as the Android package already does. No runtime environment override
+// or ordinary product resource selector is added. An unbound build refuses.
+pub const LOCAL_IO_CORE: &str = match option_env!("XBX_LOCAL_IO_CORE_SHA256") {
+    Some(value) => value,
+    None => "unqualified-local-build",
+};
+pub const LOCAL_BASE_OPEN: &str =
+    "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c";
+pub const LOCAL_IO_OPEN: &str = "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e";
 pub const LOGGING_OPEN: &str = "8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e";
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
@@ -75,6 +85,19 @@ impl Resources {
     #[cfg(not(target_os = "android"))]
     pub(crate) fn io_errors_logging(root: &Path) -> io::Result<Self> {
         Self::validated_core(root, X87_RESTART_CORE, IO_ERRORS_LOGGING_OPEN, true)
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn local_io(root: &Path, reporting: bool) -> io::Result<Self> {
+        Self::validated_core(
+            root,
+            LOCAL_IO_CORE,
+            if reporting {
+                LOCAL_IO_OPEN
+            } else {
+                LOCAL_BASE_OPEN
+            },
+            true,
+        )
     }
     #[cfg(not(target_os = "android"))]
     fn validated(root: &Path, open: &str, window: bool) -> io::Result<Self> {

@@ -22,8 +22,45 @@ and preservation limits. It does not change the selected Android assets.
 This builds a diagnostic candidate, not the finished player or an approved
 binary release. The active issue owns progress and acceptance evidence.
 `source-inputs.lock.json` and `patches/xemu-android.patch` bind the engine graph.
-First-party Rust has no external Cargo dependencies; DSP dependencies use its
-pinned upstream Cargo.lock with `--locked`.
+First-party Rust dependencies are pinned in `Cargo.lock`; use `--locked` and
+reuse the verified offline Cargo source cache. DSP dependencies use their pinned
+upstream lockfile.
+
+Historical commands below describe their source/build slice, not a current
+instruction to reconstruct every diagnostic. After cleanup, follow
+[local reconciliation](OPERATIONS.md#workstation-storage): verify surviving
+inputs and output ownership, estimate the missing intermediates, then check
+current data/metadata/reserve headroom and jobs. Preserve final/rollback builds,
+signing, saves and paused edits. A deleted temporary preparation is not a cached
+candidate; rebuild only what the next unfinished operation needs. Never recreate
+the retired external workspace or use its old admission recipes.
+
+The current recovery build owner is `xbx-cartridge-build REPO OUTPUT ACTION`,
+invoked inside the admitted resource guard. `cartridge-rebuild-io-images` exports
+the pinned public OXOS/Cromwell Git objects, verifies the accepted loader, NPX,
+queued-flush and buffer-probe composition, and builds the baseline/reporting
+pair with one compiler job. It binds `SOURCE_DATE_EPOCH` to the public source
+commit because the kernel's startup string contains `__DATE__`/`__TIME__`.
+Historical wall-clock images remain historical identities; a new candidate
+requires actual native qualification before use.
+
+`cartridge-rebuild-native` reads the retained reference build and public source
+from explicit `XBX_REFERENCE_BUILD`/`XBX_REFERENCE_SOURCE` inputs. It reuses the
+accepted repairs. If the compiler objects were retired, it reconstructs only
+the current corrected runtime in a new output tree, using retained dependency
+Git pins, checksum-verified package archives, public Meson overlays and the
+retained DSP library. It leaves the old build/source untouched and disables
+automatic wrap downloads. `XBX_RETAINED_PRODUCT` identifies the existing
+read-only tool/sysroot inputs; it is not a sibling-checkout dependency.
+
+The unfinished original I/O and demand controls consume only
+`OUTPUT/source-inputs/exports.tsv`, checked against the pinned public declaration.
+They do not require recreating the completed NPX experiment's directory.
+The local I/O baseline, reporting and exact demand-image controls must all pass,
+including native return and immutable seeds, before the focused reporting-only
+Fable action. A compilation or a status delivered by the host is not a visible
+game result. The ordinary runtime default and installed Android candidate do
+not change through these developer build actions.
 
 ## Host preparation
 

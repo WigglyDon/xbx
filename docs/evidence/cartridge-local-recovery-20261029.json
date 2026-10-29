@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "assignment": "XBX-CARTRIDGE-1",
+  "date": "2026-10-29",
+  "baseline_source": "85e2b849ab9f04a7c76b1a9e04a65d123eccc05a",
+  "scope": "Current local reconstruction after owner-retired external workspace and compiler-cache cleanup; unfinished original I/O conformance, no closed guest campaign restarted.",
+  "reconciliation": {
+    "paused_paths_byte_equal": 16,
+    "selected_save_seed_signing_rollback_witnesses_byte_equal": 5,
+    "historical_workspace_jobs_return_chains_resolved": 69,
+    "old_jobs_resumed": false,
+    "retired_storage_recreated": false,
+    "own_legacy_adapters_refuse_before_io": true,
+    "prior_internal_inputs_and_artifacts_preserved": true
+  },
+  "admission": {
+    "additional_build_estimate_bytes": 2147483648,
+    "build_tree_allocated_bytes_at_completion": 1318465536,
+    "free_bytes_snapshot": 119874351104,
+    "metadata_allocated_bytes": 5368709120,
+    "metadata_used_bytes": 2102165504,
+    "emergency_reserve_bytes": 487702528,
+    "emergency_reserve_used_bytes": 0,
+    "device_unallocated_bytes": 1048576,
+    "data_floor_bytes": 12884901888,
+    "usable_metadata_floor_bytes": 1073741824,
+    "exclusive_operation_observed": "none",
+    "snapshot_is_not_future_admission": true
+  },
+  "open_images": {
+    "Fable_observed": false,
+    "boot_archive": "280b2b1dce7d73ba40d9e4d027fb8f54624fa7db0724e2f431d813f85ef29dcb",
+    "compiler_jobs": 1,
+    "cromwell": "86f547387184d1001d377cce97d3756c8acf91cc",
+    "historical_experiments_restarted": false,
+    "images": [
+      {
+        "compiler": "ad535f0b6fc303edba958b51636169ff0291c6e36463236c99ff8abcaa34247c",
+        "expected_historical_firmware": "3b5475e5af2db6f180932d2c050a0e0730e69ecbc281782247992f143479cf46",
+        "firmware": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+        "historical_firmware_equal": false,
+        "kernel": "a986060f4b323009f011b6505a29ce351c021c13cea73df2175ed9fe1fa670c4",
+        "linker": "e056852f9ab38648c7eed62e29673998e038110641b36d84d5556b5ffc2ecc0d",
+        "map": "5995ababe3baa413af64512d394011b8a68ca662656404e0e7c2e5e69480fc62",
+        "native_execution": false,
+        "source_date_epoch": "1792632338"
+      },
+      {
+        "compiler": "ad535f0b6fc303edba958b51636169ff0291c6e36463236c99ff8abcaa34247c",
+        "expected_historical_firmware": "7f58744b2c2a875e403f06a650d52c687f44ce4ef5b44a3d8228e8fd4f131aae",
+        "firmware": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+        "historical_firmware_equal": false,
+        "kernel": "236a2517e081d437ac5f2daaaa9ea642392d526d3a8b774bf3eb29b54f2bb7a7",
+        "linker": "e056852f9ab38648c7eed62e29673998e038110641b36d84d5556b5ffc2ecc0d",
+        "map": "99331fb24261d895223b3f1fb35394e91bd2e7ea7f6a532e597f1845d81db62c",
+        "native_execution": false,
+        "source_date_epoch": "1792632338"
+      }
+    ],
+    "native_conformance_passed": false,
+    "new_candidates_require_native_qualification": true,
+    "ordinary_runtime_default_changed": false,
+    "serial": true,
+    "source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+    "source_archive": "638af1f26e98d02a645ee713c7e563519044c9d4f8a0a5bc828a8bfa1c8bb4c8",
+    "source_date_epoch": "1792632338",
+    "trace_imports": false
+  },
+  "native": {
+    "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+    "inputs": "9bf9cc53a67d68902188748c06bfd040be973dc4f14ceb840c6ef04a1ed35bdd",
+    "compiler_jobs": 1,
+    "accepted_repairs_reused": true,
+    "native_qualified": false,
+    "ordinary_default_changed": false,
+    "first_compile_exit": 143,
+    "same_directory_continuation_exit": 0,
+    "whole_old_core_cache_not_restored": true,
+    "remaining_original_io_controls_unrun": true
+  },
+  "original_control": {
+    "assembled": true,
+    "iso_sha256": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
+    "export_abi_sha256": "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b",
+    "generated_content_only": true,
+    "native_executed": false
+  },
+  "validation": {
+    "prior_ten_storage_policy_tests_passed": true,
+    "storage_policy_sources_unchanged": true,
+    "current_snapshot_strict_all_target_clippy_passed": true,
+    "current_snapshot_clippy_seconds": 7.63,
+    "formatting_passed": true,
+    "final_current_observation_builder_codegen_pending": true,
+    "new_local_native_controls_passed": false
+  },
+  "attempts_preserved": [
+    "First offline Cargo attempt refused missing sha2 index; reused checksum-verified locked crates and missing index records from retained cache.",
+    "Composed-source hashes refused skipped patches before a guest or kernel build. Standalone Git application corrected the ignored-directory context.",
+    "Wall-clock baseline differed from historical bytes; preserved unqualified. New pair pins public source time; exact equivalence to discarded historical images is not claimed.",
+    "Initial native relink found retired compiler objects/sparse source; current corrected runtime reconstructed separately.",
+    "Configure refused missing cached xxhash/float Meson inputs under nodownload; exact retained archives/public overlays supplied.",
+    "First native compilation exited143 after876/1668 reported actions, cause unknown. Same directory resumed and completed794 actions, exit0."
+  ],
+  "product_truth": {
+    "last_Fable_visible_result": "prior accepted repaired open runtime advanced through intro, then disc-error screen; cause unattributed",
+    "new_Fable_observation_run": false,
+    "Fable_playable": false,
+    "ordinary_runtime_default_changed": false,
+    "installed_Android_candidate_changed": false,
+    "phone_or_sibling_operated": false,
+    "public_binary_release": false
+  },
+  "next": [
+    "Finish code generation for the already type-checked current Rust observation builder when host admission returns.",
+    "Freshly admit the owner-authorized read-only retained-media retrieval; no phone or storage is reserved while waiting.",
+    "Run current baseline/reporting original status-data controls and exact retained demand-image control.",
+    "Only after actual original passes, run the focused matched Fable observation with bounded public failure reporting."
+  ]
+}

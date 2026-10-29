@@ -145,6 +145,13 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
     match action {
         "cartridge-package" => package(repo, &w)?,
         "cartridge-fixture" => fixture(repo, &w)?,
+        "cartridge-rebuild-io-images" => super::rebuild::io_images(repo, root)?,
+        "cartridge-rebuild-native" => super::rebuild::native(repo, root)?,
+        "cartridge-recover-media" => super::rebuild::media(repo, root)?,
+        "cartridge-local-io-baseline" => super::local_io::control(repo, root, false, false)?,
+        "cartridge-local-io-reporting" => super::local_io::control(repo, root, true, false)?,
+        "cartridge-local-io-demand" => super::local_io::control(repo, root, true, true)?,
+        "cartridge-local-io-fable" => super::local_io::fable(repo, root)?,
         "cartridge-file-highva-build" => super::file_read::build_high_va(repo, root)?,
         "cartridge-file-highva-observe" => super::file_read::observe_high_va(repo, root)?,
         "cartridge-file-demand-build" => super::file_read::build_demand(repo, root)?,
@@ -448,6 +455,19 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     } else {
         resources::Resources::logging(&dev)?
     };
+    observe_logging_fable(repo, &w.root, r, prefix, npx, x87, io_errors)
+}
+
+pub(super) fn observe_logging_fable(
+    repo: &Path,
+    root: &Path,
+    r: resources::Resources,
+    prefix: &str,
+    npx: bool,
+    x87: bool,
+    io_errors: bool,
+) -> Result<(), Error> {
+    let w = BuildPaths { root: root.into() };
     let app = w.root.join(format!("{prefix}-{}", c::new_id()?));
     let mut player = c::desktop::Player::with_resources(&app, r)?;
     let media = std::path::PathBuf::from(std::env::var("XBX_REFERENCE_MEDIA")?);

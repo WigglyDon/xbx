@@ -36,6 +36,22 @@ It refuses unrelated existing destination contents and does not delete work.
 `.local/` remains private/protected. It contains receipts and later owner data,
 not an automatically disposable cache.
 
+After cleanup or resource retirement, reconcile the current issue, source/dirt,
+surviving inputs, final executables, tool/cache ownership and signing/save recovery
+before writing. A historical receipt proves its recorded result, not that its
+artifact or output path still exists. Never recreate a retired mountpoint,
+remount/rebind retired storage, resume consumed jobs or silently substitute the
+internal disk. Qualify a new explicit local output directory against current
+host accounting and the actual reconstruction peak first. Read shared SDKs in
+place; a directory's historical product name does not establish its current owner.
+
+Compile only the unfinished slice and its necessary runtime dependencies. Do not
+repopulate old diagnostic caches or restart closed experiments after cleanup.
+Preserve all paused edits. For source checks, export the committed tree to an
+isolated source directory and add only the intended changes; do not format or
+test unrelated dirty entrypoints. Keep one reusable, explicitly selected target
+directory for that slice, with offline/locked single-job Cargo where possible.
+
 An owner-qualified independent shared workspace may admit a bounded phase even
 while internal Btrfs growth remains refused. Resolve its current private binding
 through `resource-discovery`; never copy a remembered mount path into product
@@ -52,7 +68,7 @@ or require them to await an xbx notice. A busy lock refuses the dependent xbx
 phase; continue independent work without broadcasting a project-wide hold.
 Normal physical-device custody remains separate and unchanged.
 
-The current xbx reference-preparation envelope is 2 GiB of total new input,
+The historical xbx reference-preparation envelope was 2 GiB of total new input,
 profile, cache, temporary and evidence allocation on that volume. Read retained
 internal artifacts in place; do not migrate old profiles or recreate full game
 copies. All new writable runtime paths belong in the admitted xbx directory.
@@ -67,12 +83,17 @@ the same identity, ownership, shared/project lease, reserve and inode checks to
 that concrete source/build/profile phase. This is not a standing increase for
 unrelated work or a relaxation of internal-host admission.
 
-[XBX-CARTRIDGE-1](CARTRIDGE.md) has its own fixed additional6GiB allowance above
+[XBX-CARTRIDGE-1](CARTRIDGE.md) had a fixed additional6GiB allowance above
 its recorded11,514,675,200byte start allocation. It uses the same existing locks
 and shared12GiB reserve, not a fresh baseline for each attempt. It retains native
 objects and recompiles only a demonstrated missing boundary. Failed profiles,
 private inputs and paused edits remain protected. This does not qualify internal
 Btrfs growth or authorize a public binary release.
+
+Those external-workspace figures are historical bounds, not current local-disk
+admission. The owner has retired that workspace. Its old bindings, queued
+recipes and artifact paths grant no further use. Continue the actual unfinished
+work only with verified surviving inputs and newly qualified local output.
 
 Owner-authorized xbx retention work may retire identified rebuildable objects,
 successful packaging stages and verified duplicates after recording their exact

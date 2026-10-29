@@ -145,6 +145,26 @@ fn build_child(repo: &Path, root: &Path, io_errors: bool) -> Result<(), Error> {
     }
     let out = dir.join("build-logging");
     c::mkdir(&out)?;
+    let llvm = compile_image(&source, &out, None)?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "source":lock["commit"],"cromwell":lock["cromwell_commit"],"functional_patch":lock["patch_sha256"],"changed":changed,
+            "firmware":c::file_digest(&out.join("bios.bin"))?,"kernel":c::file_digest(&out.join("xboxkrnl.exe"))?,"map":c::file_digest(&out.join("xboxkrnl.map"))?,
+            "retained_core":resources::X87_RESTART_CORE,"compiler":c::file_digest(&llvm.join("clang"))?,"linker":c::file_digest(&llvm.join("lld-link"))?,
+            "compiler_jobs":1,"serial":true,"trace_imports":false,"original_negative":negative["fixture"],"native_regression_passed":false,"Fable_cause_established":false,"public_io_failure_diagnostics_only":io_errors
+        }))?,
+    )?;
+    Ok(())
+}
+
+/// The same pinned open-image build for a surviving source or a verified
+/// reconstruction. Resource admission belongs to the enclosing build owner.
+pub(super) fn compile_image(
+    source: &Path,
+    out: &Path,
+    epoch: Option<&str>,
+) -> Result<std::path::PathBuf, Error> {
     let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
         .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     let mut paths = vec![llvm.clone()];
@@ -156,6 +176,7 @@ fn build_child(repo: &Path, root: &Path, io_errors: bool) -> Result<(), Error> {
             .arg("-C")
             .arg(source.join("kernel"))
             .env("PATH", std::env::join_paths(paths)?)
+            .envs(epoch.map(|value| ("SOURCE_DATE_EPOCH", value)))
             .args([
                 "-j1",
                 "bios",
@@ -182,16 +203,7 @@ fn build_child(repo: &Path, root: &Path, io_errors: bool) -> Result<(), Error> {
     for name in ["bios.bin", "xboxkrnl.exe", "xboxkrnl.map"] {
         fs::File::open(out.join(name))?.sync_all()?;
     }
-    c::write_new(
-        &dir.join("build.identity.json"),
-        &c::json(&json!({
-            "source":lock["commit"],"cromwell":lock["cromwell_commit"],"functional_patch":lock["patch_sha256"],"changed":changed,
-            "firmware":c::file_digest(&out.join("bios.bin"))?,"kernel":c::file_digest(&out.join("xboxkrnl.exe"))?,"map":c::file_digest(&out.join("xboxkrnl.map"))?,
-            "retained_core":resources::X87_RESTART_CORE,"compiler":c::file_digest(&llvm.join("clang"))?,"linker":c::file_digest(&llvm.join("lld-link"))?,
-            "compiler_jobs":1,"serial":true,"trace_imports":false,"original_negative":negative["fixture"],"native_regression_passed":false,"Fable_cause_established":false,"public_io_failure_diagnostics_only":io_errors
-        }))?,
-    )?;
-    Ok(())
+    Ok(llvm)
 }
 
 pub(super) fn package(root: &Path) -> Result<resources::Resources, Error> {

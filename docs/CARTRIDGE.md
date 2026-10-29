@@ -4,6 +4,18 @@ Master [6400021880](https://github.com/WigglyDon/xbx/issues/1#issuecomment-64000
 supersedes diagnostic-first ordering. This is implementation in the existing
 checkout, without rewriting history or adopting the sixteen paused paths.
 
+After owner-directed workspace retirement and cache cleanup, the existing
+worker reconstructed only the current corrected runtime and the unfinished
+public I/O reporting slice in newly qualified local storage. The open baseline
+and reporting pair, corrected reference core and original status/data fixture
+are built; current native I/O conformance and a new Fable observation remain
+unrun. The reporting images now bind their build date to public source time and
+are distinct from the discarded historical binaries. No past compatibility or
+continuity result is reassigned to these new artifacts. The ordinary runtime,
+installed candidate, saves/signing and sixteen paused paths are preserved.
+[Actual reconstruction, failed attempts and remaining gates](evidence/cartridge-local-recovery-20261029.json)
+record the exact scope. Historical paths and receipts grant no storage use.
+
 The Rust cartridge path imports a local XDVDFS image once, assigns stable game
 and profile identities, supports exact-media relinking and generates isolated
 FATX/qcow2 storage. It selects the packaged open runtime automatically; private

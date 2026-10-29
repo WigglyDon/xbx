@@ -123,7 +123,9 @@ fn build_variant(
     let export_abi = if demand || io_errors {
         // Check the assembled imports against an independent pinned declaration,
         // including function/data kind and stdcall argument bytes.
-        let exports = root.join("npx-owner-port-v1/source/kernel/exports.tsv");
+        // Current original controls need only this pinned public declaration,
+        // not a reconstructed directory for the completed NPX investigation.
+        let exports = root.join("source-inputs/exports.tsv");
         let hash = c::file_digest(&exports)?;
         if hash != "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b" {
             return Err("original demand-control ABI declaration changed".into());
@@ -272,7 +274,7 @@ pub(super) fn flush_regression(repo: &Path, root: &Path, cache: bool) -> Result<
     c::mkdir(&dir)?;
     observe_with(repo, root, &dir, &media, cache, r)
 }
-fn observe_with(
+pub(super) fn observe_with(
     repo: &Path,
     root: &Path,
     dir: &Path,
