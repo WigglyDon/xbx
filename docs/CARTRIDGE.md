@@ -8,8 +8,9 @@ After owner-directed workspace retirement and cache cleanup, the existing
 worker reconstructed only the current corrected runtime and the unfinished
 public I/O reporting slice in newly qualified local storage. The open baseline
 and reporting pair, corrected reference core and original status/data fixture
-are built; current native I/O conformance and a new Fable observation remain
-unrun. The reporting images now bind their build date to public source time and
+are built. Current original I/O baseline/reporting and exact demand-image
+controls pass with clean native returns and unchanged seeds; a new Fable
+observation remains unrun. The reporting images now bind their build date to public source time and
 are distinct from the discarded historical binaries. No past compatibility or
 continuity result is reassigned to these new artifacts. The ordinary runtime,
 installed candidate, saves/signing and sixteen paused paths are preserved.

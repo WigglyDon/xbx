@@ -21,21 +21,21 @@
     "accepted_repairs_reused": true,
     "completed": true,
     "historical_binary_equivalence_claimed": false,
-    "native_guest_execution": false
+    "native_guest_execution": true
   },
   "original_control": {
     "assembled": true,
     "iso_sha256": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
     "export_abi_sha256": "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b",
     "generated_content_only": true,
-    "native_executed": false
+    "native_executed": true
   },
   "validation": {
     "unchanged_storage_policy_ten_tests_passed": true,
     "current_cartridge_source_strict_all_target_clippy_passed": true,
     "formatting_passed": true,
-    "final_current_observation_builder_codegen_pending": true,
-    "original_native_conformance_passed": false
+    "final_current_observation_builder_codegen_pending": false,
+    "original_native_conformance_passed": true
   },
   "preserved_build_attempts": [
     "Source-composition refusal before native execution; standalone Git application corrected the ignored-directory context.",
@@ -51,5 +51,88 @@
     "sibling_source_modified": false,
     "public_binary_release": false
   },
-  "continuation": "After normal resource admission, finish the checked observation builder, verify the unchanged game input, pass the original baseline/reporting/demand controls, then conduct the focused Fable observation through the existing product session owners."
+  "continuation": "Original native gates pass. Verify/recover unchanged game input through normal resource admission, then conduct the focused matched Fable observation; no new game result claimed.",
+  "actual_original_conformance": [
+    {
+      "control": "baseline",
+      "fixture": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
+      "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+      "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+      "guest_passed": true,
+      "data_verified": true,
+      "native_clean": true,
+      "seeds_unchanged": true,
+      "elapsed_ms": 1536,
+      "public_error_control_passed": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 7,
+        "reap_ms": 222,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    {
+      "control": "reporting",
+      "fixture": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
+      "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+      "open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+      "guest_passed": true,
+      "data_verified": true,
+      "native_clean": true,
+      "seeds_unchanged": true,
+      "elapsed_ms": 1399,
+      "public_error_control_passed": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 11,
+        "reap_ms": 121,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 12,
+        "storage_synced": true
+      }
+    },
+    {
+      "control": "demand",
+      "fixture": "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+      "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+      "open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+      "guest_passed": true,
+      "data_verified": true,
+      "native_clean": true,
+      "seeds_unchanged": true,
+      "elapsed_ms": 1680,
+      "public_error_control_passed": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 181,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      }
+    }
+  ]
 }
