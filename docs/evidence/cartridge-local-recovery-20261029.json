@@ -51,7 +51,7 @@
     "sibling_source_modified": false,
     "public_binary_release": false
   },
-  "continuation": "Accepted original controls are complete. A read-only source query failed before copying and returned cleanly; underlying error attribution is missing. Obtain that bounded fact through authorized custody, verify unchanged input size/digest and device return, then conduct the focused Fable observation.",
+  "continuation": "Accepted original controls remain complete. Wireless source query confirms the prepared path is absent; bounded exact-size lookup found no match in designated Downloads. A bounded Fable-specific filename check is pending. Verified unchanged input and normal return are required before the focused observation.",
   "actual_original_conformance": [
     {
       "control": "baseline",
@@ -141,7 +141,14 @@
     "full_size_and_digest_verified": false,
     "underlying_query_failure_unattributed": true,
     "original_request_ended_with_verified_return": true,
-    "no_request_replay_or_replacement_created": true,
-    "focused_Fable_run_started": false
+    "focused_Fable_run_started": false,
+    "source_query_failure": "prepared_source_path_not_found",
+    "wireless_source_query_completed": true,
+    "exact_size_lookup_completed": true,
+    "exact_size_candidate_found_in_designated_downloads": false,
+    "settings_unchanged": true,
+    "verified_return": true,
+    "bounded_filename_identification_pending": true,
+    "phone_file_writes": false
   }
 }
