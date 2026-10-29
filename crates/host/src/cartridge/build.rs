@@ -157,6 +157,13 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-buffer-probe-fable" => fable_logging(repo, &w, LoggingRuntime::BufferProbe)?,
         "cartridge-bounded-storage-proof" => super::buffer_probe::storage_proof(repo, root)?,
         "cartridge-io-errors-build" => super::buffer_probe::build_io_errors(repo, root)?,
+        "cartridge-file-io-errors-build" => super::file_read::build_io_errors(repo, root)?,
+        "cartridge-io-errors-baseline-control" => {
+            super::file_read::io_error_control(repo, root, false)?
+        }
+        "cartridge-io-errors-control" => super::file_read::io_error_control(repo, root, true)?,
+        "cartridge-io-errors-demand" => super::file_read::io_demand_regression(repo, root)?,
+        "cartridge-io-errors-fable" => fable_logging(repo, &w, LoggingRuntime::IoErrors)?,
         "cartridge-file-read-build" => super::file_read::build(repo, root, false)?,
         "cartridge-file-read-observe" => super::file_read::observe(repo, root, false)?,
         "cartridge-flush-cache" => super::file_read::flush_regression(repo, root, true)?,
@@ -267,16 +274,24 @@ enum LoggingRuntime {
     X87,
     Flush,
     BufferProbe,
+    IoErrors,
 }
 fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result<(), Error> {
     let npx = !matches!(runtime, LoggingRuntime::Corrected);
     let flush = matches!(runtime, LoggingRuntime::Flush);
     let probe = matches!(runtime, LoggingRuntime::BufferProbe);
-    let functional = flush || probe;
+    let io_errors = matches!(runtime, LoggingRuntime::IoErrors);
+    let functional = flush || probe || io_errors;
     let x87 = matches!(
         runtime,
-        LoggingRuntime::X87 | LoggingRuntime::Flush | LoggingRuntime::BufferProbe
+        LoggingRuntime::X87
+            | LoggingRuntime::Flush
+            | LoggingRuntime::BufferProbe
+            | LoggingRuntime::IoErrors
     );
+    if io_errors {
+        super::buffer_probe::qualified_io(&w.root)?;
+    }
     if probe {
         super::buffer_probe::qualified(&w.root)?;
     }
@@ -291,7 +306,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     if x87 && !w.root.join("x87-boundary-v1/original.qualified").exists() {
         return Err("corrected-core original qualification required".into());
     }
-    let prefix = if probe {
+    let prefix = if io_errors {
+        "fable-io-errors-logging"
+    } else if probe {
         "fable-buffer-probe-logging"
     } else if flush {
         "fable-flush-logging"
@@ -321,7 +338,13 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         return Err("complete original continuity/storage-safety slice required".into());
     }
     let project = w.root.parent().ok_or("project")?;
-    let (logging, logging_pin, qualification) = if probe {
+    let (logging, logging_pin, qualification) = if io_errors {
+        (
+            w.root.join("io-errors-v1/build-logging/bios.bin"),
+            resources::IO_ERRORS_LOGGING_OPEN,
+            w.root.join("io-errors-v1/build.identity.json"),
+        )
+    } else if probe {
         (
             w.root.join("buffer-probe-v1/build-logging/bios.bin"),
             resources::BUFFER_PROBE_LOGGING_OPEN,
@@ -381,7 +404,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             }))?,
         )?;
     }
-    let dev = if probe {
+    let dev = if io_errors {
+        super::buffer_probe::io_package(&w.root)?.root
+    } else if probe {
         super::buffer_probe::package(&w.root)?.root
     } else if flush {
         super::flush_io::package(&w.root)?.root
@@ -410,7 +435,9 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
         manifest.core = core.into();
         c::write_new(&dev.join("runtime.json"), &c::json(&manifest)?)?;
     }
-    let r = if probe {
+    let r = if io_errors {
+        resources::Resources::io_errors_logging(&dev)?
+    } else if probe {
         resources::Resources::buffer_probe_logging(&dev)?
     } else if flush {
         resources::Resources::flush_logging(&dev)?
@@ -468,6 +495,8 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     let started = Instant::now();
     let mut text = String::new();
     let mut events = Vec::new();
+    let mut io_messages = Vec::new();
+    let mut io_pending = String::new();
     let mut next_capture = 0;
     let captures = [
         3, 10, 25, 75, 115, 145, 180, 240, 300, 330, 360, 390, 420, 480, 510, 550, 585,
@@ -488,6 +517,15 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             text.push_str(&new);
             if text.len() > 1024 * 1024 {
                 return Err("ordinary output bound reached".into());
+            }
+            if io_errors {
+                io_pending.push_str(&new);
+                while let Some(end) = io_pending.find('\n') {
+                    let line: String = io_pending.drain(..=end).collect();
+                    if line.starts_with("xbxio: ") && io_messages.len() < 99 {
+                        io_messages.push(json!({"host_received_ms":started.elapsed().as_millis(),"message":line.trim_end()}));
+                    }
+                }
             }
             let terminal =
                 text.contains("*** bug check") || text.contains("*** unexpected exception ");
@@ -531,8 +569,10 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
     };
     // An observed terminal machine is retained as diagnostic evidence, not
     // published as a healthy automatic-return checkpoint.
+    // This reporting-only observation explicitly stops with current ordinary
+    // storage retained. Its known error boundary is not a healthy return proof.
     let continuation_checkpoint =
-        x87 && reason == "observation_budget_expired_requires_visual_review";
+        x87 && !io_errors && reason == "observation_budget_expired_requires_visual_review";
     let returned = if continuation_checkpoint {
         player.depart()
     } else {
@@ -558,6 +598,8 @@ fn fable_logging(repo: &Path, w: &BuildPaths, runtime: LoggingRuntime) -> Result
             "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
             "return_error":returned.as_ref().err().map(ToString::to_string),"continuation_checkpoint_published":continuation_checkpoint && returned.is_ok(),"immutable_inputs_unchanged":immutable_inputs_unchanged,
             "failed_operation_cleanup":failed_operation_cleanup,
+            "public_io_error_diagnostics_only":io_errors,
+            "public_io_failure_messages":io_messages,
             "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
         }))?,
     )?;

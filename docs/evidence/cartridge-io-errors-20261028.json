@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "purpose": "Bounded public I/O error visibility for the newly observed Fable disc-error boundary",
+  "source_commit": "9c6ceb26d44f61ff8e4a2b41a85f8b562f0dd767",
+  "build_identity_observed_before_resource_withdrawal": {
+    "source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+    "cromwell": "86f547387184d1001d377cce97d3756c8acf91cc",
+    "changed": [
+      "kernel/src/io/file.cpp",
+      "kernel/src/io/irp.cpp"
+    ],
+    "firmware": "7f58744b2c2a875e403f06a650d52c687f44ce4ef5b44a3d8228e8fd4f131aae",
+    "kernel": "8f9ec28da27d65c80ea5232bdf17a1a0691ebc813f23c9ee3b0f6ceab6f11bca",
+    "map": "4596ccac116470bc0e035131d3e5a74b09f28a2a058a8d4f8ad81cb8145b320e",
+    "patch": "30b49113fe312a0922640d2dae5f5e37c9a33dddc4e81d6a2a4c147e8de16996",
+    "retained_core": "b8d9ce80080700c6a00a2678ca056452e905d80d901936047f581a76e9afb318",
+    "serial": true,
+    "trace_imports": false,
+    "compiler_jobs": 1,
+    "public_io_failure_diagnostics_only": true
+  },
+  "build_job": "9e93e6f798ba4e6fb772d01375b61a94",
+  "build_work_seconds": 39.92187290498987,
+  "build_peak_aggregate_resident_bytes": 102711296,
+  "supervised_return_verified": true,
+  "all_children_retired": true,
+  "remaining_children": 0,
+  "reporting_lines_bound": 99,
+  "fields": "public status,byte-count,flags; no paths,payloads,caller instructions or stacks",
+  "original_conformance_source_prepared": true,
+  "original_conformance_assembled_or_run": false,
+  "retained_demand_regression_run_on_this_image": false,
+  "Fable_observation_on_this_image": false,
+  "functional_game_correction_claimed": false,
+  "commercial_acceptance": false,
+  "ordinary_runtime_default_changed": false,
+  "prepared_host_checks": {
+    "results": [
+      {
+        "name": "tests",
+        "exit": 0
+      },
+      {
+        "name": "fmt",
+        "exit": 0
+      },
+      {
+        "name": "clippy",
+        "exit": 0
+      }
+    ],
+    "host_available_before": 2229542912,
+    "peak_aggregate_resident_bytes": 357203968,
+    "elapsed_seconds": 11.037503617000766,
+    "address_space_bound": 8589934592,
+    "external_writes": false,
+    "native_runs": false
+  },
+  "prepared_host_build": {
+    "results": [
+      {
+        "name": "build",
+        "exit": 0
+      }
+    ],
+    "host_available_before": 2264182784,
+    "peak_aggregate_resident_bytes": 360759296,
+    "elapsed_seconds": 4.7612266119685955,
+    "address_space_bound": 8589934592,
+    "external_writes": false,
+    "native_runs": false
+  },
+  "prepared_host_binary": "2fb5d7638a8f141c1cb27c3a87e9ad352c0414ddffdbad40c33bde78ee339cef",
+  "native_dispatch_withdrawn": true,
+  "remaining_blocker": "Replacement admitted workspace plus verified runtime and unchanged game input are required after owner-directed external workspace retirement; pending native conformance and focused Fable observation have not run",
+  "private_input_or_external_artifact_copy_performed_for_retirement": false
+}

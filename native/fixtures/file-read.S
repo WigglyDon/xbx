@@ -11,6 +11,9 @@
 .ifndef XBX_DEMAND_BUFFER
 .set XBX_DEMAND_BUFFER, 0
 .endif
+.ifndef XBX_IO_ERRORS_CONTROL
+.set XBX_IO_ERRORS_CONTROL, 0
+.endif
 .if XBX_HIGH_VA
 .if XBX_DEMAND_BUFFER
 .set buffer, 0x05001000
@@ -153,6 +156,53 @@ _start:
     movl $511,%ebx
     movl $3,%ecx
     call verify
+    .if XBX_IO_ERRORS_CONTROL
+    movl $19,stage
+    pushl $0x64
+    pushl $1                    /* FILE_OPEN of an absent original name. */
+    pushl $1
+    pushl $0
+    pushl $0
+    pushl $iosb
+    pushl $missing_attributes
+    pushl $0x80100080
+    pushl $missing_handle
+    call *thunks+8
+    movl %eax,status
+    cmpl $0xc0000034,%eax       /* STATUS_OBJECT_NAME_NOT_FOUND */
+    jne fail
+    pushl %eax
+    movl $missing_label,%esi
+    call text
+    popl %eax
+    call hex
+    movl $newline,%esi
+    call text
+    movl $20,stage
+    movl $EXPECTED_BYTES,position
+    movl $0,position+4
+    pushl $position             /* Explicit offset at EOF. */
+    pushl $2048
+    pushl $buffer
+    pushl $iosb
+    pushl $0
+    pushl $0
+    pushl $0
+    pushl handle
+    call *thunks
+    movl %eax,status
+    cmpl $0xc0000011,%eax       /* STATUS_END_OF_FILE */
+    jne fail
+    pushl %eax
+    movl $eof_label,%esi
+    call text
+    popl %eax
+    call hex
+    movl $newline,%esi
+    call text
+    movl $expected_errors_passed,%esi
+    call text
+    .endif
     movl $9,stage
     pushl handle
     call *thunks+4
@@ -365,6 +415,11 @@ status_label: .asciz " status="
 count_label: .asciz " count="
 word_label: .asciz " first="
 newline: .asciz "\n"
+.if XBX_IO_ERRORS_CONTROL
+missing_label: .asciz "XBX FILE READ MISSING STATUS="
+eof_label: .asciz "XBX FILE READ EOF STATUS="
+expected_errors_passed: .asciz "XBX FILE READ EXPECTED ERRORS PASS\n"
+.endif
 .if XBX_DEMAND_BUFFER
 demand_passed: .asciz "XBX FILE READ DEMAND PAGES PASS\n"
 demand_header_passed: .asciz "XBX FILE READ DEMAND HEADER PASS\n"
@@ -424,6 +479,15 @@ path:
     .asciz "\\Device\\CdRom0\\payload.bin"
 .endif
 path_end:
+.if XBX_IO_ERRORS_CONTROL
+.balign 4
+missing_handle: .long 0
+missing_attributes: .long 0,missing_string,0x40
+missing_string: .short missing_end-missing_path-1,missing_end-missing_path
+    .long missing_path
+missing_path: .asciz "\\Device\\CdRom0\\xbx-absent-original.bin"
+missing_end:
+.endif
 .balign 4096
 .if !XBX_HIGH_VA
 buffer: .space 16384

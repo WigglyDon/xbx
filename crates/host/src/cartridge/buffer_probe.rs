@@ -219,6 +219,91 @@ pub(super) fn package(root: &Path) -> Result<resources::Resources, Error> {
     Ok(resources::Resources::buffer_probe_logging(&dir)?)
 }
 
+pub(super) fn io_package(root: &Path) -> Result<resources::Resources, Error> {
+    let base = package(root)?;
+    let firmware = root.join("io-errors-v1/build-logging/bios.bin");
+    let identity: Value = c::read_json(&root.join("io-errors-v1/build.identity.json"))?;
+    if c::file_digest(&firmware)? != resources::IO_ERRORS_LOGGING_OPEN
+        || identity["public_io_failure_diagnostics_only"] != true
+    {
+        return Err("bounded public I/O reporting image differs".into());
+    }
+    let dir = root.join("package-io-errors-v1");
+    if !dir.exists() {
+        c::mkdir(&dir)?;
+        fs::create_dir_all(dir.join("native/subprojects/slirp"))?;
+        for name in [
+            "native/core",
+            "native/qemu-img",
+            "native/subprojects/slirp/libslirp.so.0",
+        ] {
+            fs::hard_link(base.root.join(name), dir.join(name))?;
+        }
+        fs::hard_link(firmware, dir.join("open.bin"))?;
+        let mut manifest = base.manifest.clone();
+        manifest.open_system = resources::IO_ERRORS_LOGGING_OPEN.into();
+        c::write_new(&dir.join("runtime.json"), &c::json(&manifest)?)?;
+    }
+    Ok(resources::Resources::io_errors_logging(&dir)?)
+}
+
+pub(super) fn qualified_io(root: &Path) -> Result<(), Error> {
+    let media = root.join("file-io-errors-v1/original.iso");
+    let control = c::file_digest(&media)?;
+    let build: Value = c::read_json(&root.join("file-io-errors-v1/build.json"))?;
+    if build["fixture"] != control || build["expected_public_io_error_control"] != true {
+        return Err("exact original public I/O error control required".into());
+    }
+    for (name, firmware, fixture) in [
+        (
+            "baseline-control",
+            resources::BUFFER_PROBE_LOGGING_OPEN,
+            control.as_str(),
+        ),
+        (
+            "diagnostic-control",
+            resources::IO_ERRORS_LOGGING_OPEN,
+            control.as_str(),
+        ),
+        (
+            "demand-regression",
+            resources::IO_ERRORS_LOGGING_OPEN,
+            "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+        ),
+    ] {
+        let dir = root.join("io-errors-v1").join(name);
+        let r: Value = c::read_json(&dir.join("original.result.json"))?;
+        if r["fixture"] != fixture
+            || r["core"] != resources::X87_RESTART_CORE
+            || r["open_system"] != firmware
+            || r["guest_passed"] != true
+            || r["data_verified"] != true
+            || r["native_clean"] != true
+            || r["seeds_unchanged"] != true
+            || (name != "demand-regression" && r["public_io_error_control_passed"] != true)
+        {
+            return Err("original public I/O reporting conformance or native return failed".into());
+        }
+        let serial = fs::read_to_string(dir.join("serial.log"))?;
+        if name == "diagnostic-control" {
+            let serial = serial.to_ascii_lowercase();
+            for line in [
+                "xbxio: kind=0 status=c0000034",
+                "xbxio: kind=1 status=c0000011",
+                "xbxio: kind=2 status=c0000011",
+            ] {
+                if !serial.contains(line) {
+                    return Err("actual public I/O error reporting required".into());
+                }
+            }
+        }
+        if name == "demand-regression" && !serial.contains("XBX FILE READ DEMAND PAGES PASS") {
+            return Err("accepted user-buffer residency correction must remain qualified".into());
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn qualified(root: &Path) -> Result<(), Error> {
     for (name, fixture) in [
         (

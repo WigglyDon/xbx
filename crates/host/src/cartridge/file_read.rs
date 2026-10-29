@@ -14,13 +14,16 @@ fn put(b: &mut [u8], at: usize, value: u32) {
     b[at..at + 4].copy_from_slice(&value.to_le_bytes());
 }
 pub(super) fn build(repo: &Path, root: &Path, cache: bool) -> Result<(), Error> {
-    build_variant(repo, root, cache, false, false)
+    build_variant(repo, root, cache, false, false, false)
 }
 pub(super) fn build_high_va(repo: &Path, root: &Path) -> Result<(), Error> {
-    build_variant(repo, root, true, true, false)
+    build_variant(repo, root, true, true, false, false)
 }
 pub(super) fn build_demand(repo: &Path, root: &Path) -> Result<(), Error> {
-    build_variant(repo, root, true, true, true)
+    build_variant(repo, root, true, true, true, false)
+}
+pub(super) fn build_io_errors(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_variant(repo, root, false, true, false, true)
 }
 fn build_variant(
     repo: &Path,
@@ -28,8 +31,11 @@ fn build_variant(
     cache: bool,
     high_va: bool,
     demand: bool,
+    io_errors: bool,
 ) -> Result<(), Error> {
-    let dir = root.join(if demand {
+    let dir = root.join(if io_errors {
+        "file-io-errors-v1"
+    } else if demand {
         "file-cache-demand-v3"
     } else if high_va {
         "file-cache-highva-v1"
@@ -58,10 +64,11 @@ fn build_variant(
         String::new()
     };
     let generated = format!(
-        ".set XBX_HIGH_VA, {}\n.set XBX_CACHE_TEST, {}\n.set XBX_DEMAND_BUFFER, {}\n{}\n.text\nserial_init:\n{}\n{}",
+        ".set XBX_HIGH_VA, {}\n.set XBX_CACHE_TEST, {}\n.set XBX_DEMAND_BUFFER, {}\n.set XBX_IO_ERRORS_CONTROL, {}\n{}\n.text\nserial_init:\n{}\n{}",
         u8::from(high_va),
         u8::from(cache),
         u8::from(demand),
+        u8::from(io_errors),
         fs::read_to_string(&source)?,
         uart,
         handler_source
@@ -113,7 +120,7 @@ fn build_variant(
     if bytes.len() <= 4096 || bytes.len() > 24576 || !(0x12000..0x13000).contains(&thunk) {
         return Err("original code/data extent".into());
     }
-    let export_abi = if demand {
+    let export_abi = if demand || io_errors {
         // Check the assembled imports against an independent pinned declaration,
         // including function/data kind and stdcall argument bytes.
         let exports = root.join("npx-owner-port-v1/source/kernel/exports.tsv");
@@ -122,11 +129,22 @@ fn build_variant(
             return Err("original demand-control ABI declaration changed".into());
         }
         let table = fs::read_to_string(exports)?;
-        for (offset, ordinal, name, arguments) in [
-            (36, 184u32, "NtAllocateVirtualMemory", 20),
-            (40, 174, "MmIsAddressValid", 4),
-            (44, 103, "KeGetCurrentIrql", 0),
-        ] {
+        let mut imports = Vec::new();
+        if demand {
+            imports.extend([
+                (36, 184u32, "NtAllocateVirtualMemory", 20),
+                (40, 174, "MmIsAddressValid", 4),
+                (44, 103, "KeGetCurrentIrql", 0),
+            ]);
+        }
+        if io_errors {
+            imports.extend([
+                (0, 219u32, "NtReadFile", 32),
+                (8, 190, "NtCreateFile", 36),
+                (36, 184, "NtAllocateVirtualMemory", 20),
+            ]);
+        }
+        for (offset, ordinal, name, arguments) in imports {
             let at = (thunk - 0x11000) as usize + offset;
             let value = u32::from_le_bytes(
                 bytes
@@ -204,6 +222,7 @@ fn build_variant(
             "heap_buffer_control":high_va,"heap_buffer_bytes":if high_va {Some(16384)} else {None},"cache_file_control":cache,"cache_extent_bytes":if cache { Some(0x1200004u32) } else { None },
             "demand_committed_buffer_control":demand,"demand_header_page_control":demand,"handler_source":if demand {Some(c::file_digest(&handler)?)} else {None},
             "export_abi_sha256":export_abi,
+            "expected_public_io_error_control":io_errors,
             "code_data_pages_separate":true,"original_generated_content_only":true
         }))?,
     )?;
@@ -325,7 +344,7 @@ fn observe_with(
         &result,
         &c::json(&json!({"original":true,"fixture":fixture,
         "core":core,"open_system":open,
-        "cache_file_control":cache,"data_verified":output.contains("XBX FILE READ DATA PASS"),"app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
+        "cache_file_control":cache,"data_verified":output.contains("XBX FILE READ DATA PASS"),"public_io_error_control_passed":output.contains("XBX FILE READ EXPECTED ERRORS PASS"),"app":app,"native_run":run,"guest_passed":pass,"observation_error":observed.err().map(|e|e.to_string()),
         "native_clean":clean,"native_return":native,"return_error":returned.err().map(|e|e.to_string()),
         "seeds_unchanged":unchanged,"elapsed_ms":started.elapsed().as_millis(),"commercial_acceptance":false}))?,
     )?;
@@ -357,6 +376,41 @@ pub(super) fn probe_regression(repo: &Path, root: &Path, demand: bool) -> Result
     }
     let r = super::buffer_probe::package(root)?;
     let dir = root.join("buffer-probe-v1").join(name);
+    c::mkdir(&dir)?;
+    observe_with(repo, root, &dir, &media, true, r)
+}
+
+pub(super) fn io_error_control(repo: &Path, root: &Path, candidate: bool) -> Result<(), Error> {
+    let dir = root.join("file-io-errors-v1");
+    let identity: serde_json::Value = c::read_json(&dir.join("build.json"))?;
+    let media = dir.join("original.iso");
+    if identity["fixture"] != c::file_digest(&media)?
+        || identity["expected_public_io_error_control"] != true
+        || identity["source"] != c::file_digest(&repo.join("native/fixtures/file-read.S"))?
+    {
+        return Err("public I/O error control bindings differ".into());
+    }
+    let r = if candidate {
+        super::buffer_probe::io_package(root)?
+    } else {
+        super::buffer_probe::package(root)?
+    };
+    let dest = root.join("io-errors-v1").join(if candidate {
+        "diagnostic-control"
+    } else {
+        "baseline-control"
+    });
+    c::mkdir(&dest)?;
+    observe_with(repo, root, &dest, &media, false, r)
+}
+pub(super) fn io_demand_regression(repo: &Path, root: &Path) -> Result<(), Error> {
+    let media = root.join("file-cache-demand-v3/original.iso");
+    if c::file_digest(&media)? != "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126"
+    {
+        return Err("retained original demand image differs".into());
+    }
+    let r = super::buffer_probe::io_package(root)?;
+    let dir = root.join("io-errors-v1/demand-regression");
     c::mkdir(&dir)?;
     observe_with(repo, root, &dir, &media, true, r)
 }
