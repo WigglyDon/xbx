@@ -155,3 +155,33 @@ pub(super) fn fable(repo: &Path, root: &Path) -> Result<(), Error> {
     )?;
     super::build::observe_logging_fable(repo, root, r, prefix, true, true, true)
 }
+
+/// Ordinary non-reporting open build, with manual normal controller input and
+/// a finite observation owner. No existing profile is migrated or overwritten.
+pub(super) fn play(repo: &Path, root: &Path) -> Result<(), Error> {
+    qualified(root)?;
+    let prior: Value = c::read_json(&root.join("fable-local-io-logging.native-started.json"))?;
+    let app = Path::new(prior["app"].as_str().ok_or("prior observation app")?);
+    let result: Value = c::read_json(&app.join("observation.json"))?;
+    if result["normal_retirement"] != true || result["immutable_inputs_unchanged"] != true {
+        return Err("reporting observation and return must be reconciled first".into());
+    }
+    let prefix = "fable-local-play";
+    if root.join(format!("{prefix}.native-started.json")).exists() {
+        return Err("ordinary local play already started; reconcile instead of repeating".into());
+    }
+    let r = package(root, false)?;
+    c::write_new(
+        &root.join(format!("{prefix}.started.json")),
+        &c::json(&json!({
+            "core":r.manifest.core,"open_system":r.manifest.open_system,
+            "prior_reporting_result":c::file_digest(&app.join("observation.json"))?,
+            "actual_original_conformance_passed":true,"ordinary_product_policy":true,
+            "memory_mib":64,"network":"none","fp":"native","graphics":"Intel OpenGL",
+            "public_io_failure_diagnostics":false,"maximum_seconds":1200,
+            "input":"manual normal controller, actual visible review required",
+            "departure":"operator-depart requests product checkpoint; budget expiry stops and preserves ordinary storage"
+        }))?,
+    )?;
+    super::build::observe_local_play(repo, root, r, prefix)
+}

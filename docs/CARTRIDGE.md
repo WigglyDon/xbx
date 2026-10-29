@@ -9,13 +9,34 @@ worker reconstructed only the current corrected runtime and the unfinished
 public I/O reporting slice in newly qualified local storage. The open baseline
 and reporting pair, corrected reference core and original status/data fixture
 are built. Current original I/O baseline/reporting and exact demand-image
-controls pass with clean native returns and unchanged seeds; a new Fable
-observation remains unrun. The reporting images now bind their build date to public source time and
+controls pass with clean native returns and unchanged seeds. Recovered input
+passed full size/digest verification with its source preserved and verified device
+return before desktop use. The reporting Fable run reached Press START, the main
+menu after Start and the profile-name keyboard after A, then returned cleanly at
+600.838s. The reviewed frames contain no disc-error screen; this does not explain
+or declare fixed the historical error. Thirty-two early missing-name/path open
+failures exhausted that reporting class; no negative read-return or final-read
+completion was reported. These observations identify no public platform defect.
+The owner reports unbearable lag; no frame rate was measured. Gameplay, sound,
+ordinary save/reload and unsaved Fable restoration remain unqualified. The current
+non-reporting baseline is being qualified in separate fresh storage. The
+reporting images bind their build date to public source time and
 are distinct from the discarded historical binaries. No past compatibility or
 continuity result is reassigned to these new artifacts. The ordinary runtime,
 installed candidate, saves/signing and sixteen paused paths are preserved.
 [Actual reconstruction, failed attempts and remaining gates](evidence/cartridge-local-recovery-20261029.json)
 record the exact scope. Historical paths and receipts grant no storage use.
+
+`cartridge-local-fable-play` is a private finite desktop qualification action. It
+requires the accepted original gates and a reconciled clean reporting return,
+then reuses the qualified baseline without the I/O reporter. It accepts normal
+controller input through the owned window, with actual frame review and a
+1,200-second budget. An operator-created `operator-depart` file in that fresh app
+directory requests the existing product checkpoint/departure policy after review;
+unreviewed budget expiry stops the machine and preserves ordinary storage. A
+failed departure is retained and explicitly retired by the finite owner. Neither
+a delivered key nor a published checkpoint is itself a gameplay or resume proof.
+This adds no user firmware choice and changes no installed/default runtime.
 
 The Rust cartridge path imports a local XDVDFS image once, assigns stable game
 and profile identities, supports exact-media relinking and generates isolated

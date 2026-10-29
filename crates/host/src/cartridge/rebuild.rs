@@ -17,6 +17,11 @@ pub(super) fn media(_repo: &Path, root: &Path) -> Result<(), Error> {
         return Err("installed device custody required".into());
     }
     let input = std::env::var("XBX_REFERENCE_MEDIA_SOURCE")?;
+    let device =
+        std::env::var("XBX_REFERENCE_DEVICE_ALIAS").unwrap_or_else(|_| "pixel4-lab".into());
+    if !matches!(device.as_str(), "pixel4-lab" | "pixel-fold") {
+        return Err("unsupported admitted media source device".into());
+    }
     let expected = std::env::var("XBX_REFERENCE_MEDIA_EXPECTED_SHA256")?;
     if !input.starts_with("/sdcard/Download/")
         || input.contains(['\n', '\r'])
@@ -29,7 +34,7 @@ pub(super) fn media(_repo: &Path, root: &Path) -> Result<(), Error> {
     c::mkdir(&dir)?;
     let partial = dir.join("selected-disc.iso.partial");
     let status = Command::new("android-device")
-        .args(["adb", "pixel4-lab", "--", "pull"])
+        .args(["adb", device.as_str(), "--", "pull"])
         .arg(input)
         .arg(&partial)
         .status()?;

@@ -3,7 +3,7 @@
   "assignment": "XBX-CARTRIDGE-1",
   "date": "2026-10-29",
   "baseline_source": "85e2b849ab9f04a7c76b1a9e04a65d123eccc05a",
-  "scope": "Reconstruct the current corrected runtime and prepare unfinished original I/O conformance using surviving public sources; no closed guest campaign restarted.",
+  "scope": "Reconstruct the current corrected runtime, qualify original I/O controls, recover unchanged input and observe focused Fable behavior through the product Player/Native owners.",
   "preservation": {
     "paused_source_paths_byte_equal": 16,
     "existing_user_data_preserved": true,
@@ -35,7 +35,9 @@
     "current_cartridge_source_strict_all_target_clippy_passed": true,
     "formatting_passed": true,
     "final_current_observation_builder_codegen_pending": false,
-    "original_native_conformance_passed": true
+    "original_native_conformance_passed": true,
+    "ordinary_media_alias_and_finite_play_runner_strict_clippy_passed": true,
+    "ordinary_play_runner_codegen_passed": true
   },
   "preserved_build_attempts": [
     "Source-composition refusal before native execution; standalone Git application corrected the ignored-directory context.",
@@ -45,13 +47,14 @@
   ],
   "product_truth": {
     "last_Fable_visible_result": "Earlier accepted repaired open runtime advanced through intro, then disc-error screen; cause unattributed.",
-    "new_Fable_observation_run": false,
+    "new_Fable_observation_run": true,
     "Fable_playable": false,
-    "device_operation_performed": false,
+    "device_operation_performed": true,
     "sibling_source_modified": false,
-    "public_binary_release": false
+    "public_binary_release": false,
+    "current_Fable_visible_result": "Reporting build reaches Press START, main menu after Start, then profile-name keyboard after A. No gameplay, sound, ordinary save/reload or full-session restoration qualified."
   },
-  "continuation": "Accepted original controls remain complete. Wireless source query confirms the prepared path is absent; bounded exact-size lookup found no match in designated Downloads. A bounded Fable-specific filename check is pending. Verified unchanged input and normal return are required before the focused observation.",
+  "continuation": "The focused reporting observation is complete with a clean native return. Continue finite visible gameplay qualification on the already-qualified non-reporting baseline in fresh storage; existing profiles and paused investigations remain preserved.",
   "actual_original_conformance": [
     {
       "control": "baseline",
@@ -136,19 +139,97 @@
     }
   ],
   "media_recovery_continuation": {
-    "source_query_attempted": true,
-    "copy_started": false,
-    "full_size_and_digest_verified": false,
-    "underlying_query_failure_unattributed": true,
-    "original_request_ended_with_verified_return": true,
-    "focused_Fable_run_started": false,
-    "source_query_failure": "prepared_source_path_not_found",
-    "wireless_source_query_completed": true,
-    "exact_size_lookup_completed": true,
-    "exact_size_candidate_found_in_designated_downloads": false,
+    "earlier_prepared_path_query": "not found; no copy",
+    "earlier_bounded_size_and_filename_queries": "completed without a match; verified return",
+    "owner_authorized_surviving_source_lookup_completed": true,
+    "copy_started": true,
+    "copy_completed": true,
+    "full_size_and_digest_verified": true,
+    "source_size_and_mtime_unchanged": true,
+    "phone_file_writes": false,
     "settings_unchanged": true,
     "verified_return": true,
-    "bounded_filename_identification_pending": true,
-    "phone_file_writes": false
+    "returned_before_desktop_execution": true,
+    "source_preserved": true,
+    "host_image_read_only": true,
+    "duplicate_host_game_image_created": false,
+    "focused_Fable_run_started": true
+  },
+  "reporting_Fable_actual": {
+    "native_core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+    "open_image": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+    "fresh_independent_storage": true,
+    "same_verified_read_only_input_and_matched_seeds": true,
+    "memory_mib": 64,
+    "graphics": "Intel OpenGL",
+    "controller": "Controller S with keyboard binding",
+    "floating_point": "native",
+    "network": "none",
+    "audio": "dummy; unqualified",
+    "maximum_seconds": 600,
+    "elapsed_ms_including_retirement": 600838,
+    "visible_reviewed_captures": 18,
+    "observed_stages": [
+      {
+        "stage": "armored character intro",
+        "by_ms": 25461
+      },
+      {
+        "stage": "studio logos",
+        "by_ms": 75915
+      },
+      {
+        "stage": "book intro",
+        "by_ms": 391382
+      },
+      {
+        "stage": "Press START",
+        "by_ms": 420980
+      },
+      {
+        "stage": "main menu after ordinary Start",
+        "by_ms": 511231
+      },
+      {
+        "stage": "profile-name keyboard after ordinary A",
+        "by_ms": 586376
+      }
+    ],
+    "additional_normal_input": "A selected New Game; a later A at Done was delivered near cutoff with no retained post-action frame; progression beyond the keyboard is unverified.",
+    "disc_error_visible_in_reviewed_frames": false,
+    "historical_disc_error_declared_fixed": false,
+    "public_io": {
+      "open_failures_recorded": 32,
+      "open_failure_statuses": [
+        "c0000034",
+        "c000003a"
+      ],
+      "open_reporting_cap_reached_by_ms": 13907,
+      "negative_read_return_messages": 0,
+      "negative_final_read_completion_messages": 0,
+      "open_bytes_field": 0,
+      "read_return_bytes_semantics": "requested length, not transferred count",
+      "final_read_bytes_semantics": "IoStatus.Information",
+      "attributed_public_platform_violation": false,
+      "limit": "Later open failures are not observable after the cap; missing-file statuses alone do not identify a defect. No read latency, successful completion census or frame rate was measured."
+    },
+    "performance": "Owner reports unbearable lag on the host. This observation does not qualify pacing or performance.",
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "quit_ack_ms": 398,
+      "reap_ms": 296,
+      "shutdown_deadline_reached": false,
+      "storage_synced": true,
+      "storage_sync_ms": 4
+    },
+    "immutable_inputs_unchanged": true,
+    "healthy_checkpoint_published": false,
+    "gameplay_sound_save_and_unsaved_return_qualified": false,
+    "followup": "Fresh non-reporting baseline play qualification, with normal manually reviewed controller input and a finite owner; existing reporting profile preserved."
   }
 }

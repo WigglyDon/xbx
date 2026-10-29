@@ -152,6 +152,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-local-io-reporting" => super::local_io::control(repo, root, true, false)?,
         "cartridge-local-io-demand" => super::local_io::control(repo, root, true, true)?,
         "cartridge-local-io-fable" => super::local_io::fable(repo, root)?,
+        "cartridge-local-fable-play" => super::local_io::play(repo, root)?,
         "cartridge-file-highva-build" => super::file_read::build_high_va(repo, root)?,
         "cartridge-file-highva-observe" => super::file_read::observe_high_va(repo, root)?,
         "cartridge-file-demand-build" => super::file_read::build_demand(repo, root)?,
@@ -467,6 +468,54 @@ pub(super) fn observe_logging_fable(
     x87: bool,
     io_errors: bool,
 ) -> Result<(), Error> {
+    observe_fable(
+        repo,
+        root,
+        r,
+        prefix,
+        FableObservation {
+            matched_media: npx,
+            checkpoint_on_budget: x87 && !io_errors,
+            io_errors,
+            interactive: false,
+        },
+    )
+}
+
+pub(super) fn observe_local_play(
+    repo: &Path,
+    root: &Path,
+    r: resources::Resources,
+    prefix: &str,
+) -> Result<(), Error> {
+    observe_fable(
+        repo,
+        root,
+        r,
+        prefix,
+        FableObservation {
+            matched_media: true,
+            checkpoint_on_budget: false,
+            io_errors: false,
+            interactive: true,
+        },
+    )
+}
+
+struct FableObservation {
+    matched_media: bool,
+    checkpoint_on_budget: bool,
+    io_errors: bool,
+    interactive: bool,
+}
+
+fn observe_fable(
+    repo: &Path,
+    root: &Path,
+    r: resources::Resources,
+    prefix: &str,
+    recipe: FableObservation,
+) -> Result<(), Error> {
     let w = BuildPaths { root: root.into() };
     let app = w.root.join(format!("{prefix}-{}", c::new_id()?));
     let mut player = c::desktop::Player::with_resources(&app, r)?;
@@ -478,7 +527,7 @@ pub(super) fn observe_logging_fable(
         json!({"stage":"game_imported_without_copy","elapsed_ms":admission_started.elapsed().as_millis()})
     );
     let entry = c::library::Library::read(&app)?.resolve(&game)?;
-    if npx && entry.media_sha256 != std::env::var("XBX_REFERENCE_MEDIA_SHA256")? {
+    if recipe.matched_media && entry.media_sha256 != std::env::var("XBX_REFERENCE_MEDIA_SHA256")? {
         return Err("matched reference media identity differs; no native launch".into());
     }
     // The compatibility comparison retains its previously qualified seeds. This
@@ -518,17 +567,25 @@ pub(super) fn observe_logging_fable(
     let mut io_messages = Vec::new();
     let mut io_pending = String::new();
     let mut next_capture = 0;
-    let captures = [
+    let mut captures = vec![
         3, 10, 25, 75, 115, 145, 180, 240, 300, 330, 360, 390, 420, 480, 510, 550, 585,
     ];
+    let maximum_seconds = if recipe.interactive { 1200 } else { 600 };
+    if recipe.interactive {
+        captures.retain(|second| *second < 300);
+        captures.extend((300..1200).step_by(15));
+    }
     let mut next_input = 0;
-    let inputs = [
+    let mut inputs = vec![
         (315, "Return"),
         (345, "Down"),
         (375, "Up"),
         (405, "a"),
         (495, "Return"),
     ];
+    if recipe.interactive {
+        inputs.clear();
+    }
     let observe = (|| -> Result<&str, Error> {
         loop {
             let native = &mut player.live.as_mut().ok_or("live")?.native;
@@ -538,7 +595,7 @@ pub(super) fn observe_logging_fable(
             if text.len() > 1024 * 1024 {
                 return Err("ordinary output bound reached".into());
             }
-            if io_errors {
+            if recipe.io_errors {
                 io_pending.push_str(&new);
                 while let Some(end) = io_pending.find('\n') {
                     let line: String = io_pending.drain(..=end).collect();
@@ -576,7 +633,12 @@ pub(super) fn observe_logging_fable(
                 events.push(json!({"elapsed_ms":started.elapsed().as_millis(),"normal_key":key,"operator_exit":result.status.code(),"visible_response_unqualified":true}));
                 next_input += 1;
             }
-            if elapsed >= 600 {
+            // Private finite-task operator request after actual visible review.
+            // The product owner still performs the complete durable departure.
+            if recipe.interactive && app.join("operator-depart").is_file() {
+                return Ok("operator_requested_product_departure");
+            }
+            if elapsed >= maximum_seconds {
                 return Ok("observation_budget_expired_requires_visual_review");
             }
             std::thread::sleep(Duration::from_millis(100));
@@ -589,10 +651,12 @@ pub(super) fn observe_logging_fable(
     };
     // An observed terminal machine is retained as diagnostic evidence, not
     // published as a healthy automatic-return checkpoint.
-    // This reporting-only observation explicitly stops with current ordinary
-    // storage retained. Its known error boundary is not a healthy return proof.
-    let continuation_checkpoint =
-        x87 && !io_errors && reason == "observation_budget_expired_requires_visual_review";
+    // Reporting and unreviewed budget expiry stop with ordinary storage retained.
+    // Only the interactive operator's reviewed departure requests a checkpoint;
+    // publication itself does not establish a gameplay/continuity milestone.
+    let continuation_checkpoint = reason == "operator_requested_product_departure"
+        || recipe.checkpoint_on_budget
+            && reason == "observation_budget_expired_requires_visual_review";
     let returned = if continuation_checkpoint {
         player.depart()
     } else {
@@ -614,11 +678,12 @@ pub(super) fn observe_logging_fable(
     c::write_new(
         &app.join("observation.json"),
         &c::json(&json!({
-            "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":600,
+            "reason":reason,"elapsed_ms":started.elapsed().as_millis(),"maximum_seconds":maximum_seconds,
             "native_run":run,"events":events,"normal_retirement":returned.is_ok(),
             "return_error":returned.as_ref().err().map(ToString::to_string),"continuation_checkpoint_published":continuation_checkpoint && returned.is_ok(),"immutable_inputs_unchanged":immutable_inputs_unchanged,
             "failed_operation_cleanup":failed_operation_cleanup,
-            "public_io_error_diagnostics_only":io_errors,
+            "public_io_error_diagnostics_only":recipe.io_errors,
+            "interactive_visible_review_recipe":recipe.interactive,
             "public_io_failure_messages":io_messages,
             "fable_menu_controls_gameplay_sound_save_resume_qualified":false,"title_memory_or_instruction_inspection":false
         }))?,
