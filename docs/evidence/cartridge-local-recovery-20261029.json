@@ -51,7 +51,7 @@
     "sibling_source_modified": false,
     "public_binary_release": false
   },
-  "continuation": "Original native gates pass. Verify/recover unchanged game input through normal resource admission, then conduct the focused matched Fable observation; no new game result claimed.",
+  "continuation": "Accepted original controls are complete. A read-only source query failed before copying and returned cleanly; underlying error attribution is missing. Obtain that bounded fact through authorized custody, verify unchanged input size/digest and device return, then conduct the focused Fable observation.",
   "actual_original_conformance": [
     {
       "control": "baseline",
@@ -134,5 +134,14 @@
         "storage_synced": true
       }
     }
-  ]
+  ],
+  "media_recovery_continuation": {
+    "source_query_attempted": true,
+    "copy_started": false,
+    "full_size_and_digest_verified": false,
+    "underlying_query_failure_unattributed": true,
+    "original_request_ended_with_verified_return": true,
+    "no_request_replay_or_replacement_created": true,
+    "focused_Fable_run_started": false
+  }
 }
