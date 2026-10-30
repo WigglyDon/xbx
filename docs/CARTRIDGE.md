@@ -838,3 +838,12 @@ key injection. This is a host input boundary, not an established guest USB or
 Fable compatibility defect. A transition-only sample includes 33 ms intervals
 and a 12.6-second stall; it earns no gameplay performance acceptance. Continue
 from the retained same-core checkpoint after foreground input is qualified.
+
+A subsequent genuinely fresh process validates and restores that game checkpoint
+without the cold intro. The reviewed title/attract frame is present, but a normal
+window-raise test still records no host Start bit or visible menu response.
+Advancing gameplay after this restore is therefore unqualified. Its next product
+departure publishes another checkpoint and records exit0, acknowledged quit,
+reap, sync and unchanged immutable inputs. All owned native processes are absent
+and app/profile writer leases are reacquired. The remaining input boundary needs
+a working foreground keyboard route, not another unchanged cold-boot campaign.

@@ -162,17 +162,48 @@
     },
     "immutable_inputs_unchanged": true,
     "gameplay_playable_pacing_sound_ordinary_save_reload_qualified_on_this_backend": false,
-    "next_dependent_step": "qualified foreground/key delivery, then same-core checkpoint return; no need to replay cold intro"
+    "next_dependent_step": "qualified foreground/key delivery, then same-core checkpoint return; no need to replay cold intro",
+    "fresh_process_followup": {
+      "complete_checkpoint_restored": true,
+      "expected_title_attract_frame_reviewed": true,
+      "normal_window_raise_tested": true,
+      "host_start_scalar_sample": {
+        "seconds": 10.00006927,
+        "button_bits_seen": 0,
+        "start_pressed_samples": 0,
+        "host_input_clock_delta_us": 9999960,
+        "guest_contents_read": false
+      },
+      "visible_progress_or_controller_response_qualified": false,
+      "new_checkpoint_published": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 160,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 0,
+        "storage_synced": true
+      },
+      "immutable_inputs_unchanged": true,
+      "native_absent_and_app_profile_locks_reacquired": true
+    }
   },
   "android_qualified": false,
   "scope": "Linux x86-64 desktop original-code qualification, not an ARM acceleration or game acceptance claim.",
   "preservation": {
-    "all_six_owned_native_attempts_absent": true,
     "all_app_and_profile_locks_reacquired": true,
-    "five_completed_runs_clean_exit_ack_reap_sync": true,
     "one_preexecution_rejection_not_normal_shutdown_qualified": true,
     "sixteen_paused_paths_and_five_protected_inputs_unchanged": true,
     "all_profiles_builds_media_checkpoints_evidence_retained": true,
-    "phone_or_sibling_operation": false
+    "phone_or_sibling_operation": false,
+    "all_seven_owned_native_attempts_absent": true,
+    "six_completed_runs_clean_exit_ack_reap_sync": true
   }
 }
