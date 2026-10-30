@@ -34,6 +34,10 @@ pub const CPU_FLOAT_CORE: &str = match option_env!("XBX_CPU_FLOAT_CORE_SHA256") 
     Some(v) => v,
     None => "unqualified-cpu-float-build",
 };
+pub const HOST_KVM_CORE: &str = match option_env!("XBX_HOST_KVM_CORE_SHA256") {
+    Some(v) => v,
+    None => "unqualified-host-kvm-build",
+};
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
     "85a173c73aa642fd82f64146149c6a37c38720ac8a020eb03d0c4f34de6c3255",
@@ -58,10 +62,36 @@ pub struct Resources {
     pub(crate) presentation_vsync: bool,
     #[cfg(not(target_os = "android"))]
     pub(crate) presentation_vulkan: bool,
+    #[cfg(not(target_os = "android"))]
+    pub(crate) host_kvm: bool,
     #[cfg(target_os = "android")]
     pub(crate) native_dir: PathBuf,
 }
 impl Resources {
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn host_kvm(root: &Path) -> io::Result<Self> {
+        let mut r = Self::validated_core(root, HOST_KVM_CORE, LOCAL_BASE_OPEN, true)?;
+        r.select_host_kvm();
+        Ok(r)
+    }
+    /// Fixed desktop qualification mode, never an ordinary user selector.
+    /// Preserve every legacy TCG identity and forbid cross-accelerator RAM loads.
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn select_host_kvm(&mut self) {
+        if !self.host_kvm {
+            self.identity =
+                digest(format!("xbx-accelerator:{}:kvm:split-irqchip", self.identity).as_bytes());
+            self.host_kvm = true;
+        }
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn accelerator_argument(&self) -> &'static str {
+        if self.host_kvm {
+            "kvm,kernel-irqchip=split"
+        } else {
+            "tcg"
+        }
+    }
     #[cfg(not(target_os = "android"))]
     pub(crate) fn cpu_float(root: &Path) -> io::Result<Self> {
         Self::validated_core(root, CPU_FLOAT_CORE, LOCAL_BASE_OPEN, true)
@@ -157,6 +187,7 @@ impl Resources {
             window,
             presentation_vsync: true,
             presentation_vulkan: false,
+            host_kvm: false,
         })
     }
     pub fn core(&self) -> PathBuf {

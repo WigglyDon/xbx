@@ -677,6 +677,20 @@ fn observe_into(
     out: &Path,
     thread_runtime: bool,
 ) -> Result<(), Error> {
+    let r = if candidate {
+        resources::Resources::cpu_float(&root.join("cpu-float-v1/package"))?
+    } else {
+        resources::Resources::apu_quiescent(&root.join("apu-quiescence-v1/package"))?
+    };
+    observe_resources(repo, root, r, out, thread_runtime)
+}
+pub(super) fn observe_resources(
+    repo: &Path,
+    root: &Path,
+    mut r: resources::Resources,
+    out: &Path,
+    thread_runtime: bool,
+) -> Result<(), Error> {
     let dir = root.join("cpu-performance-v1");
     let built: serde_json::Value = c::read_json(&dir.join("build.json"))?;
     let media = dir.join("original.iso");
@@ -686,11 +700,6 @@ fn observe_into(
         return Err("original workload identity differs".into());
     }
     c::mkdir(out)?;
-    let mut r = if candidate {
-        resources::Resources::cpu_float(&root.join("cpu-float-v1/package"))?
-    } else {
-        resources::Resources::apu_quiescent(&root.join("apu-quiescence-v1/package"))?
-    };
     let core = r.manifest.core.clone();
     r.window = false;
     let app = out.join("app");

@@ -24,6 +24,8 @@ mod fault_context;
 mod file_read;
 #[cfg(not(target_os = "android"))]
 mod flush_io;
+#[cfg(not(target_os = "android"))]
+mod host_accel;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;

@@ -56,6 +56,7 @@ impl Fixture {
             window: false,
             presentation_vsync: true,
             presentation_vulkan: false,
+            host_kvm: false,
             manifest: resources::Manifest {
                 schema: 1,
                 core: resources::CORE.into(),
@@ -294,6 +295,35 @@ fn corruption_or_incompatible_runtime_never_rewrites_checkpoint_or_current_saves
     assert_eq!(
         file_digest(&f.p.current().unwrap().join("hdd.qcow2")).unwrap(),
         disk
+    );
+}
+#[test]
+fn desktop_accelerator_change_refuses_old_ram_and_preserves_saves() {
+    let mut f = Fixture::new();
+    let id = f.publish();
+    let checkpoint = f.p.root.join("checkpoints").join(id).join("hdd.qcow2");
+    let current = f.p.current().unwrap().join("hdd.qcow2");
+    let before = (
+        file_digest(&checkpoint).unwrap(),
+        file_digest(&current).unwrap(),
+    );
+    assert_eq!(f.r.accelerator_argument(), "tcg");
+    let old = f.r.identity.clone();
+    f.r.select_host_kvm();
+    assert_ne!(old, f.r.identity);
+    assert_eq!(f.r.accelerator_argument(), "kvm,kernel-irqchip=split");
+    let kvm = f.r.identity.clone();
+    f.r.select_host_kvm();
+    assert_eq!(kvm, f.r.identity);
+    let mut binding = f.b.clone();
+    binding.runtime = kvm;
+    assert!(checkpoint::load(&f.p, &f.r, &binding).is_err());
+    assert_eq!(
+        before,
+        (
+            file_digest(&checkpoint).unwrap(),
+            file_digest(&current).unwrap()
+        )
     );
 }
 #[test]

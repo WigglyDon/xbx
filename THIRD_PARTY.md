@@ -385,3 +385,10 @@ under their existing notices; none are copied into first-party source.
 `native/fixtures/cpu-performance.S` and its Rust generation/qualification owner
 are original MIT code. Original workload results establish neither game
 compatibility nor Android performance. Existing runtime packages remain retained.
+
+The desktop KVM qualification enables the existing KVM implementation in the
+same pinned xemu/QEMU lineage. It adds no accelerator implementation or newly
+downloaded dependency. Upstream per-file GPL/LGPL notices and retained repairs
+remain applicable; the qualification owner and session-identity policy are MIT.
+This is Linux x86-64 work, not an Android acceleration claim. The arithmetic
+candidate is not included in this separately identified build.

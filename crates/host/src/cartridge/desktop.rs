@@ -125,7 +125,14 @@ impl Native {
             .env("SDL_AUDIO_DRIVER", "dummy")
             .env("SDL_VIDEO_DRIVER", "x11")
             .env("LIBGL_ALWAYS_SOFTWARE", "0")
-            .args(["-S", "-accel", "tcg", "-nic", "none", "-config_path"])
+            .args([
+                "-S",
+                "-accel",
+                r.accelerator_argument(),
+                "-nic",
+                "none",
+                "-config_path",
+            ])
             .arg(run.join("xemu.toml"))
             .arg("-qmp")
             .arg(format!("unix:{},server=on,wait=off", socket_path.display()))
@@ -213,6 +220,18 @@ impl Native {
             run,
             retired: false,
         };
+        if r.host_kvm {
+            let actual = native.call("query-kvm", json!({}))?;
+            write_new(
+                &native.run.join("native-accelerator.json"),
+                &super::json(&json!({"requested":"kvm","kernel_irqchip":"split","actual":actual}))?,
+            )?;
+            if actual["present"] != true || actual["enabled"] != true {
+                return Err(io::Error::other(
+                    "requested retained KVM accelerator did not activate; no TCG fallback",
+                ));
+            }
+        }
         if r.window {
             let deadline = Instant::now() + Duration::from_secs(10);
             loop {

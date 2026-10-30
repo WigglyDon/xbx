@@ -813,3 +813,28 @@ pacing. The changed-core native profile still shows substantial translation
 lookup and arithmetic cost. Preserve the candidate and its correctness evidence;
 do not promote it or a presentation setting as the performance fix. Sound and
 ordinary save/cold reload remain unqualified.
+
+The following desktop check enables the retained core's existing KVM backend
+in a separate build of the accepted APU-corrected source, retaining TCG and all
+previous packages. It is Linux x86-64 qualification, not Android acceleration.
+The first userspace-APIC configuration is rejected before guest execution; its
+profile and evidence remain retained. The source-supported split-irqchip mode
+passes original dispatch/SSE results and flags with KVM actually active, then
+the original RAM2/disk1/cookie proof through a fresh supervisor and native
+process. New input advances RAM to3 without changing disk1. Both departures are
+clean. Original data/missing-file/EOF behavior also passes on that backend.
+Accelerator mode participates in session identity; eleven focused storage cases
+include refusal of cross-accelerator RAM restoration with current saves retained.
+The [backend receipt](evidence/cartridge-host-kvm-20261030.json) distinguishes
+these original-code results from the separately observed game result. No default,
+host setting, signing material or installed Android package is changed.
+
+The KVM game observation reaches title/Press START with actual visible animation,
+then publishes a checkpoint and returns cleanly with immutable inputs unchanged.
+Menu response is unqualified: the host Start bit remains clear during an
+overlapping ordinary key hold despite an advancing host input-update clock.
+A subsequent owned-window activation test loses native focus and aborts before
+key injection. This is a host input boundary, not an established guest USB or
+Fable compatibility defect. A transition-only sample includes 33 ms intervals
+and a 12.6-second stall; it earns no gameplay performance acceptance. Continue
+from the retained same-core checkpoint after foreground input is qualified.
