@@ -780,3 +780,36 @@ vsync off; actual village graphics are reviewed before measuring. Native backend
 and integrated-GPU selection are checked independently of the OpenGL UI context.
 The short samples still show severe hitching, so neither Vulkan nor vsync-off is
 promoted as a fix or ordinary default. [Measurements and limits](evidence/cartridge-fable-performance-20261029.json).
+
+The next candidate targets the public SoftFloat binary32 add/subtract/multiply
+path identified in that native profile. It preserves guest rounding and computes
+the actual inexact flag from a bounded exact binary64 intermediate; unsupported
+cases retain the software path. The independent retained reference checks pass
+32,215,040 comparisons, including all supported rounding modes, preserved flags
+and both multiply tininess modes. The separate native core passes the retained
+original data/missing-file/EOF fixture with clean return and unchanged seeds.
+
+An original four-million-iteration dispatch/SSE fixture checks results and
+exception flags. Early host-only timings were inconclusive and remain retained.
+A finite unchanged/candidate/candidate/unchanged cohort adds Linux per-vCPU
+runtime at UART markers: candidate exact-phase runtime is 316–330 ms versus
+755–958 ms unchanged. Other phases remain within the recorded admission bounds;
+they do not establish that every operation got faster. The host was not reserved,
+and runtime accounting excludes descheduling but not clock or interrupt effects.
+This justifies a separate game observation, not a formal host benchmark, usable
+Fable pacing or Android acceptance. The exact source, candidate identities and
+scope are in the [arithmetic receipt](evidence/cartridge-f32-performance-20261030.json).
+Existing checkpoints retain their exact core binding; a changed core uses a
+separate fresh profile rather than relabeling an old RAM state.
+
+That arithmetic candidate subsequently reaches the opening village, visibly
+responds to movement and publishes a complete checkpoint. A genuinely fresh
+process restores the same village; further forward input visibly changes the
+world/camera. Both departures acknowledge quit, exit0, reap and sync storage,
+with immutable inputs unchanged. However, 20-second village samples remain
+approximately 0.90 FPS at default host vsync and 1.35 FPS on the vsync-off return.
+These sequential observations establish neither a game speedup nor usable
+pacing. The changed-core native profile still shows substantial translation
+lookup and arithmetic cost. Preserve the candidate and its correctness evidence;
+do not promote it or a presentation setting as the performance fix. Sound and
+ordinary save/cold reload remain unqualified.

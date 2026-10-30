@@ -1,0 +1,1163 @@
+{
+  "schema": 1,
+  "scope": "Original arithmetic correctness and finite native workload; separate Fable qualification remains required.",
+  "source_pin": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "base_core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+  "candidate_core": "eb8484eec4d076bafda081c6da16856099b3375b3aadf6850bc4906e009bb477",
+  "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "patch": "937eed133bd896b5b4a3949c269027dd4357b4b031825a08697e5d0678af7c27",
+  "original_source": "0ca834f3fa6d27f0e40b7e48d32214df4f217ee84deb71963d9f3640506004d1",
+  "candidate_source": "f2ad01e8393eca7271e799451bfbf4bd86d805dcd3c4974709eed1ffb99d2a22",
+  "reference": "Retained QEMU fp-test versus independent Berkeley TestFloat/SlowFloat",
+  "reference_program": "4846f0f5c5aece1a6a98efc3af2e059313de1b7faf22ff9709546d59c14a1451",
+  "reference_cases": [
+    {
+      "case": "all-rounding",
+      "elapsed_ms": 624,
+      "passed": true,
+      "test_exit": 0,
+      "comparisons": 1115136
+    },
+    {
+      "case": "preserved-flags",
+      "elapsed_ms": 617,
+      "passed": true,
+      "test_exit": 0,
+      "comparisons": 1115136
+    },
+    {
+      "case": "nearest-level2",
+      "elapsed_ms": 16646,
+      "passed": true,
+      "test_exit": 0,
+      "comparisons": 29984768
+    }
+  ],
+  "all_reference_cases_passed": true,
+  "compiler_hardening_unchanged": true,
+  "native_relink_steps": 8,
+  "original_workload": {
+    "clear_exact_benefit": true,
+    "commercial_acceptance": false,
+    "controls_within_bound": true,
+    "limit": "Finite original workload, host not reserved. Linux per-vCPU schedstat runtime at UART markers; excludes runqueue delay, not host frequency/interrupt effects. No scheduler, governor or peer changes.",
+    "rows": [
+      {
+        "clean": true,
+        "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+        "fixture": "2bda6a82fe4ce74b494b4b2c474d45a2b375b4535b81445245a633a7599a59cd",
+        "guest_passed": true,
+        "label": "baseline-first",
+        "phases": {
+          "DISPATCH": {
+            "host_ms": 604,
+            "vcpu_runtime_ns": 576781677
+          },
+          "SSE EXACT": {
+            "host_ms": 984,
+            "vcpu_runtime_ns": 957703203
+          },
+          "SSE STICKY": {
+            "host_ms": 230,
+            "vcpu_runtime_ns": 216072172
+          }
+        },
+        "seeds_unchanged": true
+      },
+      {
+        "clean": true,
+        "core": "eb8484eec4d076bafda081c6da16856099b3375b3aadf6850bc4906e009bb477",
+        "fixture": "2bda6a82fe4ce74b494b4b2c474d45a2b375b4535b81445245a633a7599a59cd",
+        "guest_passed": true,
+        "label": "candidate-first",
+        "phases": {
+          "DISPATCH": {
+            "host_ms": 326,
+            "vcpu_runtime_ns": 316097407
+          },
+          "SSE EXACT": {
+            "host_ms": 323,
+            "vcpu_runtime_ns": 316316735
+          },
+          "SSE STICKY": {
+            "host_ms": 251,
+            "vcpu_runtime_ns": 236739058
+          }
+        },
+        "seeds_unchanged": true
+      },
+      {
+        "clean": true,
+        "core": "eb8484eec4d076bafda081c6da16856099b3375b3aadf6850bc4906e009bb477",
+        "fixture": "2bda6a82fe4ce74b494b4b2c474d45a2b375b4535b81445245a633a7599a59cd",
+        "guest_passed": true,
+        "label": "candidate-second",
+        "phases": {
+          "DISPATCH": {
+            "host_ms": 375,
+            "vcpu_runtime_ns": 361036205
+          },
+          "SSE EXACT": {
+            "host_ms": 336,
+            "vcpu_runtime_ns": 329704838
+          },
+          "SSE STICKY": {
+            "host_ms": 272,
+            "vcpu_runtime_ns": 257968338
+          }
+        },
+        "seeds_unchanged": true
+      },
+      {
+        "clean": true,
+        "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+        "fixture": "2bda6a82fe4ce74b494b4b2c474d45a2b375b4535b81445245a633a7599a59cd",
+        "guest_passed": true,
+        "label": "baseline-last",
+        "phases": {
+          "DISPATCH": {
+            "host_ms": 221,
+            "vcpu_runtime_ns": 217084389
+          },
+          "SSE EXACT": {
+            "host_ms": 769,
+            "vcpu_runtime_ns": 754644643
+          },
+          "SSE STICKY": {
+            "host_ms": 224,
+            "vcpu_runtime_ns": 210158905
+          }
+        },
+        "seeds_unchanged": true
+      }
+    ]
+  },
+  "initial_host_only_samples_inconclusive_preserved": true,
+  "original_io": {
+    "fixture": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
+    "data_verified": true,
+    "guest_passed": true,
+    "public_io_error_control_passed": true,
+    "native_clean": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 38,
+      "reap_ms": 120,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 5,
+      "storage_synced": true
+    },
+    "seeds_unchanged": true
+  },
+  "ordinary_default_or_installed_runtime_changed": false,
+  "fable_candidate_observation": {
+    "cold_profile_visible_menu_new_game_village": true,
+    "visible_movement_before_departure": true,
+    "first_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 221,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 34,
+      "storage_synced": true
+    },
+    "first_checkpoint_published": true,
+    "fresh_process_restored_checkpoint": true,
+    "same_village_and_new_forward_input_visibly_changed_world_camera": true,
+    "second_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 2,
+      "reap_ms": 160,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 4,
+      "storage_synced": true
+    },
+    "second_checkpoint_published": true,
+    "immutable_inputs_unchanged_both": true,
+    "default_vsync_sample": {
+      "seconds": 20.000084249,
+      "frames": 18,
+      "average_fps": 0.8999962088109702,
+      "observed_flip_intervals": 17,
+      "flip_ms_median": 1039.319,
+      "flip_ms_p95": 1431.718,
+      "flip_ms_max": 1717.113,
+      "apu_reported_frames_per_second_median": 1519,
+      "apu_utilization_median": 0.6343497,
+      "native_not_stopped": true,
+      "guest_contents_read": false,
+      "limits": "20ms polls may miss multiple fast flips; only named public host-native performance scalars; host not reserved"
+    },
+    "vsync_off_return_sample": {
+      "seconds": 20.000132131,
+      "frames": 27,
+      "average_fps": 1.3499910812164224,
+      "observed_flip_intervals": 26,
+      "flip_ms_median": 410.23,
+      "flip_ms_p95": 1026.932,
+      "flip_ms_max": 1047.442,
+      "apu_reported_frames_per_second_median": 1518,
+      "apu_utilization_median": 0.5425514,
+      "native_not_stopped": true,
+      "guest_contents_read": false,
+      "limits": "20ms polls may miss multiple fast flips; only named public host-native performance scalars; host not reserved"
+    },
+    "performance_fix_accepted": false,
+    "audible_sound_ordinary_save_cold_reload_qualified": false,
+    "limits": "Sequential uncontrolled host observations, not a formal A/B benchmark. New core preserves limited visible gameplay and checkpoint return but does not establish a game speedup or usable pacing. The earlier intro-only sample is retained privately; its APU-rate delta field is invalid because the source field already reports a rate; no APU inference uses it."
+  },
+  "android_candidate_qualified": false,
+  "changed_core_public_native_profile": {
+    "seconds": 20.007477338,
+    "samples": 7458,
+    "lost": 0,
+    "scope": "only aggregate public native symbol names and generic execution regions; no guest code/data or raw addresses retained",
+    "counts": [
+      {
+        "symbol": "anonymous_executable_region",
+        "samples": 3171
+      },
+      {
+        "symbol": "helper_lookup_tb_ptr",
+        "samples": 971
+      },
+      {
+        "symbol": "qht_lookup_custom",
+        "samples": 416
+      },
+      {
+        "symbol": "float32_mul",
+        "samples": 224
+      },
+      {
+        "symbol": "float32_add",
+        "samples": 197
+      },
+      {
+        "symbol": "probe_access_internal.isra.0",
+        "samples": 161
+      },
+      {
+        "symbol": "tlb_set_page_full",
+        "samples": 116
+      },
+      {
+        "symbol": "x86_get_tb_cpu_state",
+        "samples": 108
+      },
+      {
+        "symbol": "float32_sub",
+        "samples": 95
+      },
+      {
+        "symbol": "tb_htable_lookup_common",
+        "samples": 91
+      },
+      {
+        "symbol": "curr_cflags",
+        "samples": 79
+      },
+      {
+        "symbol": "tb_lookup_cmp",
+        "samples": 79
+      },
+      {
+        "symbol": "victim_tlb_hit",
+        "samples": 77
+      },
+      {
+        "symbol": "soft_f32_mul",
+        "samples": 75
+      },
+      {
+        "symbol": "mem_access_callback_address_matches",
+        "samples": 72
+      },
+      {
+        "symbol": "do_ld4_mmu",
+        "samples": 71
+      },
+      {
+        "symbol": "helper_mulss",
+        "samples": 71
+      },
+      {
+        "symbol": "system_library",
+        "samples": 69
+      },
+      {
+        "symbol": "find_next_bit",
+        "samples": 58
+      },
+      {
+        "symbol": "mmu_translate",
+        "samples": 46
+      },
+      {
+        "symbol": "helper_mulps_xmm",
+        "samples": 44
+      },
+      {
+        "symbol": "helper_addss",
+        "samples": 43
+      },
+      {
+        "symbol": "helper_addps_xmm",
+        "samples": 40
+      },
+      {
+        "symbol": "helper_subss",
+        "samples": 38
+      },
+      {
+        "symbol": "cpu_exec_loop",
+        "samples": 37
+      },
+      {
+        "symbol": "mmu_lookup1",
+        "samples": 36
+      },
+      {
+        "symbol": "physical_memory_get_dirty.constprop.0",
+        "samples": 35
+      },
+      {
+        "symbol": "tb_tc_cmp",
+        "samples": 32
+      },
+      {
+        "symbol": "qemu_ram_block_from_host",
+        "samples": 30
+      },
+      {
+        "symbol": "address_space_translate_internal",
+        "samples": 29
+      },
+      {
+        "symbol": "helper_cc_compute_c",
+        "samples": 29
+      },
+      {
+        "symbol": "helper_ldub_mmu",
+        "samples": 24
+      },
+      {
+        "symbol": "get_page_addr_code_hostp",
+        "samples": 23
+      },
+      {
+        "symbol": "helper_comiss",
+        "samples": 23
+      },
+      {
+        "symbol": "tlb_reset_dirty",
+        "samples": 23
+      },
+      {
+        "symbol": "helper_fpatan__hard",
+        "samples": 22
+      },
+      {
+        "symbol": "float32_compare",
+        "samples": 21
+      },
+      {
+        "symbol": "helper_shufps_xmm",
+        "samples": 20
+      },
+      {
+        "symbol": "helper_subps_xmm",
+        "samples": 20
+      },
+      {
+        "symbol": "parts64_float_to_sint",
+        "samples": 20
+      },
+      {
+        "symbol": "x86_cpu_tlb_fill",
+        "samples": 20
+      },
+      {
+        "symbol": "tcg_flush_jmp_cache",
+        "samples": 19
+      },
+      {
+        "symbol": "address_space_translate_for_iotlb",
+        "samples": 18
+      },
+      {
+        "symbol": "helper_cc_compute_all",
+        "samples": 18
+      },
+      {
+        "symbol": "helper_fcomi_ST0_FT0__hard",
+        "samples": 18
+      },
+      {
+        "symbol": "mmu_lookup",
+        "samples": 15
+      },
+      {
+        "symbol": "helper_ldul_mmu",
+        "samples": 14
+      },
+      {
+        "symbol": "parts64_canonicalize",
+        "samples": 12
+      },
+      {
+        "symbol": "parts64_round_to_int_normal",
+        "samples": 12
+      },
+      {
+        "symbol": "do_interrupt_all",
+        "samples": 10
+      },
+      {
+        "symbol": "iotlb_to_section",
+        "samples": 10
+      },
+      {
+        "symbol": "probe_access_full_mmu",
+        "samples": 10
+      },
+      {
+        "symbol": "qemu_ram_addr_from_host_nofail",
+        "samples": 10
+      },
+      {
+        "symbol": "soft_f32_addsub",
+        "samples": 9
+      },
+      {
+        "symbol": "target_big_endian",
+        "samples": 9
+      },
+      {
+        "symbol": "tlb_flush_vtlb_page_mask_locked",
+        "samples": 9
+      },
+      {
+        "symbol": "float32_to_int32",
+        "samples": 8
+      },
+      {
+        "symbol": "memory_region_get_ram_ptr",
+        "samples": 8
+      },
+      {
+        "symbol": "object_dynamic_cast_assert",
+        "samples": 8
+      },
+      {
+        "symbol": "qemu_mutex_lock_impl",
+        "samples": 8
+      },
+      {
+        "symbol": "x86_cpu_mmu_index",
+        "samples": 8
+      },
+      {
+        "symbol": "access_with_adjusted_size",
+        "samples": 7
+      },
+      {
+        "symbol": "tlb_fill_align",
+        "samples": 7
+      },
+      {
+        "symbol": "cpu_tb_exec",
+        "samples": 6
+      },
+      {
+        "symbol": "cpu_unwind_data_from_tb",
+        "samples": 6
+      },
+      {
+        "symbol": "float32_div",
+        "samples": 6
+      },
+      {
+        "symbol": "float32_to_int32_round_to_zero",
+        "samples": 6
+      },
+      {
+        "symbol": "helper_cvtsi2ss",
+        "samples": 6
+      },
+      {
+        "symbol": "helper_punpcklwd_mmx",
+        "samples": 6
+      },
+      {
+        "symbol": "memory_region_access_valid",
+        "samples": 6
+      },
+      {
+        "symbol": "memory_region_dispatch_write",
+        "samples": 6
+      },
+      {
+        "symbol": "physical_memory_is_clean",
+        "samples": 6
+      },
+      {
+        "symbol": "cpu_asidx_from_attrs",
+        "samples": 5
+      },
+      {
+        "symbol": "do_st4_mmu",
+        "samples": 5
+      },
+      {
+        "symbol": "get_ptr_rcu_reader",
+        "samples": 5
+      },
+      {
+        "symbol": "helper_iret_protected",
+        "samples": 5
+      },
+      {
+        "symbol": "roundAndPackFloatx80",
+        "samples": 5
+      },
+      {
+        "symbol": "x86_cpu_synchronize_from_tb",
+        "samples": 5
+      },
+      {
+        "symbol": "address_space_stb",
+        "samples": 4
+      },
+      {
+        "symbol": "bql_lock_impl",
+        "samples": 4
+      },
+      {
+        "symbol": "bql_unlock",
+        "samples": 4
+      },
+      {
+        "symbol": "cpu_watchpoint_address_matches",
+        "samples": 4
+      },
+      {
+        "symbol": "get_bql_locked",
+        "samples": 4
+      },
+      {
+        "symbol": "helper_cvtps2pi",
+        "samples": 4
+      },
+      {
+        "symbol": "helper_divl_EAX",
+        "samples": 4
+      },
+      {
+        "symbol": "helper_ret_protected",
+        "samples": 4
+      },
+      {
+        "symbol": "mem_check_access_callback_ramaddr",
+        "samples": 4
+      },
+      {
+        "symbol": "memory_region_write_accessor",
+        "samples": 4
+      },
+      {
+        "symbol": "notdirty_write.isra.0",
+        "samples": 4
+      },
+      {
+        "symbol": "phys_page_find",
+        "samples": 4
+      },
+      {
+        "symbol": "ptw_translate",
+        "samples": 4
+      },
+      {
+        "symbol": "apic_get_interrupt",
+        "samples": 3
+      },
+      {
+        "symbol": "cpu_cc_compute_all",
+        "samples": 3
+      },
+      {
+        "symbol": "cpu_exec",
+        "samples": 3
+      },
+      {
+        "symbol": "cpu_svm_check_intercept_param",
+        "samples": 3
+      },
+      {
+        "symbol": "get_pg_mode",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_cc_compute_nz",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_cvttss2si",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_divss",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_fldcw__hard",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_fprem_common",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_fyl2x_common.isra.0",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_outb",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_read_eflags",
+        "samples": 3
+      },
+      {
+        "symbol": "helper_ucomiss",
+        "samples": 3
+      },
+      {
+        "symbol": "int32_to_float32",
+        "samples": 3
+      },
+      {
+        "symbol": "liveness_pass_1",
+        "samples": 3
+      },
+      {
+        "symbol": "parts128_modrem",
+        "samples": 3
+      },
+      {
+        "symbol": "parts128_round_to_int_normal.constprop.0",
+        "samples": 3
+      },
+      {
+        "symbol": "pgraph_read",
+        "samples": 3
+      },
+      {
+        "symbol": "pic_ioport_write",
+        "samples": 3
+      },
+      {
+        "symbol": "pic_stat_update_irq",
+        "samples": 3
+      },
+      {
+        "symbol": "qemu_ram_ptr_length.constprop.0",
+        "samples": 3
+      },
+      {
+        "symbol": "qemu_set_irq",
+        "samples": 3
+      },
+      {
+        "symbol": "replay_has_exception",
+        "samples": 3
+      },
+      {
+        "symbol": "runstate_is_running",
+        "samples": 3
+      },
+      {
+        "symbol": "target_info",
+        "samples": 3
+      },
+      {
+        "symbol": "tlb_set_page_with_attrs",
+        "samples": 3
+      },
+      {
+        "symbol": "x86_mmu_index_pl",
+        "samples": 3
+      },
+      {
+        "symbol": "cpu_exec_longjmp_cleanup",
+        "samples": 2
+      },
+      {
+        "symbol": "do_ld2_mmu",
+        "samples": 2
+      },
+      {
+        "symbol": "do_ld_8",
+        "samples": 2
+      },
+      {
+        "symbol": "do_tb_phys_invalidate",
+        "samples": 2
+      },
+      {
+        "symbol": "floatx80_do_compare.isra.0",
+        "samples": 2
+      },
+      {
+        "symbol": "floatx80_round_pack_canonical",
+        "samples": 2
+      },
+      {
+        "symbol": "floatx80_to_int32",
+        "samples": 2
+      },
+      {
+        "symbol": "helper_packssdw_mmx",
+        "samples": 2
+      },
+      {
+        "symbol": "i386_tr_translate_insn",
+        "samples": 2
+      },
+      {
+        "symbol": "int_st_mmio_leN",
+        "samples": 2
+      },
+      {
+        "symbol": "memory_region_dispatch_read",
+        "samples": 2
+      },
+      {
+        "symbol": "memory_region_get_ram_addr",
+        "samples": 2
+      },
+      {
+        "symbol": "native_unsymbolized",
+        "samples": 2
+      },
+      {
+        "symbol": "parts128_float_to_sint.constprop.0",
+        "samples": 2
+      },
+      {
+        "symbol": "parts128_uncanon_normal",
+        "samples": 2
+      },
+      {
+        "symbol": "pic_get_irq",
+        "samples": 2
+      },
+      {
+        "symbol": "pic_intack",
+        "samples": 2
+      },
+      {
+        "symbol": "qdev_get_parent_bus",
+        "samples": 2
+      },
+      {
+        "symbol": "tb_gen_code",
+        "samples": 2
+      },
+      {
+        "symbol": "tb_lock_page0",
+        "samples": 2
+      },
+      {
+        "symbol": "tc_ptr_to_region_tree",
+        "samples": 2
+      },
+      {
+        "symbol": "tcg_out_sib_offset",
+        "samples": 2
+      },
+      {
+        "symbol": "tcg_reg_alloc_op",
+        "samples": 2
+      },
+      {
+        "symbol": "temp_load",
+        "samples": 2
+      },
+      {
+        "symbol": "x86_cpu_exec_interrupt",
+        "samples": 2
+      },
+      {
+        "symbol": "x86_restore_state_to_opc",
+        "samples": 2
+      },
+      {
+        "symbol": "_RNvNtNtCsNDsy69z6bA_17compiler_builtins3int19specialized_div_rem12u128_div_rem",
+        "samples": 1
+      },
+      {
+        "symbol": "access_prepare_mmu",
+        "samples": 1
+      },
+      {
+        "symbol": "address_space_ldub",
+        "samples": 1
+      },
+      {
+        "symbol": "adjust_endianness.isra.0",
+        "samples": 1
+      },
+      {
+        "symbol": "apic_accept_pic_intr",
+        "samples": 1
+      },
+      {
+        "symbol": "bitmap_set",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_can_run",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_exec_start",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_io_recompile",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_ldb_code_mmu",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_ldl_mmu",
+        "samples": 1
+      },
+      {
+        "symbol": "cpu_load_eflags",
+        "samples": 1
+      },
+      {
+        "symbol": "do_ld8_mmu",
+        "samples": 1
+      },
+      {
+        "symbol": "do_ld_beN",
+        "samples": 1
+      },
+      {
+        "symbol": "do_st_mmio_leN",
+        "samples": 1
+      },
+      {
+        "symbol": "do_xsave_sse",
+        "samples": 1
+      },
+      {
+        "symbol": "fast_hash",
+        "samples": 1
+      },
+      {
+        "symbol": "flatview_do_translate.isra.0",
+        "samples": 1
+      },
+      {
+        "symbol": "flatview_write_continue_step.isra.0",
+        "samples": 1
+      },
+      {
+        "symbol": "float32_compare_quiet",
+        "samples": 1
+      },
+      {
+        "symbol": "float32_sqrt",
+        "samples": 1
+      },
+      {
+        "symbol": "floatx80_unpack_canonical.isra.0",
+        "samples": 1
+      },
+      {
+        "symbol": "fold_masks_zosa_int",
+        "samples": 1
+      },
+      {
+        "symbol": "gsi_handler",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_divps_xmm",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_f2xm1__hard",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_fnstcw__hard",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_fucomi_ST0_FT0__hard",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_fxrstor",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_idivl_EAX",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_inb",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_maxps_xmm",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_minss",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_movmskps_xmm",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_punpckhdq_xmm",
+        "samples": 1
+      },
+      {
+        "symbol": "helper_punpckldq_xmm",
+        "samples": 1
+      },
+      {
+        "symbol": "i386_tr_init_disas_context",
+        "samples": 1
+      },
+      {
+        "symbol": "init_ts_info",
+        "samples": 1
+      },
+      {
+        "symbol": "int_ld_mmio_beN",
+        "samples": 1
+      },
+      {
+        "symbol": "interval_tree_iter_first",
+        "samples": 1
+      },
+      {
+        "symbol": "interval_tree_remove",
+        "samples": 1
+      },
+      {
+        "symbol": "la_cross_call",
+        "samples": 1
+      },
+      {
+        "symbol": "liveness_pass_0",
+        "samples": 1
+      },
+      {
+        "symbol": "memory_region_clear_dirty_bitmap",
+        "samples": 1
+      },
+      {
+        "symbol": "memory_region_read_accessor",
+        "samples": 1
+      },
+      {
+        "symbol": "mutex_is_bql",
+        "samples": 1
+      },
+      {
+        "symbol": "normalizeRoundAndPackFloatx80",
+        "samples": 1
+      },
+      {
+        "symbol": "ohci_mem_read",
+        "samples": 1
+      },
+      {
+        "symbol": "ohci_mem_write",
+        "samples": 1
+      },
+      {
+        "symbol": "parts128_canonicalize",
+        "samples": 1
+      },
+      {
+        "symbol": "pci_set_irq",
+        "samples": 1
+      },
+      {
+        "symbol": "pgraph_write",
+        "samples": 1
+      },
+      {
+        "symbol": "pic_irq_request",
+        "samples": 1
+      },
+      {
+        "symbol": "pic_read_irq",
+        "samples": 1
+      },
+      {
+        "symbol": "pic_update_irq",
+        "samples": 1
+      },
+      {
+        "symbol": "process_queued_cpu_work",
+        "samples": 1
+      },
+      {
+        "symbol": "qemu_clock_get_ns",
+        "samples": 1
+      },
+      {
+        "symbol": "qemu_cond_signal",
+        "samples": 1
+      },
+      {
+        "symbol": "qemu_map_ram_ptr",
+        "samples": 1
+      },
+      {
+        "symbol": "qemu_mutex_unlock_impl",
+        "samples": 1
+      },
+      {
+        "symbol": "qemu_process_cpu_events_common",
+        "samples": 1
+      },
+      {
+        "symbol": "qht_insert",
+        "samples": 1
+      },
+      {
+        "symbol": "raise_interrupt2",
+        "samples": 1
+      },
+      {
+        "symbol": "set_bql_locked",
+        "samples": 1
+      },
+      {
+        "symbol": "tb_remove_from_jmp_list",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_cpu_exec",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_gen_code",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_gen_op3",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_op_supported",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_optimize",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_out_movext2.isra.0",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_out_opc",
+        "samples": 1
+      },
+      {
+        "symbol": "tcg_temp_new_internal",
+        "samples": 1
+      },
+      {
+        "symbol": "tgen_addi",
+        "samples": 1
+      },
+      {
+        "symbol": "tgen_qemu_st",
+        "samples": 1
+      },
+      {
+        "symbol": "translator_loop",
+        "samples": 1
+      },
+      {
+        "symbol": "vp_write",
+        "samples": 1
+      },
+      {
+        "symbol": "x86_cpu_exec_enter",
+        "samples": 1
+      },
+      {
+        "symbol": "x86_cpu_exec_exit",
+        "samples": 1
+      },
+      {
+        "symbol": "x86_cpu_pending_interrupt",
+        "samples": 1
+      },
+      {
+        "symbol": "x86_ldub_code",
+        "samples": 1
+      },
+      {
+        "symbol": "x86_need_replay_interrupt",
+        "samples": 1
+      },
+      {
+        "symbol": "xbox_lpc_set_irq",
+        "samples": 1
+      }
+    ]
+  },
+  "source_checks": {
+    "strict_all_target_clippy": true,
+    "isolated_source_fmt": true,
+    "offline_locked_single_compiler": true
+  },
+  "preservation": {
+    "sixteen_paused_paths_and_five_protected_inputs_unchanged": true,
+    "app_and_profile_leases_reacquired": true,
+    "native_processes_absent": true,
+    "prior_builds_profiles_media_evidence_retained": true,
+    "phone_or_sibling_operation": false
+  }
+}

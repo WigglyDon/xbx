@@ -159,6 +159,22 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-local-fable-play" => super::local_io::play(repo, root)?,
         "cartridge-local-fable-continue" => super::local_io::continue_play(repo, root)?,
         "cartridge-local-fable-return" => super::local_io::return_play(repo, root)?,
+        "cartridge-cpu-perf-build" => super::cpu_performance::build(repo, root)?,
+        "cartridge-cpu-perf-baseline" => super::cpu_performance::observe(repo, root, false, false)?,
+        "cartridge-cpu-perf-candidate" => super::cpu_performance::observe(repo, root, true, false)?,
+        "cartridge-cpu-perf-recheck" => super::cpu_performance::observe(repo, root, false, true)?,
+        "cartridge-cpu-perf-paired" => super::cpu_performance::paired(repo, root)?,
+        "cartridge-cpu-float-original-io" => super::cpu_performance::candidate_io(repo, root)?,
+        "cartridge-cpu-float-fable" => super::cpu_performance::fable(repo, root, false, false)?,
+        "cartridge-cpu-float-return" => super::cpu_performance::fable(repo, root, true, false)?,
+        "cartridge-cpu-float-vsync-control" => {
+            super::cpu_performance::fable(repo, root, true, true)?
+        }
+        "cartridge-cpu-float-reference" => super::cpu_performance::float_reference(repo, root)?,
+        "cartridge-cpu-float-candidate-test" => {
+            super::cpu_performance::float_candidate_test(repo, root)?
+        }
+        "cartridge-cpu-float-core" => super::cpu_performance::float_core(repo, root)?,
         "cartridge-apu-paused-original" => super::apu_quiesce::baseline(repo, root)?,
         "cartridge-apu-correction-build" => super::apu_quiesce::correct_runtime(repo, root)?,
         "cartridge-apu-paused-corrected" => super::apu_quiesce::corrected(repo, root, false)?,
@@ -665,7 +681,7 @@ fn observe_fable(
                     Some("stop") => return Ok("operator_requested_stop"),
                     Some("pause") => player.pause(true)?,
                     Some("resume") => player.resume()?,
-                    Some("key") => {
+                    Some("key") | Some("key-long") => {
                         let key = command["key"].as_str().ok_or("normal controller key")?;
                         if ![
                             "Return",
@@ -693,12 +709,16 @@ fn observe_fable(
                             return Err("unsupported normal controller key".into());
                         }
                         let result = Command::new("python3")
-                            .arg(repo.join(".local/ramht-window-input-v2.py"))
+                            .arg(repo.join(if command["op"] == "key-long" {
+                                ".local/ramht-window-input-v1.py"
+                            } else {
+                                ".local/ramht-window-input-v2.py"
+                            }))
                             .arg(&run)
                             .arg(player.resources.core())
                             .arg(key)
                             .output()?;
-                        let event = json!({"elapsed_ms":started.elapsed().as_millis(),"normal_key":key,"operator_exit":result.status.code(),"visible_response_unqualified":true});
+                        let event = json!({"elapsed_ms":started.elapsed().as_millis(),"normal_key":key,"long_normal_hold":command["op"]=="key-long","operator_exit":result.status.code(),"visible_response_unqualified":true});
                         println!("{event}");
                         events.push(event);
                         operator_capture = true;

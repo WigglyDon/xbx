@@ -373,3 +373,15 @@ APU reset hook under that file's LGPL-2.0-or-later terms, preserving upstream
 notices and lineage. The generated-data Rust QTest control is original MIT code.
 See `docs/evidence/cartridge-apu-quiescence-20261029.json` for the exact source,
 patch/candidate identities and actual red/green/active-control scope.
+
+`patches/xemu-f32-exact-flags.patch` targets `fpu/softfloat.c` at the same pinned
+xemu source. Its additions are GPL-2.0-or-later; the retained file's original
+SoftFloat 2a, BSD and GPL notices and terms remain applicable. The bounded
+binary32 fast path computes an exact binary64 intermediate and the actual
+inexact flag, with unchanged software fallbacks. It does not force exception
+flags or change guest rounding modes. Independent reference checks reuse the
+retained QEMU `tests/fp/fp-test` and bundled Berkeley TestFloat/SlowFloat sources
+under their existing notices; none are copied into first-party source.
+`native/fixtures/cpu-performance.S` and its Rust generation/qualification owner
+are original MIT code. Original workload results establish neither game
+compatibility nor Android performance. Existing runtime packages remain retained.

@@ -1,0 +1,92 @@
+--- a/fpu/softfloat.c
++++ b/fpu/softfloat.c
+@@ -1989,6 +1989,57 @@
+     }
+ }
+ 
++/* XBX contribution: GPL-2.0-or-later; existing file notices are retained.
++ * A binary32 product has at most 48 significant bits. A sum/difference of
++ * binary32 normals within 24 exponent steps needs at most 49 bits. Binary64
++ * therefore holds these intermediate results exactly. This permits computing
++ * the inexact flag rather than requiring it to have been set already.
++ * Keep the existing fallback for other rounding, non-normal inputs, overflow,
++ * and the minimum-normal boundary (including before-rounding tininess).
++ */
++enum Float32ExactOp { F32_EXACT_ADD, F32_EXACT_SUB, F32_EXACT_MUL };
++
++static bool float32_exact_flags_binary(float32 a, float32 b, float_status *s,
++                                       enum Float32ExactOp op, float32 *result)
++{
++    union_float32 ua = { .s = a }, ub = { .s = b }, ur;
++    double exact;
++
++    if (QEMU_NO_HARDFLOAT ||
++        (s->float_exception_flags & float_flag_inexact) ||
++        s->float_rounding_mode != float_round_nearest_even ||
++        !float32_is_zero_or_normal(a) ||
++        !float32_is_zero_or_normal(b)) {
++        return false;
++    }
++    if (op != F32_EXACT_MUL && ua.h != 0.0f && ub.h != 0.0f) {
++        unsigned ea = (a >> 23) & 0xff, eb = (b >> 23) & 0xff;
++        if ((ea > eb ? ea - eb : eb - ea) > 24) {
++            return false;
++        }
++    }
++    switch (op) {
++    case F32_EXACT_ADD:
++        exact = (double)ua.h + (double)ub.h;
++        break;
++    case F32_EXACT_SUB:
++        exact = (double)ua.h - (double)ub.h;
++        break;
++    default:
++        exact = (double)ua.h * (double)ub.h;
++        break;
++    }
++    ur.h = (float)exact;
++    if (f32_is_inf(ur) || (fabsf(ur.h) <= FLT_MIN && exact != 0.0)) {
++        return false;
++    }
++    if ((double)ur.h != exact) {
++        float_raise(float_flag_inexact, s);
++    }
++    *result = ur.s;
++    return true;
++}
++
+ static float32 float32_addsub(float32 a, float32 b, float_status *s,
+                               hard_f32_op2_fn hard, soft_f32_op2_fn soft)
+ {
+@@ -2006,12 +2057,20 @@
+ float32 QEMU_FLATTEN
+ float32_add(float32 a, float32 b, float_status *s)
+ {
++    float32 result;
++    if (float32_exact_flags_binary(a, b, s, F32_EXACT_ADD, &result)) {
++        return result;
++    }
+     return float32_addsub(a, b, s, hard_f32_add, soft_f32_add);
+ }
+ 
+ float32 QEMU_FLATTEN
+ float32_sub(float32 a, float32 b, float_status *s)
+ {
++    float32 result;
++    if (float32_exact_flags_binary(a, b, s, F32_EXACT_SUB, &result)) {
++        return result;
++    }
+     return float32_addsub(a, b, s, hard_f32_sub, soft_f32_sub);
+ }
+ 
+@@ -2169,6 +2228,10 @@
+ float32 QEMU_FLATTEN
+ float32_mul(float32 a, float32 b, float_status *s)
+ {
++    float32 result;
++    if (float32_exact_flags_binary(a, b, s, F32_EXACT_MUL, &result)) {
++        return result;
++    }
+     return float32_gen2(a, b, s, hard_f32_mul, soft_f32_mul,
+                         f32_is_zon2, f32_addsubmul_post);
+ }

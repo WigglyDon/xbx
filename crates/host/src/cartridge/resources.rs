@@ -30,6 +30,10 @@ pub const APU_QUIESCENT_CORE: &str = match option_env!("XBX_APU_QUIESCENT_CORE_S
     None => "unqualified-apu-build",
 };
 pub const LOGGING_OPEN: &str = "8f1d5ac9ec1b8d97eabf13fdca53f0f995f19b56951e1ddf8dca370cf71c070e";
+pub const CPU_FLOAT_CORE: &str = match option_env!("XBX_CPU_FLOAT_CORE_SHA256") {
+    Some(v) => v,
+    None => "unqualified-cpu-float-build",
+};
 pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
     "85a173c73aa642fd82f64146149c6a37c38720ac8a020eb03d0c4f34de6c3255",
@@ -58,6 +62,10 @@ pub struct Resources {
     pub(crate) native_dir: PathBuf,
 }
 impl Resources {
+    #[cfg(not(target_os = "android"))]
+    pub(crate) fn cpu_float(root: &Path) -> io::Result<Self> {
+        Self::validated_core(root, CPU_FLOAT_CORE, LOCAL_BASE_OPEN, true)
+    }
     /// The normal runtime accepts only the compiled supported open resource set.
     /// No proprietary/reference fallback, config override or firmware selector.
     #[cfg(not(target_os = "android"))]
