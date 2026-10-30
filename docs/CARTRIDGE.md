@@ -17,9 +17,11 @@ menu after Start and the profile-name keyboard after A, then returned cleanly at
 or declare fixed the historical error. Thirty-two early missing-name/path open
 failures exhausted that reporting class; no negative read-return or final-read
 completion was reported. These observations identify no public platform defect.
-The owner reports unbearable lag; no frame rate was measured. Gameplay, sound,
-ordinary save/reload and unsaved Fable restoration remain unqualified. The current
-non-reporting baseline is being qualified in separate fresh storage. The
+The later non-reporting candidate reached controlled opening-village gameplay.
+The corrected APU candidate additionally restored that unsaved gameplay in a
+genuinely fresh process and accepted further movement. Severe hitching is now
+measured; sound, ordinary save/cold reload and usable performance remain
+unqualified. Focused performance work reuses the retained gameplay checkpoint. The
 reporting images bind their build date to public source time and
 are distinct from the discarded historical binaries. No past compatibility or
 continuity result is reassigned to these new artifacts. The ordinary runtime,
@@ -42,7 +44,8 @@ The non-reporting baseline subsequently reached the opening village. A dismissed
 tutorial prompt revealed the gameplay HUD, and the mapped left-stick-forward
 input visibly advanced the character, camera/world view and minimap position.
 This is first controlled desktop Fable gameplay, limited to that opening action.
-The owner reports unbearable lag; frame rate and usable pacing remain unmeasured.
+The owner reports unbearable lag. The later corrected-core run confirms severe
+hitching; usable pacing remains unqualified.
 Dummy audio qualifies no sound. A later cold launch displayed Continue Game,
 but an ordinary save/load has not yet been exercised.
 
@@ -51,8 +54,10 @@ path with native exit0, acknowledged quit, reap and storage sync. Its genuinely
 fresh-process return aborted in the public APU interpreter's24-bit program-word
 check. The child is absent; read-only comparison verifies unchanged authoritative
 disk contents, EEPROM, generation, checkpoint bytes and current/session pointers.
-A written checkpoint therefore earns no visible Fable restoration. The current
-public APU reset/quiescence boundary needs an original reproducer before repair.
+That failed return earned no visible restoration. It motivated the independently
+reproduced and qualified
+APU reset/quiescence correction recorded below. The later corrected-core
+checkpoint visibly restores village gameplay and permits further movement.
 
 The finite interactive owner now accepts up to100 whitelisted normal commands in
 one foreground terminal session. An earlier background-terminal attempt stopped
@@ -741,6 +746,37 @@ The repair has its own source/object tree, artifact digest and developer package
 Only the APU object and build-version metadata were compiled before relinking;
 the original source/build are byte-preserved. Existing resource and newer-save
 checks continue to reject incompatible state rather than loading old RAM against
-new storage. An actual Fable recheck on this new non-reporting candidate is next.
-No Fable restore or performance improvement follows from these original controls.
+new storage. The actual non-reporting Fable recheck now reaches controlled village
+play and visibly restores that gameplay in a fresh native process, with further
+movement afterward. Those commercial observations are separate from the original
+controls and earn no performance or sound acceptance.
 [Exact original results and provenance](evidence/cartridge-apu-quiescence-20261029.json).
+
+## Focused desktop performance continuation
+
+The corrected core now reaches the village, visibly responds to left-stick
+input, publishes a gameplay checkpoint and restores it in a new native process
+without an intro. Further input changes the character and world/camera/minimap.
+Both product departures record exit0, acknowledged quit, reap, sync and unchanged
+immutable inputs. This earns only the observed opening-gameplay continuity slice;
+sound and ordinary save/cold reload remain separate.
+
+Performance work uses that checkpoint instead of repeated intro runs. Read-only
+measurements use existing public native timing counters, with no game-code or
+private-data inspection. Debugger-assisted samples are labeled intrusive; the
+20-second interval samples read only the identified scalar counters without
+stopping the native process. Lid/display state can influence measurements and
+was not recorded alongside the initial FPS samples; a later host-wait probe
+recorded the lid closed at both ends. The owner reports persistent hitching
+independent of lid changes. A developer-only `cartridge-apu-fable-vsync-control` restores the
+same compatible session with only host vertical sync disabled. This changes no
+core, system, machine-state binding or ordinary default, and is a comparison,
+not an accepted performance fix.
+
+The retained Vulkan backend is also compiled into the same core. Source review
+confirms renderer-neutral device state and post-load cache invalidation. A fixed
+`cartridge-apu-fable-vulkan-control` returns to the same profile with Vulkan and
+vsync off; actual village graphics are reviewed before measuring. Native backend
+and integrated-GPU selection are checked independently of the OpenGL UI context.
+The short samples still show severe hitching, so neither Vulkan nor vsync-off is
+promoted as a fix or ordinary default. [Measurements and limits](evidence/cartridge-fable-performance-20261029.json).

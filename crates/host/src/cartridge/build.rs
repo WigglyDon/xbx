@@ -164,8 +164,14 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-apu-paused-corrected" => super::apu_quiesce::corrected(repo, root, false)?,
         "cartridge-apu-running-control" => super::apu_quiesce::corrected(repo, root, true)?,
         "cartridge-apu-original-io" => super::apu_quiesce::original_io(repo, root)?,
-        "cartridge-apu-fable-play" => super::apu_quiesce::fable(repo, root, false)?,
-        "cartridge-apu-fable-return" => super::apu_quiesce::fable(repo, root, true)?,
+        "cartridge-apu-fable-play" => super::apu_quiesce::fable(repo, root, false, true, false)?,
+        "cartridge-apu-fable-return" => super::apu_quiesce::fable(repo, root, true, true, false)?,
+        "cartridge-apu-fable-vsync-control" => {
+            super::apu_quiesce::fable(repo, root, true, false, false)?
+        }
+        "cartridge-apu-fable-vulkan-control" => {
+            super::apu_quiesce::fable(repo, root, true, false, true)?
+        }
         "cartridge-file-highva-build" => super::file_read::build_high_va(repo, root)?,
         "cartridge-file-highva-observe" => super::file_read::observe_high_va(repo, root)?,
         "cartridge-file-demand-build" => super::file_read::build_demand(repo, root)?,

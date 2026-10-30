@@ -119,9 +119,12 @@
   },
   "game_truth": {
     "prior_core_controlled_opening_gameplay_observed": true,
-    "corrected_core_Fable_recheck_started": false,
-    "corrected_core_Fable_restore_qualified": false,
-    "usable_pacing_sound_save_reload_unqualified": true
+    "corrected_core_Fable_recheck_started": true,
+    "corrected_core_Fable_restore_qualified": true,
+    "usable_pacing_sound_save_reload_unqualified": true,
+    "corrected_core_controlled_village_play_observed": true,
+    "restore_scope": "Fresh native process, same village state/HUD, then further left-stick input visibly changes character and world/camera/minimap; limited opening gameplay only.",
+    "performance_qualified": false
   },
   "preservation": {
     "installed_candidate_and_default_selection_changed": false,
@@ -130,5 +133,49 @@
     "paused_investigations_resumed": false,
     "public_binary_release": false
   },
-  "continuation": "Use the separately identified non-reporting corrected candidate for actual Fable launch/input and checkpoint/fresh-process return; these original controls are not substitute gameplay acceptance."
+  "continuation": "Use retained actual gameplay checkpoint for focused hitch measurements. No intro replay is needed for the same compatible runtime. Sound, ordinary save/cold reload, usable pacing and Android Fable remain unqualified.",
+  "actual_game_runs": [
+    {
+      "elapsed_ms": 1093298,
+      "restored": false,
+      "checkpoint_published": true,
+      "inputs_unchanged": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 103,
+        "reap_ms": 261,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 20,
+        "storage_synced": true
+      }
+    },
+    {
+      "elapsed_ms": 2174507,
+      "restored": true,
+      "checkpoint_published": true,
+      "inputs_unchanged": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 10,
+        "reap_ms": 221,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 5,
+        "storage_synced": true
+      }
+    }
+  ]
 }

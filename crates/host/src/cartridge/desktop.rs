@@ -100,7 +100,13 @@ impl Native {
             json!({"driver":"raw","offset":partition,"read-only":true,"file":{"driver":"file","filename":"/dev/fdset/1"}})
         );
         let config = format!(
-            "[general]\nshow_welcome=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"OPENGL\"\n[sys]\nmem_limit=\"64\"\n[input]\nauto_bind=false\n[input.bindings]\nport1_driver=\"usb-xbox-gamepad-s\"\nport1=\"keyboard\"\n[sys.files]\nbootrom_path=\"\"\nflashrom_path={}\nhdd_path={}\neeprom_path={}\ndvd_path={}\n",
+            "[general]\nshow_welcome=false\n[general.updates]\ncheck=false\n[display]\nrenderer=\"{}\"\n[display.window]\nvsync={}\n[sys]\nmem_limit=\"64\"\n[input]\nauto_bind=false\n[input.bindings]\nport1_driver=\"usb-xbox-gamepad-s\"\nport1=\"keyboard\"\n[sys.files]\nbootrom_path=\"\"\nflashrom_path={}\nhdd_path={}\neeprom_path={}\ndvd_path={}\n",
+            if r.presentation_vulkan {
+                "VULKAN"
+            } else {
+                "OPENGL"
+            },
+            r.presentation_vsync,
             q(&r.root.join("open.bin")),
             q(&dir.join("hdd.qcow2")),
             q(&dir.join("eeprom.bin")),

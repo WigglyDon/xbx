@@ -54,6 +54,8 @@ impl Fixture {
             root: runtime,
             identity: "c".repeat(64),
             window: false,
+            presentation_vsync: true,
+            presentation_vulkan: false,
             manifest: resources::Manifest {
                 schema: 1,
                 core: resources::CORE.into(),

@@ -50,6 +50,10 @@ pub struct Resources {
     pub manifest: Manifest,
     #[cfg(not(target_os = "android"))]
     pub(crate) window: bool,
+    #[cfg(not(target_os = "android"))]
+    pub(crate) presentation_vsync: bool,
+    #[cfg(not(target_os = "android"))]
+    pub(crate) presentation_vulkan: bool,
     #[cfg(target_os = "android")]
     pub(crate) native_dir: PathBuf,
 }
@@ -143,6 +147,8 @@ impl Resources {
             root,
             manifest: m,
             window,
+            presentation_vsync: true,
+            presentation_vulkan: false,
         })
     }
     pub fn core(&self) -> PathBuf {

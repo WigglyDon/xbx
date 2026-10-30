@@ -322,7 +322,13 @@ pub(super) fn original_io(repo: &Path, root: &Path) -> Result<(), Error> {
     )
 }
 
-pub(super) fn fable(repo: &Path, root: &Path, returning: bool) -> Result<(), Error> {
+pub(super) fn fable(
+    repo: &Path,
+    root: &Path,
+    returning: bool,
+    presentation_vsync: bool,
+    presentation_vulkan: bool,
+) -> Result<(), Error> {
     corrected_controls(root)?;
     let io: Value = c::read_json(&root.join("apu-quiescence-v1/original-io/original.result.json"))?;
     if io["core"] != resources::APU_QUIESCENT_CORE
@@ -334,11 +340,23 @@ pub(super) fn fable(repo: &Path, root: &Path, returning: bool) -> Result<(), Err
     {
         return Err("changed core requires its actual original startup/I-O requalification".into());
     }
-    let r = resources::Resources::apu_quiescent(&root.join("apu-quiescence-v1/package"))?;
+    let mut r = resources::Resources::apu_quiescent(&root.join("apu-quiescence-v1/package"))?;
+    // Host presentation is not the guest machine-state ABI. This fixed,
+    // developer-only comparison retains the exact core, system and checkpoint.
+    // Ordinary resources keep the retained upstream vsync default.
+    r.presentation_vsync = presentation_vsync;
+    r.presentation_vulkan = presentation_vulkan;
     if returning {
         let prior: Value = c::read_json(&root.join("fable-apu-corrected.native-started.json"))?;
         let app = Path::new(prior["app"].as_str().ok_or("corrected cartridge app")?);
-        let prefix = format!("fable-apu-corrected-return-{}", c::new_id()?);
+        let kind = if presentation_vulkan {
+            "vulkan-control"
+        } else if presentation_vsync {
+            "return"
+        } else {
+            "vsync-control"
+        };
+        let prefix = format!("fable-apu-corrected-{kind}-{}", c::new_id()?);
         super::build::observe_local_play(repo, root, r, &prefix, Some(app.into()), true)
     } else {
         let prefix = "fable-apu-corrected";

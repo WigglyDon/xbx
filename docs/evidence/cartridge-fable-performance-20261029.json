@@ -1,0 +1,294 @@
+{
+  "schema": 1,
+  "assignment": "XBX-CARTRIDGE-1",
+  "date": "2026-10-29",
+  "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+  "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "entry": "retained opening-village gameplay checkpoint through ordinary Player restore; no intro replay",
+  "owner_report": "Persistent unbearable lag, independent of occasional lid open/close. Lid state was not recorded with samples.",
+  "method": {
+    "scope": "existing public native host GPU/APU and translation performance counters only; no game-code or guest-data inspection",
+    "non_stopping_sample_seconds": 20,
+    "poll_interval_ms": 20,
+    "first_interval_starting_before_window_excluded": true,
+    "limitations": [
+      "Short sequential samples; host scheduling/lid state not controlled",
+      "Counter samples do not qualify input latency, sound or ordinary saves",
+      "Fast multiple flips between polls can be missed in interval distribution",
+      "Debugger-assisted snapshots stop native execution briefly and are not used as sustained frame-rate proof"
+    ]
+  },
+  "samples": [
+    {
+      "condition": "OpenGL retained vsync default",
+      "summary": {
+        "seconds": 19.980084377,
+        "frames": 20,
+        "average_fps": 1.0009967737184797,
+        "observed_flip_intervals": 19,
+        "flip_ms_median": 574.737,
+        "flip_ms_p95": 1146.265,
+        "flip_ms_max": 3173.573,
+        "apu_frames_per_second_median": 1518.0,
+        "apu_utilization_median": 0.6253917217254639,
+        "sampling_limit": "20ms polls can miss multiple fast flips; named host counters only, native not stopped while sampling",
+        "first_pre_window_interval_excluded": true
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 10,
+        "reap_ms": 221,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 5,
+        "storage_synced": true
+      },
+      "checkpoint_restored": true,
+      "next_checkpoint_published": true,
+      "immutable_inputs_unchanged": true
+    },
+    {
+      "condition": "OpenGL vsync disabled",
+      "summary": {
+        "seconds": 19.980048777,
+        "frames": 81,
+        "average_fps": 4.054044156951359,
+        "observed_flip_intervals": 79,
+        "flip_ms_median": 224.408,
+        "flip_ms_p95": 524.711,
+        "flip_ms_max": 648.075,
+        "apu_frames_per_second_median": 1517.0,
+        "apu_utilization_median": 0.5637451708316803,
+        "sampling_limit": "20ms polls can miss multiple fast flips; named host counters only, native not stopped while sampling"
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 15,
+        "reap_ms": 183,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      },
+      "checkpoint_restored": true,
+      "next_checkpoint_published": true,
+      "immutable_inputs_unchanged": true
+    },
+    {
+      "condition": "OpenGL vsync disabled later translation sample",
+      "summary": {
+        "tb_flushes_delta": 0,
+        "tb_invalidations_delta": 7888,
+        "tlb_full_flushes_delta": 0,
+        "seconds": 19.980081965,
+        "frames": 157,
+        "average_fps": 7.8578256222884315,
+        "observed_flip_intervals": 157,
+        "flip_ms_median": 131.756,
+        "flip_ms_p95": 230.222,
+        "flip_ms_max": 301.64,
+        "apu_frames_per_second_median": 1524.0,
+        "apu_utilization_median": 0.40211962163448334,
+        "sampling_limit": "20ms polls can miss multiple fast flips; named host counters only, native not stopped while sampling"
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 15,
+        "reap_ms": 183,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      },
+      "checkpoint_restored": true,
+      "next_checkpoint_published": true,
+      "immutable_inputs_unchanged": true
+    },
+    {
+      "condition": "Vulkan with vsync disabled",
+      "summary": {
+        "seconds": 19.980086508,
+        "frames": 149,
+        "average_fps": 7.457425168821997,
+        "observed_flip_intervals": 148,
+        "flip_ms_median": 110.4665,
+        "flip_ms_p95": 253.453,
+        "flip_ms_max": 533.481,
+        "apu_frames_per_second_median": 1522.5,
+        "apu_utilization_median": 0.4045374095439911,
+        "sampling_limit": "20ms polls can miss multiple fast flips; named host counters only, native not stopped while sampling"
+      },
+      "native_backend_verified": "Vulkan",
+      "hardware_device_class": "integrated_gpu",
+      "visible_village_restoration_and_further_input_reviewed": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 11,
+        "reap_ms": 644,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 0,
+        "storage_synced": true
+      },
+      "checkpoint_restored": true,
+      "next_checkpoint_published": true,
+      "immutable_inputs_unchanged": true
+    }
+  ],
+  "native_correction_in_this_slice": false,
+  "ordinary_defaults_changed": false,
+  "performance_qualified": false,
+  "validation": {
+    "strict_all_target_clippy_passed": true,
+    "rust_builder_passed": true
+  },
+  "continuation": "Use the retained actual gameplay checkpoint for further supported performance work. The observed native dispatch and arithmetic cost motivates an original bounded benchmark before any targeted candidate/game recheck; no unsupported performance patch or default change.",
+  "other_observations": {
+    "intrusive_GPU_FPS_samples": [
+      5,
+      3,
+      3
+    ],
+    "intrusive_renderer_work_ms_ring": {
+      "median": 1,
+      "p95": 4,
+      "max": 10
+    },
+    "APU_frames_per_second_roughly": 1518,
+    "APU_utilization_varied": true,
+    "full_translation_cache_flushes_in_twenty_seconds": 0,
+    "full_TLB_flushes_in_twenty_seconds": 0,
+    "invalidated_translation_blocks_in_twenty_seconds": 7888,
+    "interpretation": "Observed hitching remains severe; these counters do not attribute a public implementation defect. Vsync-off samples vary and do not establish a performance fix."
+  },
+  "native_cpu_profile": {
+    "method": "20s userspace CPU-clock perf events on owned vCPU; existing public native symbols and generic executable-region classification only",
+    "sample_count": 7052,
+    "lost": 0,
+    "top_counts": [
+      {
+        "symbol": "anonymous_executable_region",
+        "samples": 3057
+      },
+      {
+        "symbol": "helper_lookup_tb_ptr",
+        "samples": 911
+      },
+      {
+        "symbol": "qht_lookup_custom",
+        "samples": 375
+      },
+      {
+        "symbol": "float32_mul",
+        "samples": 214
+      },
+      {
+        "symbol": "float32_add",
+        "samples": 161
+      },
+      {
+        "symbol": "probe_access_internal.isra.0",
+        "samples": 137
+      },
+      {
+        "symbol": "tlb_set_page_full",
+        "samples": 107
+      },
+      {
+        "symbol": "x86_get_tb_cpu_state",
+        "samples": 92
+      },
+      {
+        "symbol": "soft_f32_mul",
+        "samples": 91
+      },
+      {
+        "symbol": "do_ld4_mmu",
+        "samples": 90
+      },
+      {
+        "symbol": "float32_sub",
+        "samples": 81
+      },
+      {
+        "symbol": "victim_tlb_hit",
+        "samples": 81
+      },
+      {
+        "symbol": "system_library",
+        "samples": 78
+      },
+      {
+        "symbol": "tb_htable_lookup_common",
+        "samples": 67
+      },
+      {
+        "symbol": "find_next_bit",
+        "samples": 62
+      }
+    ],
+    "raw_addresses_or_game_contents_retained": false
+  },
+  "public_kernel_clock_sample": {
+    "kernel_tick_delta": 18259,
+    "kernel_interrupt_low_delta": 182590000,
+    "native_cpu_halted_fraction": 0.01,
+    "seconds": 19.980306128,
+    "frames": 124,
+    "average_fps": 6.206111117898684,
+    "observed_flip_intervals": 123,
+    "flip_ms_median": 140.271,
+    "flip_ms_p95": 310.715,
+    "flip_ms_max": 529.944,
+    "apu_frames_per_second_median": 1523.0,
+    "apu_utilization_median": 0.4744497537612915,
+    "sampling_limit": "20ms polls can miss multiple fast flips; named host counters only, native not stopped while sampling"
+  },
+  "host_wait_sample": {
+    "seconds": 20.000118864,
+    "cpu_runtime_percent": 77.86936182680878,
+    "runqueue_wait_percent": 0.5652642205216846,
+    "samples": {
+      "executing_user_or_transition": 1627,
+      "host_futex_pgraph": 202,
+      "host_futex_other": 58,
+      "host_futex_apu": 51,
+      "host_futex_bql": 38,
+      "host_futex_pfifo": 24
+    },
+    "lid_before": "closed",
+    "lid_after": "closed"
+  },
+  "limits_of_attribution": "The samples identify translation/FP overhead and host waits, not a proven correctable defect. Renderer/vsync trials do not establish a usable performance gain. Host lid and scheduling differed or were unrecorded across FPS samples.",
+  "preservation": {
+    "all_native_attempts_cleanly_returned": true,
+    "all_profiles_checkpoints_evidence_retained": true,
+    "app_and_profile_leases_reacquired": true,
+    "sixteen_paused_paths_and_five_protected_inputs_unchanged": true,
+    "phone_or_sibling_operation": false
+  }
+}
