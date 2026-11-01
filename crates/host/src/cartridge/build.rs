@@ -333,6 +333,13 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
         "cartridge-android-demo-native" => super::android_demo::native(repo, root)?,
         "cartridge-android-serial-native" => super::serial_watch::build(repo, root)?,
+        "cartridge-android-tcg-fault-contract" => super::tcg_fault::contract(repo, root)?,
+        "cartridge-android-tcg-fault-native" => super::tcg_fault::build(repo, root)?,
+        "cartridge-android-tcg-fault-package" => {
+            super::android_package::build_tcg_fault(repo, root)?
+        }
+        "cartridge-android-launch-status" => super::android_launch::build(repo, root)?,
+        "cartridge-android-launch-package" => super::android_package::build_launch(repo, root)?,
         "cartridge-android-serial-contract" => super::serial_watch::contract(repo, root)?,
         "cartridge-android-serial-package" => super::android_package::build_serial(repo, root)?,
         "cartridge-android-serial-io-package" => {

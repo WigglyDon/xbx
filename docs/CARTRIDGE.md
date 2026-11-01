@@ -1058,3 +1058,44 @@ bounded public I/O reporting image to the same corrected native core. It does
 not rebuild firmware, expose a user firmware selector, or alter ordinary saves.
 Its Android observation is pending at this source checkpoint.
 [Scoped repair and outcomes](evidence/cartridge-android-serial-watch-20261101.json).
+
+The subsequent matched Android I/O observation reaches the same restart toward
+the dashboard. It captures no earlier failed open/read; the only reported open
+failure is the absent dashboard. Ordinary Stop ends that observation with a
+clean native return. A separate two-object public launch-status image then
+records firmware routine2, launch type1, empty path, dashboard reason1/code1.
+The first reporting placement loses the post-reset fields; moving those same
+fields before reset preserves them. No path, payload, caller address or game
+code is collected. This generic error disposition does not attribute the cause.
+Both launch-status device phases preserve data and verify actual return.
+
+Source review independently finds a condition-code lifetime defect in the
+retained Android tier-1 optimizer. Its backward elimination can remove a global
+value required by an intervening fault, and its successor summary can advertise
+a later overwrite even though an earlier operation may fault. The source's
+`TCG_OPF_SIDE_EFFECTS` explicitly includes potentially faulting operations;
+x86 exception restoration restores the operation selector, retaining the other
+condition-code globals. The correction treats those operations conservatively
+in local/cross-block analysis and stops the successor summary at that boundary.
+Ordinary nonfaulting elimination remains active.
+
+`cartridge-android-tcg-fault-contract` compiles unchanged before/after optimizer
+function bodies with an original controlled IR fixture. Both original fault
+cases fail while both ordinary controls pass; all four corrected cases pass.
+This qualifies the dataflow boundary, not real vCPU exception delivery.
+`cartridge-android-tcg-fault-native` consumes that result, recompiles one native
+unit and relinks the retained UART-corrected core. Its separately bound package
+keeps the exact preceding open image, helper, seeds, media and settings, without
+aliasing old checkpoints.
+
+That candidate is installed with all prior profile files unchanged. The original
+cartridge boots, accepts a new RAM action and publishes a checkpoint with a
+clean native departure and OS process absence. The following genuinely fresh
+process starts, but the private test client's short idle cutoff interrupts
+observation before restored RAM is verified. Cleanup preserves its artifacts,
+retires only the task-owned app and verifies stock return. This is an interrupted
+qualification, not a compatibility failure. The prepared continuation retrieves
+that launch's retained diagnostics first, reuses the installed binary and keeps
+the declared finite work budget without the shorter idle cutoff. Fable has not
+yet been rechecked on this correction.
+[Actual fields, contract and device boundary](evidence/cartridge-android-launch-and-flags-20261101.json).

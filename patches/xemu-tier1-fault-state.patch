@@ -1,0 +1,35 @@
+--- a/tcg/tier1-opt.c
++++ b/tcg/tier1-opt.c
+@@ -133,10 +133,10 @@
+         }
+ 
+         /*
+-         * For call ops, conservatively assume all CC globals are
+-         * both read and written (the helper might access cpu state).
+-         */
+-        if (opc == INDEX_op_call) {
++         * Calls and potentially faulting operations implicitly observe all
++         * architectural CC globals before any explicit output is written.
++         */
++        if (opc == INDEX_op_call || (def->flags & TCG_OPF_SIDE_EFFECTS)) {
+             cc_live = (1u << CC_GLOBAL_COUNT) - 1;
+             continue;
+         }
+@@ -237,7 +237,7 @@
+ 
+         def = &tcg_op_defs[opc];
+         if (def->flags & (TCG_OPF_BB_EXIT | TCG_OPF_BB_END |
+-                          TCG_OPF_COND_BRANCH)) {
++                          TCG_OPF_COND_BRANCH | TCG_OPF_SIDE_EFFECTS)) {
+             break;
+         }
+ 
+@@ -323,7 +323,7 @@
+             continue;
+         }
+ 
+-        if (opc == INDEX_op_call) {
++        if (opc == INDEX_op_call || (def->flags & TCG_OPF_SIDE_EFFECTS)) {
+             cc_live = (1u << CC_GLOBAL_COUNT) - 1;
+             continue;
+         }

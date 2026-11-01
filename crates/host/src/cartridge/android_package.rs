@@ -37,6 +37,17 @@ pub(super) fn build_demo(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn build_serial(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-serial-v1", "android-serial-package-v1")
 }
+pub(super) fn build_tcg_fault(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-fault-v1",
+        "android-tcg-fault-package-v1",
+    )
+}
+pub(super) fn build_launch(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, "android-serial-v1", "android-launch-package-v2")
+}
 pub(super) fn build_serial_io(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -94,18 +105,46 @@ fn build_selected(
     let core_hash = c::file_digest(&native.join("libxemu.so"))?;
     let helper_hash = c::file_digest(&helper.join("libxbx-disk.so"))?;
     let seed_hash = c::file_digest(&helper.join("empty.qcow2"))?;
-    let demo = matches!(native_stage, "android-demo-native-v2" | "android-serial-v1");
+    let demo = matches!(
+        native_stage,
+        "android-demo-native-v2" | "android-serial-v1" | "android-tcg-fault-v1"
+    );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let reporting = package_stage == "android-serial-io-package-v1";
-    let open_hash = if reporting {
+    let fault = package_stage == "android-tcg-fault-package-v1";
+    let launch = package_stage == "android-launch-package-v2" || fault;
+    let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
+    let launch_identity: serde_json::Value = if launch {
+        c::read_json(&root.join("android-launch-v2/identity.json"))?
+    } else {
+        json!(null)
+    };
+    let open_hash = if launch {
+        let parent_core = if fault {
+            native_identity["prior_library_sha256"]
+                .as_str()
+                .ok_or("prior native binding")?
+        } else {
+            &core_hash
+        };
+        if launch_identity["native_core"] != parent_core
+            || launch_identity["parent_open_system"] != super::resources::LOCAL_IO_OPEN
+            || launch_identity["patch"]
+                != c::file_digest(&repo.join("patches/oxos-launch-disposition.patch"))?
+        {
+            return Err("public launch-status candidate bindings differ".into());
+        }
+        launch_identity["open_system"]
+            .as_str()
+            .ok_or("launch-status image binding")?
+    } else if reporting {
         super::resources::LOCAL_IO_OPEN
     } else if demo {
         super::resources::LOCAL_BASE_OPEN
     } else {
         super::resources::OPEN
     };
-    let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     if native_identity["source_sha256"] != c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?
         || native_identity["bridge_abi"] != 4
     {
@@ -163,7 +202,9 @@ fn build_selected(
     for dir in [&assets, &libs, &classes, &dex] {
         fs::create_dir_all(dir)?;
     }
-    let open = if reporting {
+    let open = if launch {
+        root.join("android-launch-v2/build/bios.bin")
+    } else if reporting {
         root.parent()
             .ok_or("current workspace")?
             .join("rebuilt-io-images-v3/reporting/bios.bin")

@@ -437,3 +437,14 @@ GPL obligations remain unchanged. The Rust owner and original MIT
 `native/fixtures/serial-watch-context.c` are qualification machinery. The
 generated private test includes preserve the native source notices and unchanged
 function bodies. No title or private firmware implementation is included.
+
+`patches/oxos-launch-disposition.patch` changes only public boot/HAL launch
+reporting in retained OXOS `9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96` under
+its GPL-2.0 terms. No launch path/payload, title code or proprietary firmware is
+copied. `patches/xemu-tier1-fault-state.patch` changes the retained Android
+`tcg/tier1-opt.c` at the xemu/X1 BOX pin above, retaining its GPL-2.0-or-later
+notice and obligations. The Rust owner and original controlled-IR scaffold
+`native/fixtures/tier1-fault-state.c` are MIT; generated private test subjects
+retain the complete native notice and unchanged function bodies. The fixture
+uses the retained QEMU queue header under its existing terms. It does not claim
+actual vCPU exception delivery or commercial compatibility.

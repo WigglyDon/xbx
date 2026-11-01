@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "Android public launch disposition and independently supported TCG state correction",
+  "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+  "public_launch_reporting": {
+    "patch": "patches/oxos-launch-disposition.patch",
+    "kernel_objects_changed": [
+      "hal/smbus.obj",
+      "xe/loader.obj"
+    ],
+    "native_core_changed": false,
+    "game_or_private_firmware_code_inspected": false,
+    "retained_IO_reporter_reused": true,
+    "original_boot_action_and_clean_departure_passed": true,
+    "first_placement": "post-reboot disposition lost during subsequent reset; preserved",
+    "corrected_placement": "same narrow public launch-header fields before reboot",
+    "actual_fields": {
+      "firmware_routine": 2,
+      "launch_data_type": 1,
+      "flags": 0,
+      "empty_launch_path": true,
+      "dashboard_reason": 1,
+      "dashboard_code": 1
+    },
+    "meaning": "generic startup error request; underlying cause unassigned",
+    "raw_logs_paths_payloads_callers_identifiers_published": false,
+    "all_three_finite_device_phases_return_verified": true
+  },
+  "tcg_contract": {
+    "actual_vCPU_or_Android_exception_delivery": false,
+    "controlled_IR_and_fault_observation": true,
+    "fixture": "e24d0131f1f4be50eeb36ba82d348407e016275a989695a7f89de84ff8b3a7b7",
+    "game_causality": false,
+    "passed": true,
+    "patch": "e24bb9bfcf96ba88b4f24c2369a93f4d28cc0730cd298c4c4d4d29548b633af5",
+    "results": [
+      {
+        "case": "local-safe",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "local-fault",
+        "exit": 1,
+        "expected_exit": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "cross-safe",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "cross-fault",
+        "exit": 1,
+        "expected_exit": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "local-safe",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "local-fault",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "cross-safe",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "cross-fault",
+        "exit": 0,
+        "expected_exit": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "subject_after": "6272570dc33213f107d90bccffd662e090f94ca1b081252e4a92dfc1f1e3b7d2",
+    "unchanged_function_bodies": true
+  },
+  "native_build": {
+    "units_recompiled": [
+      "tcg/tier1-opt.c"
+    ],
+    "whole_core_rebuild": false,
+    "same_open_image_helper_seed_media_and_settings": true,
+    "strict_isolated_Clippy_and_format_passed": true,
+    "APK_signature_alignment_identity_checks_passed": true,
+    "state_layout_changed": false,
+    "checkpoints_retagged": false
+  },
+  "actual_changed_core_device": {
+    "same_signer_update_passed": true,
+    "all_existing_profile_files_identical_across_update": true,
+    "original_boot_and_new_RAM_action_passed": true,
+    "original_checkpoint_written": true,
+    "original_native_departure_clean": true,
+    "OS_process_absence_before_return_attempt": true,
+    "fresh_process_started": true,
+    "fresh_process_RAM_restoration_observed": false,
+    "restoration_observation": "interrupted by private test-client short idle cutoff; result unqualified, not compatibility failure",
+    "task_owned_app_retired_and_stock_return_verified": true,
+    "post_correction_Fable_run": false,
+    "continued_using_same_installed_candidate": true,
+    "no_unchanged_rebuild_or_reinstall_planned": true
+  },
+  "preservation": {
+    "all_prior_sources_profiles_media_builds_and_evidence_retained": true,
+    "paused_paths_unchanged": 16,
+    "signing_seeds_and_rollback_checks_unchanged": true,
+    "PSX_and_other_sibling_sources_untouched": true,
+    "no_further_deletion": true
+  },
+  "remaining": "retrieve only interrupted return diagnostics under fresh admission; complete actual original fresh return, then matched Fable check; game and performance remain unqualified"
+}
