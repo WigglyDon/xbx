@@ -874,3 +874,25 @@ hypothesis; it establishes no Fable cause. The separate fixed Xbox RDTSC rate
 still needs qualification before a configuration correction. The
 [controller and clock receipt](evidence/cartridge-host-input-20261031.json)
 records actual results, failed input attempts, lineage and preservation.
+
+The RDTSC extension reproduces a separate public counter mismatch: about
+733.317 million software-backend ticks versus 1.992 billion KVM ticks per
+performance-counter second. The retained Xbox helper specifies 733.333 MHz;
+the KVM path otherwise uses the host rate. An explicit guest-frequency setting
+has a separate session identity and twelve storage regressions pass, including
+refusal of the old RAM state without rewriting current saves. This host then
+rejects native initialization because KVM counter scaling is unavailable. No
+guest or Fable run occurs under that setting. The failed profile, prior states
+and evidence are retained; process absence and writer-lease reacquisition are
+verified. This proves a counter discrepancy and a host capability limit, not
+the Fable stall's cause. [Actual results](evidence/cartridge-host-tsc-20261031.json).
+
+A direct return to the retained TCG village collects new public translation
+statistics without another intro. The buffer remains under72 MB of1 GB with
+zero whole-buffer flushes, while translation invalidations rise by about396
+per second. A twenty-second timing sample is about1.95 FPS; this uncontrolled
+observation earns no speedup claim. The retained Xbox-specific page invalidation
+path omits the general byte-overlap filter. An original same-page data/code and
+actual code-change control must establish a safe correction before game use.
+The departure checkpoints, exits0, acknowledges quit, reaps and syncs storage.
+[Exact counters and limits](evidence/cartridge-tcg-invalidation-20261031.json).

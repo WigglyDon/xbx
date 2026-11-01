@@ -64,6 +64,8 @@ pub struct Resources {
     pub(crate) presentation_vulkan: bool,
     #[cfg(not(target_os = "android"))]
     pub(crate) host_kvm: bool,
+    #[cfg(not(target_os = "android"))]
+    pub(crate) host_xbox_tsc: bool,
     #[cfg(target_os = "android")]
     pub(crate) native_dir: PathBuf,
 }
@@ -108,6 +110,22 @@ impl Resources {
         } else {
             "tcg"
         }
+    }
+    /// KVM otherwise exposes the host counter rate, bypassing the retained
+    /// Xbox-specific cpu_get_tsc helper. KVM represents frequency in whole kHz.
+    /// A new clock configuration gets a distinct RAM/session compatibility key.
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn select_xbox_tsc(&mut self) {
+        self.select_host_kvm();
+        if !self.host_xbox_tsc {
+            self.identity = digest(format!("xbx-cpu:{}:tsc733333000", self.identity).as_bytes());
+            self.host_xbox_tsc = true;
+        }
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn cpu_argument(&self) -> Option<&'static str> {
+        self.host_xbox_tsc
+            .then_some("pentium3,tsc-frequency=733333000")
     }
     #[cfg(not(target_os = "android"))]
     pub(crate) fn cpu_float(root: &Path) -> io::Result<Self> {
@@ -205,6 +223,7 @@ impl Resources {
             presentation_vsync: true,
             presentation_vulkan: false,
             host_kvm: false,
+            host_xbox_tsc: false,
         })
     }
     pub fn core(&self) -> PathBuf {

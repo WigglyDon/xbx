@@ -57,6 +57,7 @@ impl Fixture {
             presentation_vsync: true,
             presentation_vulkan: false,
             host_kvm: false,
+            host_xbox_tsc: false,
             manifest: resources::Manifest {
                 schema: 1,
                 core: resources::CORE.into(),
@@ -324,6 +325,31 @@ fn desktop_accelerator_change_refuses_old_ram_and_preserves_saves() {
             file_digest(&checkpoint).unwrap(),
             file_digest(&current).unwrap()
         )
+    );
+}
+#[test]
+fn desktop_tsc_change_refuses_old_ram_and_preserves_current_saves() {
+    let mut f = Fixture::new();
+    f.r.select_host_kvm();
+    f.b.runtime = f.r.identity.clone();
+    let id = f.publish();
+    let old = f.p.root.join("checkpoints").join(id).join("hdd.qcow2");
+    let current = f.p.current().unwrap().join("hdd.qcow2");
+    let before = (file_digest(&old).unwrap(), file_digest(&current).unwrap());
+    assert_eq!(f.r.cpu_argument(), None);
+    let unscaled = f.r.identity.clone();
+    f.r.select_xbox_tsc();
+    assert_ne!(unscaled, f.r.identity);
+    assert_eq!(f.r.cpu_argument(), Some("pentium3,tsc-frequency=733333000"));
+    let fixed = f.r.identity.clone();
+    f.r.select_xbox_tsc();
+    assert_eq!(fixed, f.r.identity);
+    let mut binding = f.b.clone();
+    binding.runtime = fixed;
+    assert!(checkpoint::load(&f.p, &f.r, &binding).is_err());
+    assert_eq!(
+        before,
+        (file_digest(&old).unwrap(), file_digest(&current).unwrap())
     );
 }
 #[test]

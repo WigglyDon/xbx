@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "date": "2026-10-31",
+  "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+  "complete_checkpoint_restored": true,
+  "visible_stage": "retained opening village; no cold intro",
+  "purpose": "new public translation/cache statistics, not repeated compatibility or presentation-setting acceptance",
+  "public_native_statistics": [
+    {
+      "elapsed_ms": 73839,
+      "code_bytes": 55128259,
+      "capacity_bytes": 1073736704,
+      "one_instruction_per_block": false,
+      "translations": 79749,
+      "whole_buffer_flushes": 0,
+      "invalidations": 29020,
+      "tlb_full": 0,
+      "tlb_partial": 4374,
+      "tlb_elided": 41658
+    },
+    {
+      "elapsed_ms": 465561,
+      "code_bytes": 71790195,
+      "capacity_bytes": 1073736704,
+      "one_instruction_per_block": false,
+      "translations": 106203,
+      "whole_buffer_flushes": 0,
+      "invalidations": 183977,
+      "tlb_full": 0,
+      "tlb_partial": 26174,
+      "tlb_elided": 225810
+    }
+  ],
+  "interval_seconds": 391.722,
+  "invalidations_per_second": 395.57900756148496,
+  "partial_tlb_flushes_per_second": 55.65171218364044,
+  "cadence": {
+    "seconds": 20.000078048,
+    "frames": 39,
+    "average_fps": 1.949992390349696,
+    "observed_flip_intervals": 38,
+    "flip_ms_median": 349.265,
+    "flip_ms_p95": 1342.769,
+    "flip_ms_max": 1896.647,
+    "native_not_stopped": true,
+    "guest_contents_read": false,
+    "limits": "20ms polls may miss multiple fast flips; only named public host-native GPU scalars; host not reserved"
+  },
+  "buffer_capacity_exhaustion_supported": false,
+  "whole_page_invalidation_source": "accel/tcg/tb-maint.c tb_invalidate_phys_page_range__locked omits byte-overlap checks under XBOX",
+  "new_original_reproduction_required": true,
+  "game_causality_or_speedup_established": false,
+  "native_return": {
+    "clean": true,
+    "forced": false,
+    "kill_attempted": false,
+    "native_exit": "exit status: 0",
+    "native_reaped": true,
+    "qmp_acknowledged": true,
+    "qmp_error": null,
+    "quit_ack_ms": 16,
+    "reap_ms": 140,
+    "shutdown_deadline_reached": false,
+    "shutdown_grace_seconds": 15,
+    "storage_sync_ms": 4,
+    "storage_synced": true
+  },
+  "continuation_checkpoint_published": true,
+  "immutable_inputs_unchanged": true,
+  "private_guest_contents_read": false,
+  "limits": "Sequential uncontrolled host observation; display/lid state not recorded. Public native aggregate counts and timing scalars only; no game-code or data inspection."
+}

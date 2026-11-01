@@ -451,6 +451,60 @@ pub(super) fn fable(repo: &Path, root: &Path, vsync: bool) -> Result<(), Error> 
     )
 }
 
+pub(super) fn fable_xbox_tsc(repo: &Path, root: &Path, returning: bool) -> Result<(), Error> {
+    let mut r =
+        resources::Resources::controller_candidate(&root.join("host-input-v1/package-signed"))?;
+    r.select_xbox_tsc();
+    r.presentation_vsync = false;
+    for name in ["fixed-kvm-cold", "fixed-kvm-return"] {
+        let v: Value = c::read_json(&root.join("host-tsc-v1").join(name).join("result.json"))?;
+        if v["passed"] != true
+            || v["core"] != CORE
+            || v["fixed_xbox_tsc"] != true
+            || v["runtime"] != r.identity
+            || v["actual_tsc"]["actual_hz"] != 733333000u64
+        {
+            return Err(
+                "actual fixed-clock original and fresh-process return proofs required".into(),
+            );
+        }
+    }
+    let original: Value =
+        c::read_json(&root.join("host-input-v1/original-visible-return-v3/result.json"))?;
+    if original["passed"] != true || original["core"] != CORE {
+        return Err("qualified native controller transport required".into());
+    }
+    let app = if returning {
+        let prior: Value = c::read_json(&root.join("fable-controller-tsc.native-started.json"))?;
+        Some(
+            prior["app"]
+                .as_str()
+                .ok_or("retained fixed-clock app")?
+                .into(),
+        )
+    } else {
+        if root
+            .join("fable-controller-tsc.native-started.json")
+            .exists()
+        {
+            return Err("fixed-clock game already started; continue its retained profile".into());
+        }
+        None
+    };
+    super::build::observe_local_play(
+        repo,
+        root,
+        r,
+        &if returning {
+            format!("fable-controller-tsc-return-{}", c::new_id()?)
+        } else {
+            "fable-controller-tsc".into()
+        },
+        app,
+        returning,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

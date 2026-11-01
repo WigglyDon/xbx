@@ -2,6 +2,9 @@
  * Original finite public clock/timer contract. UART and generated XBE envelope
  * are retained xbx fixture code. No title content, instruction or memory input.
  */
+.ifndef XBX_TSC_CONTRACT
+.set XBX_TSC_CONTRACT, 0
+.endif
 .text
 .globl _start
 _start:
@@ -25,10 +28,22 @@ again:
     movl %eax,tick_start
     call *thunks                 /* KeQueryPerformanceCounter */
     movl %eax,pm_start
+.if XBX_TSC_CONTRACT
+    rdtsc
+    movl %eax,tsc_start
+    movl %edx,tsc_start+4
+.endif
 1:  call *thunks
     subl pm_start,%eax           /* one second, wrap-safe low-word delta */
     cmpl $3375000,%eax
     jb 1b
+.if XBX_TSC_CONTRACT
+    rdtsc
+    subl tsc_start,%eax
+    sbbl tsc_start+4,%edx
+    movl %eax,tsc_delta
+    movl %edx,tsc_delta+4
+.endif
     call *thunks+12
     subl interrupt_start,%eax
     movl %eax,interrupt_delta
@@ -46,6 +61,25 @@ again:
     call hex
     movl $newline,%esi
     call text
+.if XBX_TSC_CONTRACT
+    movl $tsc_text,%esi
+    call text
+    movl tsc_delta+4,%eax
+    call hex
+    movl tsc_delta,%eax
+    call hex
+    movl $newline,%esi
+    call text
+    /* Retained hw/i386/x86-cpu.c supplies 733333333 ticks per virtual second.
+     * The loose bounds permit ordinary host scheduling, not a different rate.
+     */
+    cmpl $0,tsc_delta+4
+    jne fail
+    cmpl $700000000,tsc_delta
+    jb fail
+    cmpl $770000000,tsc_delta
+    ja fail
+.endif
     cmpl $500,tick_delta
     jb fail
     cmpl $2000,tick_delta
@@ -119,6 +153,11 @@ interrupt_start: .long 0
 interrupt_delta: .long 0
 tick_start: .long 0
 tick_delta: .long 0
+.if XBX_TSC_CONTRACT
+tsc_start: .quad 0
+tsc_delta: .quad 0
+tsc_text: .asciz "XBX CLOCK tsc_delta="
+.endif
 superio: .byte 7,4,0x60,3,0x61,0xf8,0x70,4,0x30,1
 boot: .asciz "XBX CLOCK BOOT\n"
 begin: .asciz "XBX CLOCK BEGIN\n"

@@ -172,6 +172,19 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-host-clock-tcg" => super::host_clock::observe(repo, root, false, false)?,
         "cartridge-host-clock-kvm" => super::host_clock::observe(repo, root, true, false)?,
         "cartridge-host-clock-return" => super::host_clock::observe(repo, root, true, true)?,
+        "cartridge-host-tsc-build" => super::host_clock::build_tsc(repo, root)?,
+        "cartridge-host-tsc-tcg" => {
+            super::host_clock::observe_tsc(repo, root, false, false, false)?
+        }
+        "cartridge-host-tsc-kvm" => super::host_clock::observe_tsc(repo, root, true, false, false)?,
+        "cartridge-host-tsc-fixed" => {
+            super::host_clock::observe_tsc(repo, root, true, true, false)?
+        }
+        "cartridge-host-tsc-return" => {
+            super::host_clock::observe_tsc(repo, root, true, true, true)?
+        }
+        "cartridge-controller-tsc-fable" => super::host_input::fable_xbox_tsc(repo, root, false)?,
+        "cartridge-controller-tsc-return" => super::host_input::fable_xbox_tsc(repo, root, true)?,
         "cartridge-host-kvm-package" => super::host_accel::package(root)?,
         "cartridge-host-kvm-original" => super::host_accel::original(repo, root)?,
         "cartridge-host-kvm-session-first" => super::host_accel::session(root, false)?,
@@ -700,6 +713,19 @@ fn observe_fable(
                     Some("stop") => return Ok("operator_requested_stop"),
                     Some("pause") => player.pause(true)?,
                     Some("resume") => player.resume()?,
+                    Some("native-stats") => {
+                        // The retained public TCG statistics contain aggregate
+                        // buffer/translation/flush counts, not guest contents.
+                        let stats =
+                            player.live.as_mut().ok_or("live session")?.native.call(
+                                "human-monitor-command",
+                                json!({"command-line":"info jit"}),
+                            )?;
+                        let event = json!({"elapsed_ms":started.elapsed().as_millis(),
+                            "native_tcg_stats":stats,"guest_contents_read":false});
+                        println!("{event}");
+                        events.push(event);
+                    }
                     Some("pad") => {
                         let f: crate::input::Pad =
                             serde_json::from_value(command["frame"].clone())?;

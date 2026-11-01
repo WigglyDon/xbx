@@ -154,6 +154,9 @@ impl Native {
         if !r.window {
             c.args(["-display", "none"]);
         }
+        if let Some(cpu) = r.cpu_argument() {
+            c.args(["-cpu", cpu]);
+        }
         // Derived host shader caches survive native process replacement. The
         // profile lease owns their writer; the exact runtime identity separates
         // incompatible builds. They are neither guest saves nor checkpoint RAM.
@@ -231,6 +234,30 @@ impl Native {
             if actual["present"] != true || actual["enabled"] != true {
                 return Err(io::Error::other(
                     "requested retained KVM accelerator did not activate; no TCG fallback",
+                ));
+            }
+        }
+        if r.host_xbox_tsc {
+            let cpus = native.call("query-cpus-fast", json!({}))?;
+            let cpus = cpus
+                .as_array()
+                .filter(|v| v.len() == 1)
+                .ok_or_else(|| io::Error::other("single native CPU required"))?;
+            let path = cpus[0]["qom-path"]
+                .as_str()
+                .ok_or_else(|| io::Error::other("native CPU object unavailable"))?;
+            let frequency =
+                native.call("qom-get", json!({"path":path,"property":"tsc-frequency"}))?;
+            write_new(
+                &native.run.join("native-tsc.json"),
+                &super::json(&json!({
+                    "requested_hz":733333000u64,"actual_hz":frequency,
+                    "source":"actual native CPU QOM property, not inferred from arguments"
+                }))?,
+            )?;
+            if frequency != 733333000u64 {
+                return Err(io::Error::other(
+                    "native Xbox counter frequency was not applied",
                 ));
             }
         }

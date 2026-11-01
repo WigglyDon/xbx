@@ -12,7 +12,13 @@ type Error = Box<dyn std::error::Error>;
 const EXPORTS: &str = "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b";
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("host-clock-v1");
+    build_variant(repo, root, false)
+}
+pub(super) fn build_tsc(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_variant(repo, root, true)
+}
+fn build_variant(repo: &Path, root: &Path, tsc: bool) -> Result<(), Error> {
+    let dir = root.join(if tsc { "host-tsc-v1" } else { "host-clock-v1" });
     c::mkdir(&dir)?;
     let exports = root.join("source-inputs/exports.tsv");
     if c::file_digest(&exports)? != EXPORTS {
@@ -41,7 +47,8 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         .ok_or("UART end")?
         .0;
     let generated = format!(
-        "{}\n.text\nserial_init:\n{uart}",
+        ".set XBX_TSC_CONTRACT, {}\n{}\n.text\nserial_init:\n{uart}",
+        u8::from(tsc),
         fs::read_to_string(&source)?
     );
     let fixture = super::cpu_performance::assemble_two_page(
@@ -56,6 +63,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         &c::json(&json!({
             "source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,
             "exports":EXPORTS,"fixture":fixture,"original_content_only":true,
+            "tsc_contract":tsc,"tsc_source":"retained hw/i386/x86-cpu.c cpu_get_tsc: 733333333 Hz; target/i386/kvm/kvm.c requires explicit user frequency for a fixed KVM rate",
             "contract":"3375000Hz performance counter; about 1000 tick/10000000 interrupt units per performance-counter second; one-second non-alertable delay; repeat after native checkpoint return",
             "timing_bounds":"wide 0.5–2.0 seconds; host timestamps are serial receipt times, not a benchmark",
             "no_core_or_kernel_rebuild":true,"commercial_acceptance":false
@@ -65,10 +73,29 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 
 pub(super) fn observe(repo: &Path, root: &Path, kvm: bool, returning: bool) -> Result<(), Error> {
-    if returning && !kvm {
+    observe_variant(repo, root, kvm, returning, false, false)
+}
+pub(super) fn observe_tsc(
+    repo: &Path,
+    root: &Path,
+    kvm: bool,
+    fixed: bool,
+    returning: bool,
+) -> Result<(), Error> {
+    observe_variant(repo, root, kvm, returning, true, fixed)
+}
+fn observe_variant(
+    repo: &Path,
+    root: &Path,
+    kvm: bool,
+    returning: bool,
+    tsc: bool,
+    fixed: bool,
+) -> Result<(), Error> {
+    if (returning && !kvm) || (fixed && (!kvm || !tsc)) {
         return Err("only the observed KVM return is assigned".into());
     }
-    let dir = root.join("host-clock-v1");
+    let dir = root.join(if tsc { "host-tsc-v1" } else { "host-clock-v1" });
     let built: Value = c::read_json(&dir.join("build.json"))?;
     let media = dir.join("original.iso");
     if built["fixture"] != c::file_digest(&media)?
@@ -78,12 +105,20 @@ pub(super) fn observe(repo: &Path, root: &Path, kvm: bool, returning: bool) -> R
         return Err("original clock input differs".into());
     }
     if returning {
-        let prior: Value = c::read_json(&dir.join("kvm-cold/result.json"))?;
+        let prior: Value = c::read_json(&dir.join(if fixed {
+            "fixed-kvm-cold/result.json"
+        } else {
+            "kvm-cold/result.json"
+        }))?;
         if prior["passed"] != true || prior["core"] != super::host_input::CORE {
             return Err("actual same-core cold clock proof required".into());
         }
     }
-    let label = if returning {
+    let label = if fixed && returning {
+        "fixed-kvm-return"
+    } else if fixed {
+        "fixed-kvm-cold"
+    } else if returning {
         "kvm-return"
     } else if kvm {
         "kvm-cold"
@@ -97,9 +132,18 @@ pub(super) fn observe(repo: &Path, root: &Path, kvm: bool, returning: bool) -> R
     } else {
         resources::Resources::apu_quiescent(&root.join("apu-quiescence-v1/package"))?
     };
+    if fixed {
+        r.select_xbox_tsc();
+    }
     r.window = false;
     let core = r.manifest.core.clone();
-    let app = dir.join(if kvm { "kvm-app" } else { "tcg-app" });
+    let app = dir.join(if fixed {
+        "fixed-kvm-app"
+    } else if kvm {
+        "kvm-app"
+    } else {
+        "tcg-app"
+    });
     let mut player = c::desktop::Player::with_resources(&app, r)?;
     let game = if returning {
         player.last_game()?.ok_or("clock entry")?
@@ -157,11 +201,17 @@ pub(super) fn observe(repo: &Path, root: &Path, kvm: bool, returning: bool) -> R
     };
     c::write_new(&out.join("serial.log"), text.as_bytes())?;
     let passed = observed.is_ok() && returned.is_ok() && native["clean"] == true;
+    let actual_tsc: Value = match &run {
+        Some(run) if fixed => c::read_json(&run.join("native-tsc.json"))?,
+        _ => Value::Null,
+    };
     c::write_new(
         &out.join("result.json"),
         &c::json(&json!({
             "passed":passed,"core":core,"open_system":resources::LOCAL_BASE_OPEN,
             "fixture":built["fixture"],"kvm":kvm,"returning":returning,"native_run":run,
+            "tsc_contract":tsc,
+            "fixed_xbox_tsc":fixed,"runtime":player.resources.identity,"actual_tsc":actual_tsc,
             "events":events,"native_return":native,"observation_error":observed.err().map(|e|e.to_string()),
             "return_error":returned.err().map(|e|e.to_string()),"generated_storage_only":true,
             "commercial_acceptance":false,"guest_code_or_data_inspection":false

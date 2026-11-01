@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "date": "2026-10-31",
+  "source_pin": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+  "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "retained_original_fixture": "17d5259ca779ba816dd9bf455da1fd7cb760bafcb7f45b2ebe52eed4e3923d37",
+  "original_source": "6c9dfacb34e8e0f30f4406d3083a4d8d63499154725148cca58f4aa58abbbdcb",
+  "public_contract": {
+    "source": "hw/i386/x86-cpu.c cpu_get_tsc under XBOX",
+    "software_backend_ticks_per_virtual_second": 733333333,
+    "kvm_contract_source": "target/i386/kvm/kvm.c kvm_arch_set_tsc_khz and kvm_arch_init_vcpu; target/i386/cpu.c x86_cpuid_set_tsc_freq",
+    "kvm_rate_without_explicit_property": "host counter frequency",
+    "kvm_property_resolution_hz": 1000
+  },
+  "original_measurement": {
+    "reference_counter_hz": 3375000,
+    "software_backend_tsc_ticks": 733317230,
+    "unscaled_kvm_tsc_ticks": 1991995456,
+    "tcg_control": {
+      "passed": true,
+      "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 10,
+        "storage_synced": true
+      },
+      "observation_error": null
+    },
+    "kvm_negative": {
+      "passed": false,
+      "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "observation_error": "original clock contract failed"
+    },
+    "fable_causality_inferred": false
+  },
+  "ordinary_configuration_attempt": {
+    "cpu_argument": "pentium3,tsc-frequency=733333000",
+    "new_native_or_open_system_build": false,
+    "configured_state_identity": "a261159c3d29164b1b30ce5e2872c1aa541167260ad93e4d46ba6be103adc614",
+    "old_checkpoints_retagged": false,
+    "native_frequency_verified_before_execution_when_available": true,
+    "current_host_qualified": false,
+    "actual_stage": "pre-execution KVM vCPU initialization refusal",
+    "actual_error": "TSC scaling unavailable; requested 733333 kHz differs from current 1991998 kHz; Operation not supported",
+    "failed_profile_and_evidence_retained": true,
+    "native_absence_and_existing_writer_locks_reacquired": true,
+    "normal_native_shutdown_claim": false,
+    "fable_run_with_setting": false,
+    "fixed_clock_return_run": false
+  },
+  "source_checks": {
+    "strict_all_target_clippy": true,
+    "focused_storage_cases_passed": 12,
+    "counter_change_refuses_old_RAM_without_rewriting_current_saves": true,
+    "builder_and_player_compiled": true
+  },
+  "scope": "A concrete public counter contract discrepancy and a host capability refusal. This establishes no Fable stall cause or performance fix. Existing native packages, checkpoints, game media, installed candidate and sixteen paused paths stay retained. No host setting, phone or sibling change."
+}
