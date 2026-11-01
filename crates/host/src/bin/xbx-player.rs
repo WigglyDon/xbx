@@ -45,6 +45,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     player.resume()?;
                     json!({})
                 }
+                "input" => {
+                    let frame: xbx::input::Pad =
+                        serde_json::from_value(v["frame"].clone()).map_err(io::Error::other)?;
+                    player.input(frame)?;
+                    json!({})
+                }
                 "commit" => json!({"checkpoint":player.commit()?}),
                 "leave" => {
                     player.depart()?;

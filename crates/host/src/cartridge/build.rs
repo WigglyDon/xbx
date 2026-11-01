@@ -161,6 +161,17 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-local-fable-return" => super::local_io::return_play(repo, root)?,
         "cartridge-cpu-perf-build" => super::cpu_performance::build(repo, root)?,
         "cartridge-host-kvm-build" => super::host_accel::build(repo, root)?,
+        "cartridge-controller-build" => super::host_input::build(repo, root)?,
+        "cartridge-controller-package" => super::host_input::package(root)?,
+        "cartridge-controller-baseline" => super::host_input::baseline(root)?,
+        "cartridge-controller-original" => super::host_input::original(root, false)?,
+        "cartridge-controller-return" => super::host_input::original(root, true)?,
+        "cartridge-controller-fable" => super::host_input::fable(repo, root, true)?,
+        "cartridge-controller-vsync-control" => super::host_input::fable(repo, root, false)?,
+        "cartridge-host-clock-build" => super::host_clock::build(repo, root)?,
+        "cartridge-host-clock-tcg" => super::host_clock::observe(repo, root, false, false)?,
+        "cartridge-host-clock-kvm" => super::host_clock::observe(repo, root, true, false)?,
+        "cartridge-host-clock-return" => super::host_clock::observe(repo, root, true, true)?,
         "cartridge-host-kvm-package" => super::host_accel::package(root)?,
         "cartridge-host-kvm-original" => super::host_accel::original(repo, root)?,
         "cartridge-host-kvm-session-first" => super::host_accel::session(root, false)?,
@@ -689,6 +700,31 @@ fn observe_fable(
                     Some("stop") => return Ok("operator_requested_stop"),
                     Some("pause") => player.pause(true)?,
                     Some("resume") => player.resume()?,
+                    Some("pad") => {
+                        let f: crate::input::Pad =
+                            serde_json::from_value(command["frame"].clone())?;
+                        let hold = command["millis"]
+                            .as_u64()
+                            .ok_or("finite controller duration")?;
+                        super::host_input::pulse(
+                            &mut player,
+                            crate::input::Pad {
+                                buttons: f.buttons,
+                                axes: f.axes,
+                            },
+                            Duration::from_millis(hold),
+                        )?;
+                        let state = player
+                            .live
+                            .as_mut()
+                            .ok_or("live controller session")?
+                            .native
+                            .input_state()?;
+                        let event = json!({"elapsed_ms":started.elapsed().as_millis(),"controller_frame":{"buttons":f.buttons,"axes":f.axes},"hold_ms":hold,"neutral_host_state":state,"visible_response_unqualified":true});
+                        println!("{event}");
+                        events.push(event);
+                        operator_capture = true;
+                    }
                     Some("key") | Some("key-long") => {
                         let key = command["key"].as_str().ok_or("normal controller key")?;
                         if ![

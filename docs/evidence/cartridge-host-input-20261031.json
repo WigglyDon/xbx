@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "date": "2026-10-31",
+  "source_pin": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "base_core": "46b262d2dfc7d9a93c29e1dba854a45fcf0e88e788e7c94eba07972a0b349211",
+  "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+  "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "patch": "5471262720919e6dd89f9c73e8107c55a0714857c6ae36ea620f21477a051ff7",
+  "changed_native_files": [
+    "ui/xemu-input.c",
+    "monitor/hmp-target.c",
+    "hmp-commands.hx"
+  ],
+  "configuration": "retained desktop KVM split irqchip; actual query-kvm activation; visible Controller S; 64 MiB; offline",
+  "transport": "ordinary shared Rust Pad -> Player.input -> complete native ControllerState -> existing USB XID report; no key injection or guest-content access",
+  "input_safety": {
+    "max_native_ttl_ms": 500,
+    "rust_ttl_ms": 400,
+    "buttons_and_signed_axes_validated_before_mutation": true,
+    "expired_frame_neutralizes_all_channels": true,
+    "pause_capture_retirement_neutralize": true,
+    "paused_product_input_refused": true,
+    "one_controller_owner": true
+  },
+  "native_build": {
+    "new_dependencies_or_downloads": false,
+    "compiler_jobs": 1,
+    "initial_planned_steps": 10,
+    "initial_actual_steps": 7,
+    "small_followup_relinks_retained": true,
+    "retained_base_and_sources_unchanged": true,
+    "vmstate_layout_changed": false,
+    "initial_declaration_warnings_corrected": true,
+    "final_signed_axes_and_argument_delimiters_corrected": true
+  },
+  "original_visible_baseline": {
+    "passed": true,
+    "core": "46b262d2dfc7d9a93c29e1dba854a45fcf0e88e788e7c94eba07972a0b349211",
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 1,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 8,
+      "storage_synced": true
+    },
+    "checkpoint_metadata_retagged": false,
+    "old_library_unchanged": true
+  },
+  "old_to_new_original_restore": {
+    "passed": true,
+    "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 4,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 8,
+      "storage_synced": true
+    },
+    "checkpoint_metadata_retagged": false,
+    "old_library_unchanged": true
+  },
+  "new_process_original_restore": {
+    "passed": true,
+    "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 6,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 16,
+      "storage_synced": true
+    },
+    "checkpoint_metadata_retagged": false,
+    "old_library_unchanged": true
+  },
+  "original_state": {
+    "restored_ram": 2,
+    "save_marker": 1,
+    "restored_cookie": "57F090E4",
+    "new_input_ram": 3,
+    "new_input_cookie": "6B482CC3",
+    "fresh_process_ram": 3,
+    "fresh_process_cookie": "6B482CC3"
+  },
+  "host_frame_original": {
+    "applied": {
+      "axes": [
+        32767,
+        16384,
+        -32768,
+        -32768,
+        1234,
+        2344
+      ],
+      "buttons": 513,
+      "owned": true
+    },
+    "expired": {
+      "axes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "buttons": 0,
+      "owned": true
+    },
+    "invalid_refused": true,
+    "pause_neutralized": true,
+    "paused_product_input_refused": true
+  },
+  "state_compatibility": {
+    "explicit_state_abi_core": "46b262d2dfc7d9a93c29e1dba854a45fcf0e88e788e7c94eba07972a0b349211",
+    "no_checkpoint_retag": true,
+    "old_to_new_and_new_to_new_proven": true,
+    "reverse_compatibility_claim": false,
+    "developer_factory_only": true
+  },
+  "preserved_failed_attempts": [
+    "headless controller not bound during premature neutralization",
+    "negative signed axes initially rejected by HMP integer type",
+    "negative argument expression framing consumed preceding values; parenthesized numeric arguments correct it"
+  ],
+  "fable": {
+    "actual_visible_response": "Start exits attract to Press START; next Start opens main menu; A opens profile keyboard; Done enters opening illustration",
+    "menu_and_profile_control_response_observed": true,
+    "visible_gameplay_on_this_core_qualified": false,
+    "opening_scene_stalled": true,
+    "host_vsync_default": {
+      "complete_checkpoint_restored": true,
+      "continuation_checkpoint_published": true,
+      "normal_retirement": true,
+      "immutable_inputs_unchanged": true,
+      "elapsed_ms": 495452,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 4,
+        "reap_ms": 160,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 13,
+        "storage_synced": true
+      }
+    },
+    "same_checkpoint_vsync_off": {
+      "complete_checkpoint_restored": true,
+      "continuation_checkpoint_published": true,
+      "normal_retirement": true,
+      "immutable_inputs_unchanged": true,
+      "elapsed_ms": 121316,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 19,
+        "reap_ms": 180,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      }
+    },
+    "vsync_off_opening_sample": {
+      "seconds": 20.000060929,
+      "frames": 0,
+      "average_fps": 0,
+      "observed_flip_intervals": 0,
+      "flip_ms_median": null,
+      "flip_ms_p95": null,
+      "flip_ms_max": null,
+      "native_not_stopped": true,
+      "guest_contents_read": false,
+      "limits": "20ms polls may miss multiple fast flips; only named public host-native GPU scalars; host not reserved"
+    },
+    "public_native_stack_observation": "one bounded native sample: frontend waiting in display-driver swap barrier; KVM vCPU alive, APU worker active and PFIFO waiting",
+    "causal_correction_or_game_performance_fix_established": false,
+    "audible_sound_ordinary_save_cold_reload_qualified": false,
+    "earlier_TCG_village_and_return_preserved": true
+  },
+  "original_clock_control": {
+    "fixture": "f1fa408a360323406875f07cbe07981fc01b7a69db3bbff3f50e2d671ee2f381",
+    "exports": "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b",
+    "tcg_cold": {
+      "passed": true,
+      "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+      "kvm": false,
+      "returning": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      }
+    },
+    "kvm_cold": {
+      "passed": true,
+      "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+      "kvm": true,
+      "returning": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 80,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    "kvm_fresh_process_return": {
+      "passed": true,
+      "core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+      "kvm": true,
+      "returning": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 1,
+        "reap_ms": 80,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 15,
+        "storage_synced": true
+      }
+    },
+    "ticks_per_performance_counter_second": 1000,
+    "interrupt_time_units_per_performance_counter_second": 10000000,
+    "delay_pm_counter_delta": [
+      3374089,
+      3376293,
+      3373874
+    ],
+    "restored_cycle": 2,
+    "RDTSC_rate_not_tested": true,
+    "does_not_establish_stall_cause": true
+  },
+  "source_checks": {
+    "input_mapping_unit_passed": true,
+    "focused_storage_cases_passed": 11,
+    "strict_all_target_clippy_passed": true,
+    "builder_and_player_compiled": true
+  },
+  "preservation": {
+    "protected_hashes_unchanged": 21,
+    "paused_paths_unchanged": 16,
+    "inspected_native_attempts_all_absent": 18,
+    "app_profile_writer_locks_reacquired": 16,
+    "existing_guards_preserved": true,
+    "all_builds_profiles_checkpoints_media_and_evidence_retained": true,
+    "phone_or_sibling_operation": false,
+    "installed_or_default_runtime_changed": false,
+    "public_binary_release": false
+  },
+  "next_boundary": "Independently measure the retained fixed Xbox RDTSC contract versus the unspecified KVM counter rate before changing configuration; no game cause inferred."
+}

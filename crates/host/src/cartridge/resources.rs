@@ -68,6 +68,23 @@ pub struct Resources {
     pub(crate) native_dir: PathBuf,
 }
 impl Resources {
+    /// Developer-only cross-build qualification. The patch changes only host
+    /// controller/HMP plumbing, not VMState. Keep the old state lineage without
+    /// editing any checkpoint; game use additionally requires the actual old-
+    /// core -> new-core original restore proof in host_input::fable.
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn controller_candidate(root: &Path) -> io::Result<Self> {
+        let mut r = Self::validated_core(root, super::host_input::CORE, LOCAL_BASE_OPEN, true)?;
+        r.identity = digest(
+            format!(
+                "xbx-state:{}:{}:{}:64:offline",
+                r.manifest.state_abi, HOST_KVM_CORE, r.manifest.open_system
+            )
+            .as_bytes(),
+        );
+        r.select_host_kvm();
+        Ok(r)
+    }
     #[cfg(not(target_os = "android"))]
     pub(crate) fn host_kvm(root: &Path) -> io::Result<Self> {
         let mut r = Self::validated_core(root, HOST_KVM_CORE, LOCAL_BASE_OPEN, true)?;

@@ -69,6 +69,7 @@ pub struct Native {
     pub directory: PathBuf,
     pub(crate) run: PathBuf,
     retired: bool,
+    controller_owned: bool,
 }
 impl Native {
     fn start(
@@ -219,6 +220,7 @@ impl Native {
             directory: dir.into(),
             run,
             retired: false,
+            controller_owned: false,
         };
         if r.host_kvm {
             let actual = native.call("query-kvm", json!({}))?;
@@ -248,6 +250,9 @@ impl Native {
                 std::thread::sleep(Duration::from_millis(20));
             }
         }
+        if r.manifest.core == super::host_input::CORE && r.window {
+            native.input(crate::input::Pad::default())?;
+        }
         Ok(native)
     }
     pub fn call(&mut self, execute: &str, arguments: Value) -> io::Result<Value> {
@@ -260,13 +265,47 @@ impl Native {
             .ok_or_else(|| io::Error::other("invalid native HMP response"))
     }
     pub fn pause(&mut self) -> io::Result<()> {
-        self.monitor.pause()
+        let neutral = if self.controller_owned {
+            self.input(crate::input::Pad::default())
+        } else {
+            Ok(())
+        };
+        let paused = self.monitor.pause();
+        neutral.and(paused)
     }
     fn resume(&mut self) -> io::Result<()> {
         self.monitor.resume()
     }
     pub fn capture(&mut self) -> io::Result<()> {
+        self.pause()?;
         self.monitor.capture()
+    }
+    pub(crate) fn input(&mut self, pad: crate::input::Pad) -> io::Result<()> {
+        let (buttons, axes) = super::host_input::frame(pad)?;
+        // Even an interrupted acknowledgement may have applied the frame.
+        // Keep ownership so pause/teardown still attempts neutralization.
+        self.controller_owned = true;
+        // HMP parses arithmetic expressions and consumes a following negative
+        // argument as subtraction unless each numeric argument is delimited.
+        let command = format!(
+            "xbx-pad-frame ({}) ({}) ({}) ({}) ({}) ({}) ({}) ({})",
+            buttons,
+            axes[0],
+            axes[1],
+            axes[2],
+            axes[3],
+            axes[4],
+            axes[5],
+            super::host_input::TTL_MS
+        );
+        let response = self.hmp(&command)?;
+        if !response.trim().is_empty() {
+            return Err(io::Error::other(format!("controller refused: {response}")));
+        }
+        Ok(())
+    }
+    pub(crate) fn input_state(&mut self) -> io::Result<Value> {
+        serde_json::from_str(&self.hmp("xbx-pad-state")?).map_err(io::Error::other)
     }
     fn load(&mut self) -> io::Result<()> {
         self.monitor.load()
@@ -313,6 +352,9 @@ impl Native {
     pub fn retire(&mut self) -> io::Result<bool> {
         if self.retired {
             return Ok(true);
+        }
+        if self.controller_owned {
+            let _ = self.input(crate::input::Pad::default());
         }
         let quit_started = Instant::now();
         let quit = self.call("quit", json!({}));

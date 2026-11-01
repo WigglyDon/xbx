@@ -392,3 +392,13 @@ downloaded dependency. Upstream per-file GPL/LGPL notices and retained repairs
 remain applicable; the qualification owner and session-identity policy are MIT.
 This is Linux x86-64 work, not an Android acceleration claim. The arithmetic
 candidate is not included in this separately identified build.
+
+`patches/xemu-controller-frame.patch` adapts the existing controller state and
+USB report path in retained `ui/xemu-input.c` at the same pinned source. Those
+additions are GPL-2.0-or-later, with upstream notices retained. Its two monitor
+declarations retain `monitor/hmp-target.c`'s permissive notice; command-table
+additions retain the applicable QEMU terms. This introduces no machine-state
+serializer or game implementation. The Rust controller transport, qualification
+owner and original `native/fixtures/clock-continuity.S` are MIT. The clock fixture
+reuses xbx's original UART/envelope code and checks imports against the retained
+public ABI declaration, without copying a title or kernel implementation.

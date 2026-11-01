@@ -37,7 +37,8 @@ pub fn outline_width(pressed: bool) -> f32 {
 // SDL gamepad button indices. Xbox White/Black use the retained shoulder mapping.
 const BUTTON: [usize; 14] = [0, 1, 2, 3, 11, 12, 13, 14, 4, 6, 9, 10, 7, 8];
 
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Pad {
     pub buttons: u32,
     pub axes: [i16; 6],

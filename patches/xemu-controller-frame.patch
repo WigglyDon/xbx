@@ -1,0 +1,125 @@
+--- a/ui/xemu-input.c
++++ b/ui/xemu-input.c
+@@ -24,6 +24,10 @@
+ #include "qapi/error.h"
+ #include "monitor/qdev.h"
+ #include "qobject/qdict.h"
++#include "monitor/monitor.h"
++
++void hmp_xbx_pad_frame(Monitor *mon, const QDict *qdict);
++void hmp_xbx_pad_state(Monitor *mon, const QDict *qdict);
+ #include "qemu/option.h"
+ #include "qemu/timer.h"
+ #include "qemu/config-file.h"
+@@ -504,9 +508,77 @@
+     }
+ }
+ 
++/* XBX GPL-2.0-or-later contribution. Private supervisor controller transport.
++ * These are host input values, not serialized machine state. The existing XID
++ * consumer reads the same ControllerState and performs its normal USB report.
++ * Caller and consumer hold BQL. Expiry never falls back to stale physical keys.
++ */
++static bool xbx_frame_owned;
++static uint16_t xbx_frame_buttons;
++static int16_t xbx_frame_axes[CONTROLLER_AXIS__COUNT];
++static int64_t xbx_frame_until;
++
++static bool xbx_frame_update(ControllerState *state, int64_t now)
++{
++    if (!xbx_frame_owned || state != bound_controllers[0]) {
++        return false;
++    }
++    state->buttons = now < xbx_frame_until ? xbx_frame_buttons : 0;
++    memset(state->axis, 0, sizeof(state->axis));
++    if (now < xbx_frame_until) {
++        memcpy(state->axis, xbx_frame_axes, sizeof(state->axis));
++    }
++    state->last_input_updated_ts = now;
++    return true;
++}
++
++void hmp_xbx_pad_frame(Monitor *mon, const QDict *qdict)
++{
++    const char *names[] = { "lt", "rt", "lx", "ly", "rx", "ry" };
++    int64_t buttons = qdict_get_int(qdict, "buttons");
++    int64_t ttl = qdict_get_int(qdict, "ttl");
++    int64_t axes[CONTROLLER_AXIS__COUNT];
++    if (!bound_controllers[0] || buttons < 0 || buttons > 0x3fff ||
++        ttl < 1 || ttl > 500) {
++        monitor_printf(mon, "invalid controller frame\n");
++        return;
++    }
++    for (int i = 0; i < CONTROLLER_AXIS__COUNT; i++) {
++        axes[i] = qdict_get_int(qdict, names[i]);
++        if (axes[i] < (i < 2 ? 0 : INT16_MIN) || axes[i] > INT16_MAX) {
++            monitor_printf(mon, "invalid controller axis\n");
++            return;
++        }
++    }
++    xbx_frame_owned = true;
++    xbx_frame_buttons = buttons;
++    for (int i = 0; i < CONTROLLER_AXIS__COUNT; i++) {
++        xbx_frame_axes[i] = axes[i];
++    }
++    xbx_frame_until = qemu_clock_get_us(QEMU_CLOCK_REALTIME) + ttl * 1000;
++    xemu_input_update_controller(bound_controllers[0]);
++}
++
++void hmp_xbx_pad_state(Monitor *mon, const QDict *qdict)
++{
++    ControllerState *state = bound_controllers[0];
++    if (!state) {
++        monitor_printf(mon, "controller unavailable\n");
++        return;
++    }
++    xemu_input_update_controller(state);
++    monitor_printf(mon, "{\"owned\":%s,\"buttons\":%u,\"axes\":[%d,%d,%d,%d,%d,%d]}\n",
++                   xbx_frame_owned ? "true" : "false", state->buttons,
++                   state->axis[0], state->axis[1], state->axis[2],
++                   state->axis[3], state->axis[4], state->axis[5]);
++}
++
+ void xemu_input_update_controller(ControllerState *state)
+ {
+     int64_t now = qemu_clock_get_us(QEMU_CLOCK_REALTIME);
++    if (xbx_frame_update(state, now)) {
++        return;
++    }
+     if (ABS(now - state->last_input_updated_ts) <
+         XEMU_INPUT_MIN_INPUT_UPDATE_INTERVAL_US) {
+         return;
+--- a/monitor/hmp-target.c
++++ b/monitor/hmp-target.c
+@@ -74,6 +74,10 @@
+ #include "hmp-commands-info.h"
+     { NULL, NULL, },
+ };
++
++/* XBX host controller transport; no machine-state format changes. */
++void hmp_xbx_pad_frame(Monitor *mon, const QDict *qdict);
++void hmp_xbx_pad_state(Monitor *mon, const QDict *qdict);
+ 
+ /* hmp_cmds and hmp_info_cmds would be sorted at runtime */
+ HMPCommand hmp_cmds[] = {
+--- a/hmp-commands.hx
++++ b/hmp-commands.hx
+@@ -1,3 +1,18 @@
++    {
++        .name = "xbx-pad-frame",
++        .args_type = "buttons:i,lt:i,rt:i,lx:l,ly:l,rx:l,ry:l,ttl:i",
++        .params = "buttons lt rt lx ly rx ry ttl_ms",
++        .help = "apply one complete private supervisor Xbox controller frame",
++        .cmd = hmp_xbx_pad_frame,
++    },
++    {
++        .name = "xbx-pad-state",
++        .args_type = "",
++        .params = "",
++        .help = "read the native host controller state; not guest memory",
++        .cmd = hmp_xbx_pad_state,
++    },
++
+ HXCOMM See docs/devel/docs.rst for the format of this file.
+ HXCOMM
+ HXCOMM This file defines the contents of an array of HMPCommand structs

@@ -26,6 +26,10 @@ mod file_read;
 mod flush_io;
 #[cfg(not(target_os = "android"))]
 mod host_accel;
+#[cfg(not(target_os = "android"))]
+mod host_clock;
+#[cfg(not(target_os = "android"))]
+mod host_input;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;

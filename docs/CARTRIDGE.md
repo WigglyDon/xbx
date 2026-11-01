@@ -847,3 +847,30 @@ departure publishes another checkpoint and records exit0, acknowledged quit,
 reap, sync and unchanged immutable inputs. All owned native processes are absent
 and app/profile writer leases are reacquired. The remaining input boundary needs
 a working foreground keyboard route, not another unchanged cold-boot campaign.
+
+The following ordinary input repair supplies complete shared Rust `Pad` frames
+through `Player.input` and the retained USB Controller S representation. It
+validates all channels, expires abandoned input, neutralizes before pause/capture
+and teardown, and refuses input while explicitly paused. Its small native monitor
+adapter changes no VMState layout. The developer candidate earns old-core to
+new-core and new-process original restoration before game use, including the
+noninitial RAM3/save1/cookie and unchanged prior library. No checkpoint is retagged;
+reverse compatibility and an installed/default change are not claimed.
+
+Fable's retained KVM checkpoint now visibly responds to Start, opens the main
+menu and profile keyboard, and accepts Done. The opening illustration then stops
+advancing. A same-core, same-checkpoint host-vsync-off comparison also stalls;
+its twenty-second native counter sample records zero flips. Both product
+departures publish checkpoints and record exit0, acknowledged quit, reap, sync
+and unchanged immutable inputs. These results qualify menu/profile input, not
+KVM gameplay or a performance fix. The earlier TCG village/return remains valid
+and preserved.
+
+A finite original clock fixture independently checks the performance counter,
+interrupt time, tick count and a non-alertable one-second delay on retained TCG
+and KVM. Both cold controls pass, and a genuinely fresh KVM process restores the
+cycle counter and repeats the checks successfully. This rejects the tested timer
+hypothesis; it establishes no Fable cause. The separate fixed Xbox RDTSC rate
+still needs qualification before a configuration correction. The
+[controller and clock receipt](evidence/cartridge-host-input-20261031.json)
+records actual results, failed input attempts, lineage and preservation.

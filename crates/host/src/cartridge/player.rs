@@ -48,6 +48,21 @@ pub struct Player<E: Engine> {
     pub live: Option<Live<E>>,
     _lease: crate::storage::ProfileLease,
 }
+#[cfg(not(target_os = "android"))]
+impl Player<super::desktop::Native> {
+    /// The same logical frame used by the Rust touch/controller model. Input
+    /// never resumes an explicitly paused or checkpointed machine by itself.
+    pub fn input(&mut self, pad: crate::input::Pad) -> io::Result<()> {
+        let live = self
+            .live
+            .as_mut()
+            .ok_or_else(|| io::Error::other("no game"))?;
+        if live.paused || !live.running {
+            return Err(io::Error::other("session is not accepting input"));
+        }
+        live.native.input(pad)
+    }
+}
 impl<E: Engine> Player<E> {
     pub fn open(app: &Path, resources: &Path) -> io::Result<Self> {
         Self::with_resources(app, resources::Resources::open(resources)?)

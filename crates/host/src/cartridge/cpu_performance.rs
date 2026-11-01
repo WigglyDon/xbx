@@ -561,6 +561,35 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         ".set DISPATCH_EXPECTED, {expected}\n{}\n.text\nserial_init:\n{uart}",
         fs::read_to_string(&source)?
     );
+    let fixture = assemble_two_page(
+        &template,
+        &dir,
+        &generated,
+        "xbx original CPU workload",
+        0x58424350,
+    )?;
+    c::write_new(
+        &dir.join("build.json"),
+        &c::json(
+            &json!({"source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,"fixture":fixture,"iterations_per_phase":4_000_000,"dispatch_expected":expected,"separate_code_data_pages":true,"original_generated_content_only":true,"operations":"alternating indirect calls; exact packed SSE mul/add with inexact initially clear, then sticky","performance_not_game_acceptance":true}),
+        )?,
+    )?;
+    Ok(())
+}
+/// Reuse the original, bounded two-page XBE/ISO envelope without rebuilding
+/// accepted inputs. Callers bind their own original source and ABI declarations.
+pub(super) fn assemble_two_page(
+    template: &Path,
+    dir: &Path,
+    generated: &str,
+    title: &str,
+    title_id: u32,
+) -> Result<String, Error> {
+    if title.encode_utf16().count() > 40
+        || c::file_digest(template)? != resources::ORIGINAL_FIXTURES[0]
+    {
+        return Err("original fixture envelope differs".into());
+    }
     c::write_new(&dir.join("original.S"), generated.as_bytes())?;
     c::store::checked(
         Command::new("/usr/bin/clang")
@@ -614,9 +643,9 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     put(&mut xbe, 0x10c, 0x3000);
     put(&mut xbe, 0x11c, 2);
     put(&mut xbe, 0x158, thunk ^ 0x5b6d40b6);
-    put(&mut xbe, 0x180, 0x58424350);
+    put(&mut xbe, 0x180, title_id);
     xbe[0x184..0x1d4].fill(0);
-    for (i, ch) in "xbx original CPU workload".encode_utf16().enumerate() {
+    for (i, ch) in title.encode_utf16().enumerate() {
         xbe[0x184 + i * 2..0x186 + i * 2].copy_from_slice(&ch.to_le_bytes());
     }
     xbe[0x408..0x40e].copy_from_slice(b".data\0");
@@ -647,14 +676,9 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     put(&mut iso, 33 * 2048 + 8, xbe.len() as u32);
     iso[34 * 2048..34 * 2048 + xbe.len()].copy_from_slice(&xbe);
     c::write_new(&dir.join("original.iso"), &iso)?;
-    c::write_new(
-        &dir.join("build.json"),
-        &c::json(
-            &json!({"source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,"fixture":c::digest(&iso),"iterations_per_phase":4_000_000,"dispatch_expected":expected,"separate_code_data_pages":true,"original_generated_content_only":true,"operations":"alternating indirect calls; exact packed SSE mul/add with inexact initially clear, then sticky","performance_not_game_acceptance":true}),
-        )?,
-    )?;
-    Ok(())
+    Ok(c::digest(&iso))
 }
+
 pub(super) fn observe(
     repo: &Path,
     root: &Path,
