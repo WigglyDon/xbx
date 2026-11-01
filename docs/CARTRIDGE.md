@@ -969,3 +969,22 @@ clean. The first finite changed-core Fable run nevertheless finishes its budget
 in intro imagery and returns cleanly with a checkpoint. No playable result,
 timer-repair speedup, sound or commercial save acceptance follows from these
 original controls. [Pins, build failure and actual red/green](evidence/cartridge-vblank-20261101.json).
+
+An interactive fresh-process return of that new-core checkpoint visibly renders
+through logo imagery, Press START and map imagery. Normal input was delivered;
+main-menu/profile response and controllable3D gameplay were not established in
+this run. Its checkpointed departure is clean. The initial unattended run's
+ending frame can include attract mode and is not a time-to-menu measurement.
+
+The next discriminating hardware baseline needs the fixed Xbox counter contract
+already reproduced by the original workload. This host refuses the explicit
+rate because KVM scaling is unavailable. That is a concrete capability gap, not
+an attributed Fable cause. No qualified alternative host or operating window is
+established. First qualify the retained original counter/control on an admitted
+capable x86 Linux host, with a finite initial envelope of15 minutes, about1GiB
+native resident memory and under300MiB prepared original/runtime inputs, subject
+to actual host dependencies and custody. This first step needs no commercial
+media. Do not transfer media or start another machine merely from that request.
+If no such host is available, a new CPU/timing implementation boundary needs
+Master's scoped architectural direction. Existing evidence does not support
+suppressing errors, another unchanged intro or a speculative game patch.

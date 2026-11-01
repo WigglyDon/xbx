@@ -296,8 +296,57 @@
       "storage_synced": true
     },
     "playable_qualified": false,
-    "repair_causality_or_speedup_established": false
+    "repair_causality_or_speedup_established": false,
+    "initial_observation_limit": "No operator input in the first run; ending intro imagery can include attract mode. It establishes neither time-to-menu nor a continuous progression failure.",
+    "fresh_process_return": {
+      "complete_checkpoint_restored": true,
+      "reviewed_stages": [
+        "character/logo imagery",
+        "Press START",
+        "map imagery"
+      ],
+      "ordinary_input_holds_ms": [
+        300,
+        500,
+        1000,
+        5000
+      ],
+      "visible_input_response_attribution": "title-to-map imagery observed after Start; main-menu/profile keyboard and controllable 3D gameplay not established on this run",
+      "elapsed_ms": 929530,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 12,
+        "reap_ms": 201,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      },
+      "continuation_checkpoint_published": true,
+      "immutable_inputs_unchanged": true,
+      "time_spent_idle_or_attract_mode_separately_measured": false,
+      "playable_qualified": false
+    }
   },
   "installed_default_and_phones_unchanged": true,
-  "prior_media_saves_profiles_builds_paused_source_and_evidence_preserved": true
+  "prior_media_saves_profiles_builds_paused_source_and_evidence_preserved": true,
+  "next_missing_fact": "An attributed remaining public-platform behavior or a qualified host supporting the already-demonstrated fixed Xbox counter requirement; present KVM counter discrepancy is not established as the game cause.",
+  "resource_status": {
+    "qualified_alternative_host_established": false,
+    "new_remote_or_device_operation": false,
+    "private_capability_inquiry_prepared_not_posted": true
+  },
+  "final_preservation": {
+    "native_processes_independently_absent": 31,
+    "writer_locks_reacquired": 46,
+    "paused_signing_recovery_hashes_unchanged": 21,
+    "phones_and_siblings_mutated": false,
+    "future_resource_reservation": false
+  }
 }
