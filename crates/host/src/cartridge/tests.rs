@@ -58,6 +58,7 @@ impl Fixture {
             presentation_vulkan: false,
             host_kvm: false,
             host_xbox_tsc: false,
+            vertex_fixture: false,
             manifest: resources::Manifest {
                 schema: 1,
                 core: resources::CORE.into(),

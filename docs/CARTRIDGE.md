@@ -915,3 +915,30 @@ state identity and original fresh-process proof before a new game checkpoint.
 No missing state is fabricated in an old checkpoint. Derived host caches now
 bind the actual core/configuration independently of developer state-ABI aliases.
 [Scoped results and limits](evidence/cartridge-smc-continuity-20261101.json).
+
+The targeted vertex-state correction now passes its original native red/green:
+the unchanged descriptor restores zero populated attributes and a zero-byte
+layout; the corrected serializer retains all16 attributes,220 bytes per packed
+vertex and three pending vertices across genuinely fresh processes. Only defined
+buffer bytes are saved, with bounded native load validation. NV2A version6 refuses
+the older incomplete payload; exact-core bindings preserve old checkpoints
+without pretending their missing fields can be recovered. A separate original
+CPU/RAM/save/controller fresh-process proof also passes on the new build.
+
+An original prelaunch capture exposed another precise defect in the retained
+paused-save hook: restoring Prelaunch directly from Running aborts. The corrected
+hook uses the valid Paused transition while BQL is held. Original prelaunch
+capture and fresh restoration now return cleanly; all failed builds/profiles
+remain retained.
+
+Unchanged Fable on the separately identified corrected build reaches its menu,
+profile keyboard, opening story and controllable3D village. A story checkpoint
+returns in a fresh process and progresses into the village; a subsequent village
+checkpoint also visibly returns in another process and accepts movement. This
+repairs the observed graphics-return failure, not the pacing problem. A20-second
+village sample is about1.15 FPS. After restoration, the public invalidation count
+is still zero after421 seconds. Native profiling places substantial time in
+translated execution and block lookup. The uncontrolled scenes/host differ from
+prior samples; no speedup or regression magnitude is established. Sound, ordinary
+save/cold reload, usable pacing and Android game acceptance remain unqualified.
+[Source, actual results and preservation](evidence/cartridge-vertex-state-20261101.json).

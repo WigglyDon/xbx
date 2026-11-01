@@ -66,10 +66,27 @@ pub struct Resources {
     pub(crate) host_kvm: bool,
     #[cfg(not(target_os = "android"))]
     pub(crate) host_xbox_tsc: bool,
+    #[cfg(not(target_os = "android"))]
+    pub(crate) vertex_fixture: bool,
     #[cfg(target_os = "android")]
     pub(crate) native_dir: PathBuf,
 }
 impl Resources {
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn vertex_candidate(
+        root: &Path,
+        corrected: bool,
+        fixture: bool,
+    ) -> io::Result<Self> {
+        let core = if corrected {
+            super::vertex_state::CORE
+        } else {
+            super::vertex_state::BASE
+        };
+        let mut r = Self::validated_core(root, core, LOCAL_BASE_OPEN, true)?;
+        r.vertex_fixture = fixture;
+        Ok(r)
+    }
     #[cfg(not(target_os = "android"))]
     pub(super) fn smc_fresh(root: &Path) -> io::Result<Self> {
         Self::validated_core(root, super::smc::CORE, LOCAL_BASE_OPEN, true)
@@ -254,6 +271,7 @@ impl Resources {
             presentation_vulkan: false,
             host_kvm: false,
             host_xbox_tsc: false,
+            vertex_fixture: false,
         })
     }
     pub fn core(&self) -> PathBuf {

@@ -410,3 +410,13 @@ precise self-modifying-code machinery. The Rust qualification owner and original
 `native/fixtures/smc-data-range.S` and `fp-continuity.S` remain MIT. Original
 controls establish the stated invalidation and CPU-state behavior, not a
 commercial game speedup or complete GPU-state acceptance.
+
+`patches/xemu-vertex-state.patch` extends the existing VMState description in
+`hw/xbox/nv2a/nv2a.c` at that pinned xemu revision, retaining its
+LGPL-2.0-or-later notice and authorship. `patches/xemu-prelaunch-savevm.patch`
+corrects the accepted HMP hook in `migration/migration-hmp-cmds.c` under that
+file's GPL-2.0-or-later terms. Neither adds a second machine serializer.
+The original MIT `native/fixtures/nv2a-vertex-state.inc` and its separately
+gated monitor adapter are qualification machinery; upstream file notices and
+combined core obligations remain. The Rust owner and fixture contain no game
+or private-firmware implementation. Old incomplete checkpoints remain retained.

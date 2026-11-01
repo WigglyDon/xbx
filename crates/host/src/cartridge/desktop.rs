@@ -121,6 +121,12 @@ impl Native {
             .mode(0o600)
             .open(run.join("native.log"))?;
         let mut c = Command::new(r.core());
+        // Only a deliberately selected original-device proof enables the
+        // bounded native fixture. The game and ordinary route remove it.
+        c.env_remove("XBX_ORIGINAL_VERTEX_FIXTURE");
+        if r.vertex_fixture {
+            c.env("XBX_ORIGINAL_VERTEX_FIXTURE", "1");
+        }
         c.current_dir(&run)
             .env("XBX_ISOLATED_PROCESS_EXIT", "1")
             .env("SDL_AUDIO_DRIVER", "dummy")
@@ -294,7 +300,9 @@ impl Native {
         }
         if (r.manifest.core == super::host_input::CORE
             || r.manifest.core == super::smc::CORE
-            || r.manifest.core == super::smc::INPUT_CORE)
+            || r.manifest.core == super::smc::INPUT_CORE
+            || r.manifest.core == super::vertex_state::CORE
+            || r.manifest.core == super::vertex_state::BASE)
             && r.window
         {
             native.input(crate::input::Pad::default())?;
