@@ -134,6 +134,119 @@ fn qualified(root: &Path) -> Result<(), Error> {
     Ok(())
 }
 
+/// Two finite ordinary integration inputs that differ from the accepted seeded
+/// full-disc desktop result. Never rerun the completed intro/menu campaign.
+pub(super) fn input_check(repo: &Path, root: &Path, view: bool) -> Result<(), Error> {
+    use std::time::{Duration, Instant};
+    qualified(root)?;
+    let name = if view {
+        "input-media-view-v1"
+    } else {
+        "input-generated-profile-v1"
+    };
+    let out = root.join(name);
+    c::mkdir(&out)?;
+    let r = package(root, false)?;
+    let media_root = repo.join(".local/cartridge-media-20261029-v1");
+    let media = media_root.join(if view {
+        "game-view-v1/selected-game-partition.iso"
+    } else {
+        "media/selected-disc.iso"
+    });
+    let identity: Value = c::read_json(&if view {
+        repo.join(".local/evidence/cartridge-v1/pixel-demo-20261101-v1/prepared-game-view.json")
+    } else {
+        media_root.join("media/verified.identity.json")
+    })?;
+    let mut player = c::desktop::Player::with_resources(&out.join("app"), r)?;
+    let game = player.add(&media)?;
+    let entry = c::library::Library::read(&player.app)?.resolve(&game)?;
+    if entry.media_sha256
+        != identity["sha256"]
+            .as_str()
+            .ok_or("verified media identity")?
+        || entry.partition != if view { 0 } else { 405_798_912 }
+    {
+        return Err("integration input differs; native not started".into());
+    }
+    let seed = repo.join(".local/dashboard-v20260516-0955/xbox_hdd.qcow2");
+    let eeprom = repo.join(".local/quick-reboot-d87cfc33-run1/eeprom.bin");
+    let seed_before = (c::file_digest(&seed)?, c::file_digest(&eeprom)?);
+    if view {
+        if seed_before.0 != "00d7df7a2bc235f8801764f00b7f40e194d1e392f7a9619d6b2396c89770f6dd" {
+            return Err("matched seed differs".into());
+        }
+        let _p =
+            c::store::Profile::open_seeded(&player.app, &entry, &player.resources, &seed, &eeprom)?;
+    }
+    let metadata = fs::metadata(&media)?;
+    player.launch(&game)?;
+    let run = player
+        .live
+        .as_ref()
+        .ok_or("native machine")?
+        .native
+        .run
+        .clone();
+    let core = player.resources.core();
+    let start = Instant::now();
+    let mut serial = String::new();
+    let mut captures = Vec::new();
+    let mut next = 0;
+    let observed = (|| -> Result<(), Error> {
+        while start.elapsed() < Duration::from_secs(45) {
+            serial.push_str(&player.live.as_mut().ok_or("live")?.native.serial()?);
+            if serial.len() > 128 * 1024 {
+                return Err("finite startup log bound".into());
+            }
+            if next < 4 && start.elapsed().as_secs() >= [3, 10, 20, 40][next] {
+                let result = std::process::Command::new("python3")
+                    .arg(repo.join(".local/capture-ramht-window-v2.py"))
+                    .arg(&run)
+                    .arg(&core)
+                    .output()?;
+                captures.push(json!({"elapsed_ms":start.elapsed().as_millis(),"exit":result.status.code(),
+                    "path":String::from_utf8_lossy(&result.stdout).trim(),"actual_review_required":true}));
+                next += 1;
+            }
+            if serial.contains("fatal error 21") {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        Ok(())
+    })();
+    c::write_new(&out.join("kernel.log"), serial.as_bytes())?;
+    let stopped = player.stop();
+    drop(player);
+    let native: Value = c::read_json(&run.join("native-return.json"))?;
+    let unchanged = seed_before == (c::file_digest(&seed)?, c::file_digest(&eeprom)?)
+        && fs::metadata(&media)?.len() == metadata.len()
+        && fs::metadata(&media)?.modified()? == metadata.modified()?;
+    c::write_new(
+        &out.join("result.json"),
+        &c::json(&json!({
+            "case":name,"core":resources::LOCAL_IO_CORE,"open_system":resources::LOCAL_BASE_OPEN,
+            "media_view":view,"matched_reference_storage":view,"ordinary_generated_storage":!view,
+            "maximum_guest_observation_seconds":45,"elapsed_ms":start.elapsed().as_millis(),
+            "default_xbe_loaded":serial.contains("load \\Device\\CdRom0\\default.xbe: 0x0"),
+            "quick_reboot_observed":serial.contains(": quick boot"),"fatal21_observed":serial.contains("fatal error 21"),
+            "captures":captures,"native_return":native,"inputs_preserved":unchanged,
+            "observation_error":observed.as_ref().err().map(ToString::to_string),
+            "stop_error":stopped.as_ref().err().map(ToString::to_string),
+            "gameplay_or_performance_acceptance":false,"phone_operated":false
+        }))?,
+    )?;
+    observed?;
+    stopped?;
+    if native["clean"] != true || native["native_reaped"] != true || !unchanged {
+        return Err(
+            "integration observation return/input verification failed; preserve outputs".into(),
+        );
+    }
+    Ok(())
+}
+
 pub(super) fn fable(repo: &Path, root: &Path) -> Result<(), Error> {
     qualified(root)?;
     let prefix = "fable-local-io-logging";

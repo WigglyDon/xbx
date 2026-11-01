@@ -1,0 +1,29 @@
+--- a/accel/tcg/cpu-exec.c
++++ b/accel/tcg/cpu-exec.c
+@@ -63,13 +63,14 @@
+ 
+ static int tier1_promotion_budget = TIER1_PROMOTION_BUDGET;
+ 
+-static int g_tier1_threshold = TB_TIER1_THRESHOLD;
++/* Developer correctness baseline; zero retains ordinary TCG without extra tiers. */
++static int g_tier1_threshold = 0;
+ static uint64_t g_tier1_promotions_total;
+ static uint64_t g_tier1_promotions_dropped;
+ 
+ void xemu_set_tier1_threshold(int value)
+ {
+-    if (value < 8) value = 8;
++    if (value != 0 && value < 8) value = 8;
+     if (value > 512) value = 512;
+     g_tier1_threshold = value;
+ }
+@@ -179,7 +180,8 @@
+  */
+ static inline void tier1_maybe_promote(CPUState *cpu, TranslationBlock *tb)
+ {
+-    if (tb->tier == 0 && tb->exec_count >= (uint32_t)g_tier1_threshold) {
++    if (g_tier1_threshold > 0 && tb->tier == 0 &&
++        tb->exec_count >= (uint32_t)g_tier1_threshold) {
+         if (tier1_promotion_budget > 0) {
+             tier1_promotion_budget--;
+             g_tier1_promotions_total++;

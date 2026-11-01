@@ -448,3 +448,9 @@ notice and obligations. The Rust owner and original controlled-IR scaffold
 retain the complete native notice and unchanged function bodies. The fixture
 uses the retained QEMU queue header under its existing terms. It does not claim
 actual vCPU exception delivery or commercial compatibility.
+
+`patches/xemu-tier1-baseline.patch` changes only the optional extra-tier threshold
+in retained `accel/tcg/cpu-exec.c` at the same Android pin, under its existing
+LGPL-2.1-or-later terms and notices. It is a separate ordinary-TCG developer
+comparison, not a replacement CPU or an attributed game fix. The Rust builder
+and ordinary integration-input qualification owner are MIT.

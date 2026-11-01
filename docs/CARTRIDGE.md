@@ -1099,3 +1099,33 @@ that launch's retained diagnostics first, reuses the installed binary and keeps
 the declared finite work budget without the shorter idle cutoff. Fable has not
 yet been rechecked on this correction.
 [Actual fields, contract and device boundary](evidence/cartridge-android-launch-and-flags-20261101.json).
+
+The corrected finite continuation completes the original return: an actual new
+process reports the prior noninitial RAM state and accepts a further action,
+with its ordinary disk marker unchanged. The accumulated six new native return
+records are clean. The matched Fable retry on the corrected core still requests
+launch type1 / dashboard reason1 / code1 and reaches the unhealthy-machine UI.
+The correction is not established as its cause. Task-owned app retirement and
+stock return are verified, with all profiles and current saves retained. No game
+frame, menu, play, sound or pacing is qualified by that retry.
+
+Two45-second desktop integration controls reuse the retained qualified core and
+open image. The smaller byte-identical game-partition view with the matched
+reference storage reaches advancing armored-character intro imagery. The full
+disc with ordinary newly generated storage also reaches that intro. All eight
+captured frames are opened; both native returns acknowledge quit, exit0, reap
+and sync storage with unchanged inputs. These qualify the stated startup inputs,
+not a menu, game controls, play, sound or pacing. They do not repeat the completed
+full-length intro/menu campaign.
+
+The separate `cartridge-android-tcg-baseline-native` developer candidate retains
+both supported repairs and recompiles only `accel/tcg/cpu-exec.c`. It permits a
+zero promotion threshold and defaults this separate core to ordinary TCG without
+the fork's extra tiers. There is no user-facing JIT selector or checkpoint alias.
+Actual native counters report threshold0 and zero promotions. The original
+cartridge again restores noninitial RAM in a fresh process and accepts a further
+action with its ordinary save marker unchanged. All four captures are reviewed.
+Fable nevertheless makes the same type1 / reason1 / code1 dashboard-error request.
+The app exits normally from its error dialog; process absence and stock return
+are verified. No further speculative optimizer change is justified by this result.
+[Input and baseline receipt](evidence/cartridge-inputs-and-tcg-baseline-20261101.json).

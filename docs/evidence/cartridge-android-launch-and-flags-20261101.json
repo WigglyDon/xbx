@@ -115,12 +115,16 @@
     "original_native_departure_clean": true,
     "OS_process_absence_before_return_attempt": true,
     "fresh_process_started": true,
-    "fresh_process_RAM_restoration_observed": false,
-    "restoration_observation": "interrupted by private test-client short idle cutoff; result unqualified, not compatibility failure",
+    "fresh_process_RAM_restoration_observed": true,
+    "restoration_observation": "first private-client-cutoff attempt remains retained; corrected finite continuation visibly restores noninitial RAM then accepts a further action",
     "task_owned_app_retired_and_stock_return_verified": true,
-    "post_correction_Fable_run": false,
+    "post_correction_Fable_run": true,
     "continued_using_same_installed_candidate": true,
-    "no_unchanged_rebuild_or_reinstall_planned": true
+    "no_unchanged_rebuild_or_reinstall_planned": true,
+    "new_action_after_restoration": true,
+    "ordinary_save_marker_preserved": true,
+    "continuation_native_returns_clean": true,
+    "continuation_native_return_records_total": 6
   },
   "preservation": {
     "all_prior_sources_profiles_media_builds_and_evidence_retained": true,
@@ -129,5 +133,23 @@
     "PSX_and_other_sibling_sources_untouched": true,
     "no_further_deletion": true
   },
-  "remaining": "retrieve only interrupted return diagnostics under fresh admission; complete actual original fresh return, then matched Fable check; game and performance remain unqualified"
+  "remaining": "two short ordinary desktop integration-input checks distinguish game-partition view and generated profile from the retained seeded full-disc working result; no unchanged intro campaign or speculative game patch",
+  "post_correction_Fable": {
+    "same_open_image_media_helper_seeds_and_settings": true,
+    "title_load_and_entry_return": true,
+    "firmware_routine": 2,
+    "launch_data_type": 1,
+    "dashboard_reason": 1,
+    "dashboard_code": 1,
+    "same_startup_boundary": true,
+    "fault_state_repair_established_as_game_cause": false,
+    "menu_gameplay_audio_pacing_or_game_resume_qualified": false,
+    "visible_error_UI_observed": true,
+    "game_frame_capture_obtained": false,
+    "app_data_cleared": false,
+    "failed_profiles_and_current_saves_retained": true,
+    "cleanup_task_app_forced_retirement": true,
+    "actual_process_absence_and_stock_return_verified": true,
+    "host_observation_seconds": 79
+  }
 }

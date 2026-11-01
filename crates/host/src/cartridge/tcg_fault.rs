@@ -92,12 +92,27 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, false)
+}
+pub(super) fn baseline(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, true)
+}
+fn build_candidate(repo: &Path, root: &Path, baseline: bool) -> Result<(), Error> {
     let proof: serde_json::Value =
         c::read_json(&root.join("android-tcg-fault-contract-v1/result.json"))?;
     if proof["passed"] != true || proof["patch"] != c::file_digest(&repo.join(PATCH))? {
         return Err("qualified actual-source IR contract required".into());
     }
-    let prior = root.join("android-serial-v1");
+    let prior = root.join(if baseline {
+        "android-tcg-fault-v1"
+    } else {
+        "android-serial-v1"
+    });
+    let patch = if baseline {
+        "patches/xemu-tier1-baseline.patch"
+    } else {
+        PATCH
+    };
     let old = repo.join(".local/build-android");
     let base = repo.join(".local/src/xemu-android");
     let previous: serde_json::Value = c::read_json(&prior.join("build.identity.json"))?;
@@ -106,7 +121,11 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     {
         return Err("retained serial-corrected core differs".into());
     }
-    let new = root.join("android-tcg-fault-v1");
+    let new = root.join(if baseline {
+        "android-tcg-baseline-v1"
+    } else {
+        "android-tcg-fault-v1"
+    });
     c::mkdir(&new)?;
     let source = new.join("source");
     c::store::checked(
@@ -115,8 +134,12 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             .arg(prior.join("source"))
             .arg(&source),
     )?;
-    let unit = "tcg/tier1-opt.c";
-    fs::create_dir_all(source.join("tcg"))?;
+    let unit = if baseline {
+        "accel/tcg/cpu-exec.c"
+    } else {
+        "tcg/tier1-opt.c"
+    };
+    fs::create_dir_all(source.join(unit).parent().ok_or("unit parent")?)?;
     let original = output(
         Command::new("git")
             .arg("-C")
@@ -131,9 +154,9 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             .arg(&source)
             .env("GIT_CEILING_DIRECTORIES", &new)
             .arg("apply")
-            .arg(repo.join(PATCH)),
+            .arg(repo.join(patch)),
     )?;
-    if proof["subject_after"] != c::file_digest(&source.join(unit))? {
+    if !baseline && proof["subject_after"] != c::file_digest(&source.join(unit))? {
         return Err("built optimizer must equal qualified subject".into());
     }
     let core = new.join("libxemu_core.a");
@@ -146,9 +169,11 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
         .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     let ar = llvm.join("llvm-ar");
+    let stem = if baseline { "cpu-exec" } else { "tier1-opt" };
+    let member = format!("{stem}.c.o");
     if output(Command::new(&ar).arg("t").arg(&core))?
         .lines()
-        .filter(|v| *v == "tier1-opt.c.o")
+        .filter(|v| *v == member)
         .count()
         != 1
     {
@@ -158,7 +183,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         "CMakeFiles/xemu_core.dir/{}/{unit}.o",
         literal(&base)?.trim_start_matches('/')
     );
-    let object = compile(&old, &source, &base, &new, unit, &target, "tier1-opt")?;
+    let object = compile(&old, &source, &base, &new, unit, &target, stem)?;
     c::store::checked(Command::new(&ar).arg("rD").arg(&core).arg(object))?;
     let lib = new.join("libxemu.so");
     let link = fs::read_to_string(prior.join("link.command"))?
@@ -170,12 +195,18 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         );
     c::write_new(&new.join("link.command"), link.as_bytes())?;
     c::store::checked(Command::new("sh").current_dir(&old).arg("-c").arg(link))?;
+    let open_parent = if baseline {
+        previous["prior_library_sha256"].clone()
+    } else {
+        previous["library_sha256"].clone()
+    };
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(&json!({
             "source_pin":PIN,"bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,
             "library_sha256":c::file_digest(&lib)?,"prior_library_sha256":previous["library_sha256"],
-            "patch":proof["patch"],"subject":proof["subject_after"],"contract":proof,
+            "patch":c::file_digest(&repo.join(patch))?,"subject":c::file_digest(&source.join(unit))?,"contract":proof,
+            "extra_tier_promotion_disabled":baseline,"open_image_native_parent":open_parent,
             "inherited_repairs":previous,"recompiled_units":[unit],"whole_core_rebuild":false,
             "state_layout_changed":false,"old_checkpoints_retagged":false,"game_causality":false
         }))?,

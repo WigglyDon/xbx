@@ -37,6 +37,14 @@ pub(super) fn build_demo(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn build_serial(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-serial-v1", "android-serial-package-v1")
 }
+pub(super) fn build_tcg_baseline(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-tcg-baseline-package-v1",
+    )
+}
 pub(super) fn build_tcg_fault(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -107,13 +115,17 @@ fn build_selected(
     let seed_hash = c::file_digest(&helper.join("empty.qcow2"))?;
     let demo = matches!(
         native_stage,
-        "android-demo-native-v2" | "android-serial-v1" | "android-tcg-fault-v1"
+        "android-demo-native-v2"
+            | "android-serial-v1"
+            | "android-tcg-fault-v1"
+            | "android-tcg-baseline-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let reporting = package_stage == "android-serial-io-package-v1";
     let fault = package_stage == "android-tcg-fault-package-v1";
-    let launch = package_stage == "android-launch-package-v2" || fault;
+    let baseline = package_stage == "android-tcg-baseline-package-v1";
+    let launch = package_stage == "android-launch-package-v2" || fault || baseline;
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     let launch_identity: serde_json::Value = if launch {
         c::read_json(&root.join("android-launch-v2/identity.json"))?
@@ -121,7 +133,11 @@ fn build_selected(
         json!(null)
     };
     let open_hash = if launch {
-        let parent_core = if fault {
+        let parent_core = if baseline {
+            native_identity["open_image_native_parent"]
+                .as_str()
+                .ok_or("launch component lineage")?
+        } else if fault {
             native_identity["prior_library_sha256"]
                 .as_str()
                 .ok_or("prior native binding")?

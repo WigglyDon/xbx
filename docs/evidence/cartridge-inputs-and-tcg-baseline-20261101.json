@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "ordinary input qualification and optional Android JIT tier baseline",
+  "desktop_cases": [
+    {
+      "case": "input-media-view-v1",
+      "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+      "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+      "media_view": true,
+      "matched_reference_storage": true,
+      "ordinary_generated_storage": false,
+      "maximum_guest_observation_seconds": 45,
+      "default_xbe_loaded": true,
+      "quick_reboot_observed": false,
+      "fatal21_observed": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 9,
+        "reap_ms": 160,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 0,
+        "storage_synced": true
+      },
+      "inputs_preserved": true,
+      "actual_frames_reviewed": 4,
+      "visible_result": "open splash then advancing armored-character intro",
+      "menu_controls_play_or_pacing_qualified": false
+    },
+    {
+      "case": "input-generated-profile-v1",
+      "core": "c91b04002caf5fc8ed7a28c4bfbccfdc9e013b414f06c3d2a1643ce82a3eb5a0",
+      "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+      "media_view": false,
+      "matched_reference_storage": false,
+      "ordinary_generated_storage": true,
+      "maximum_guest_observation_seconds": 45,
+      "default_xbe_loaded": true,
+      "quick_reboot_observed": false,
+      "fatal21_observed": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      },
+      "inputs_preserved": true,
+      "actual_frames_reviewed": 4,
+      "visible_result": "open splash then advancing armored-character intro",
+      "menu_controls_play_or_pacing_qualified": false
+    }
+  ],
+  "baseline": {
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "patch": "patches/xemu-tier1-baseline.patch",
+    "one_native_unit": "accel/tcg/cpu-exec.c",
+    "inherits_UART_and_fault_state_repairs": true,
+    "whole_core_rebuild": false,
+    "same_kernel_media_helper_seed_and_settings": true,
+    "same_signer_update_all_prior_profile_files_preserved": true,
+    "original_noninitial_fresh_process_restore_and_further_action_passed": true,
+    "ordinary_save_marker_unchanged": true,
+    "baseline_threshold": 0,
+    "extra_tier_promotions_observed": 0,
+    "original_captures_reviewed": 4,
+    "Fable_public_error_same": {
+      "launch_type": 1,
+      "dashboard_reason": 1,
+      "dashboard_code": 1
+    },
+    "Fable_gameplay_menu_audio_or_pacing_qualified": false,
+    "extra_tier_exclusion_does_not_fix_game_startup": true,
+    "processes_absent_and_stock_return_verified": true,
+    "forced_task_app_retirement": false
+  },
+  "validation": {
+    "isolated_strict_Clippy": true,
+    "owned_Rust_formatting": true,
+    "APK_signature_alignment_and_runtime_bindings": true,
+    "all_prior_artifacts_and_paused_work_preserved": true
+  },
+  "remaining": "Android public startup contract attribution; further speculative optimizer changes are not supported"
+}

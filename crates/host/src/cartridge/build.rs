@@ -156,6 +156,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-local-io-reporting" => super::local_io::control(repo, root, true, false)?,
         "cartridge-local-io-demand" => super::local_io::control(repo, root, true, true)?,
         "cartridge-local-io-fable" => super::local_io::fable(repo, root)?,
+        "cartridge-local-media-view-input" => super::local_io::input_check(repo, root, true)?,
+        "cartridge-local-generated-profile-input" => {
+            super::local_io::input_check(repo, root, false)?
+        }
         "cartridge-local-fable-play" => super::local_io::play(repo, root)?,
         "cartridge-local-fable-continue" => super::local_io::continue_play(repo, root)?,
         "cartridge-local-fable-return" => super::local_io::return_play(repo, root)?,
@@ -335,6 +339,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-serial-native" => super::serial_watch::build(repo, root)?,
         "cartridge-android-tcg-fault-contract" => super::tcg_fault::contract(repo, root)?,
         "cartridge-android-tcg-fault-native" => super::tcg_fault::build(repo, root)?,
+        "cartridge-android-tcg-baseline-native" => super::tcg_fault::baseline(repo, root)?,
+        "cartridge-android-tcg-baseline-package" => {
+            super::android_package::build_tcg_baseline(repo, root)?
+        }
         "cartridge-android-tcg-fault-package" => {
             super::android_package::build_tcg_fault(repo, root)?
         }
