@@ -73,6 +73,21 @@ pub struct Resources {
 }
 impl Resources {
     #[cfg(not(target_os = "android"))]
+    pub(super) fn vblank(root: &Path, fixture: bool) -> io::Result<Self> {
+        let mut r = Self::validated_core(root, super::vblank::CORE, LOCAL_BASE_OPEN, true)?;
+        r.select_host_kvm();
+        r.vertex_fixture = fixture;
+        Ok(r)
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn vertex_kvm(root: &Path, fixture: bool) -> io::Result<Self> {
+        let mut r =
+            Self::validated_core(root, super::vertex_state::KVM_CORE, LOCAL_BASE_OPEN, true)?;
+        r.select_host_kvm();
+        r.vertex_fixture = fixture;
+        Ok(r)
+    }
+    #[cfg(not(target_os = "android"))]
     pub(super) fn vertex_candidate(
         root: &Path,
         corrected: bool,

@@ -420,3 +420,11 @@ The original MIT `native/fixtures/nv2a-vertex-state.inc` and its separately
 gated monitor adapter are qualification machinery; upstream file notices and
 combined core obligations remain. The Rust owner and fixture contain no game
 or private-firmware implementation. Old incomplete checkpoints remain retained.
+
+`patches/xemu-vblank-timer.patch` modifies the same retained NV2A source under
+its LGPL-2.0-or-later terms. It transfers the qualified nominal60Hz interrupt
+generation from host presentation to QEMU's virtual timer and saves its phase
+with the existing native serializer. It does not establish programmable scan,
+PLL or PAL/interlaced timing accuracy. The original PCRTC counter fixture
+`native/fixtures/vblank-cadence.S` and Rust qualification owner are MIT. No game
+or private firmware implementation is copied.

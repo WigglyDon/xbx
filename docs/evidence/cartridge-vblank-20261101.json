@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "upstream": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "public_source_finding": "nv2a_vga_gfx_update generated PCRTC VBlank status/IRQ only from a host display-update callback",
+  "contract": "Preserve qualified nominal 60Hz VBlank generation on QEMU_CLOCK_VIRTUAL independently of a host presenter. This is a hardware event rate, not a required game FPS.",
+  "scope_limits": "Programmable PLL/scanline and PAL/interlaced timing accuracy remain unqualified. No causal Fable speedup is claimed from the original control.",
+  "fixture": {
+    "commercial_acceptance": false,
+    "contract": "PCRTC VBlank status events continue independently of a host presentation listener; event count per one 3375000Hz-counter second",
+    "fixture": "2ab8dc1026d619c28839982c4ec2db108a0844e03f779e075a87e81de2dfa595",
+    "guest_irq_delivery_disabled_during_count": true,
+    "original_only": true,
+    "source": "a0ae52b19e4b1829dd4ac3dace8c6c109a52adcfbe385b4b5330779ed090e771",
+    "uart_source": "219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60"
+  },
+  "patch": {
+    "path": "patches/xemu-vblank-timer.patch",
+    "sha256": "787169883840fc086344e52fff5330c1dfd5e2379139681e9ade50531c9d3f0d",
+    "license": "LGPL-2.0-or-later; retained NV2A notices preserved",
+    "native_phase_owner": "existing QEMU timer and VMState timer-pointer serializer",
+    "nominal_period_ns": 16666666,
+    "new_nv2a_version": 7,
+    "minimum_nv2a_version": 7,
+    "old_state_alias": false,
+    "presenter_irq_removed": true,
+    "missed_host_schedule_backlog_replayed": false
+  },
+  "build": {
+    "identity": {
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "base_core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+      "nv2a_version": 7,
+      "minimum_nv2a_version": 7,
+      "state_layout_changed": true,
+      "qualified": false
+    },
+    "repair_result": {
+      "passed": true,
+      "original_failure_retained": true,
+      "final_patch": "787169883840fc086344e52fff5330c1dfd5e2379139681e9ade50531c9d3f0d",
+      "final_source": "5e688cee39516a628fab4ff527710ab7660258c92bf25d1f6729e6695f7530fc",
+      "retained_base_unchanged": true,
+      "patch_reverse_check": true
+    },
+    "planned_steps": 8,
+    "compiler_jobs": 1,
+    "new_dependencies_or_downloads": false,
+    "initial_pointer_macro_compile_failure_preserved": true
+  },
+  "original_results": {
+    "headless-baseline": {
+      "completed": true,
+      "visible": false,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "events_per_counter_second": 0,
+      "within_45_to_75_event_window": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 4,
+        "storage_synced": true
+      }
+    },
+    "visible-baseline": {
+      "completed": true,
+      "visible": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "events_per_counter_second": 60,
+      "within_45_to_75_event_window": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 245,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 14,
+        "storage_synced": true
+      }
+    },
+    "headless-corrected-first": {
+      "passed": true,
+      "completed": true,
+      "visible": false,
+      "corrected": true,
+      "restored": false,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "events_per_counter_second": 60,
+      "within_45_to_75_event_window": true,
+      "query_ms": 1011,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      }
+    },
+    "headless-corrected-return": {
+      "passed": true,
+      "completed": true,
+      "visible": false,
+      "corrected": true,
+      "restored": true,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "events_per_counter_second": 60,
+      "within_45_to_75_event_window": true,
+      "query_ms": 1011,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 0,
+        "reap_ms": 60,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    "visible-corrected-first": {
+      "passed": true,
+      "completed": true,
+      "visible": true,
+      "corrected": true,
+      "restored": false,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "events_per_counter_second": 60,
+      "within_45_to_75_event_window": true,
+      "query_ms": 1012,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 10,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 18,
+        "storage_synced": true
+      }
+    },
+    "gpu-first": {
+      "passed": true,
+      "corrected": true,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "state": {
+        "passed": true,
+        "populated": 16,
+        "vertex_bytes": 220,
+        "vertices": 3
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 15,
+        "storage_synced": true
+      }
+    },
+    "gpu-return": {
+      "passed": true,
+      "corrected": true,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "state": {
+        "passed": true,
+        "populated": 16,
+        "vertex_bytes": 220,
+        "vertices": 3
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 1,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 14,
+        "storage_synced": true
+      }
+    },
+    "cpu-first": {
+      "passed": true,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 5,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 15,
+        "storage_synced": true
+      }
+    },
+    "cpu-return": {
+      "passed": true,
+      "core": "2001fa447924a10a5544f2b364eadc6d1a75fb5ce94087d21eadddee23e4b389",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 14,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 18,
+        "storage_synced": true
+      },
+      "checkpoint_metadata_retagged": false,
+      "old_library_unchanged": true
+    }
+  },
+  "validation": {
+    "strict_clippy": true,
+    "built": true,
+    "new_core_compiled_pin_bound": true
+  },
+  "fable": {
+    "fresh_matched_profile": true,
+    "unchanged_verified_readonly_media": true,
+    "visible_result": "final reviewed frame remains in character/logo intro; no game menu, controls, gameplay or usable pacing established",
+    "result_pending_actual_visible_review": false,
+    "reason": "observation_budget_expired_requires_visual_review",
+    "elapsed_ms": 3626079,
+    "no_operator_input_in_this_first_run": true,
+    "complete_checkpoint_published": true,
+    "immutable_inputs_unchanged": true,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 44,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 9,
+      "storage_synced": true
+    },
+    "playable_qualified": false,
+    "repair_causality_or_speedup_established": false
+  },
+  "installed_default_and_phones_unchanged": true,
+  "prior_media_saves_profiles_builds_paused_source_and_evidence_preserved": true
+}

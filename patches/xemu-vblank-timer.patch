@@ -1,0 +1,84 @@
+--- a/hw/xbox/nv2a/nv2a.c
++++ b/hw/xbox/nv2a/nv2a.c
+@@ -200,16 +200,27 @@
+     return g_nv2a->vga.sr[VGA_SEQ_CLOCK_MODE] & VGA_SR01_SCREEN_OFF;
+ }
+ 
++/* Preserve the qualified nominal 60 Hz mode independently of host
++ * presentation. Programmable/PAL scan timing remains outside this repair.
++ * QEMU_CLOCK_VIRTUAL stops with the VM; missed status events coalesce instead
++ * of replaying a host scheduling backlog. The timer runs under the BQL.
++ */
++#define NV2A_VBLANK_PERIOD_NS (NANOSECONDS_PER_SECOND / 60)
++
++static void nv2a_vblank(void *opaque)
++{
++    NV2AState *d = opaque;
++    d->pcrtc.pending_interrupts |= NV_PCRTC_INTR_0_VBLANK;
++    d->pcrtc.raster = 0;
++    nv2a_update_irq(d);
++    timer_mod(d->vblank_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) +
++              NV2A_VBLANK_PERIOD_NS);
++}
++
+ static void nv2a_vga_gfx_update(void *opaque)
+ {
+     VGACommonState *vga = opaque;
+     vga->hw_ops->gfx_update(vga);
+-
+-    NV2AState *d = container_of(vga, NV2AState, vga);
+-    d->pcrtc.pending_interrupts |= NV_PCRTC_INTR_0_VBLANK;
+-    d->pcrtc.raster = 0;
+-
+-    nv2a_update_irq(d);
+ }
+ 
+ static void nv2a_init_memory(NV2AState *d, MemoryRegion *ram)
+@@ -336,6 +347,10 @@
+     d->ptimer.pending_interrupts = 0;
+     ptimer_reset(d);
+     d->pcrtc.pending_interrupts = 0;
++    if (d->vblank_timer) {
++        timer_mod(d->vblank_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) +
++                  NV2A_VBLANK_PERIOD_NS);
++    }
+ 
+     for (int i = 0; i < 256; i++) {
+         d->puserdac.palette[i*3]   = i;
+@@ -379,6 +394,8 @@
+     d = NV2A_DEVICE(dev);
+ 
+     d->exiting = true;
++    timer_free(d->vblank_timer);
++    d->vblank_timer = NULL;
+ 
+     qemu_cond_broadcast(&d->pfifo.fifo_cond);
+     qemu_thread_join(&d->pfifo.thread);
+@@ -603,8 +620,8 @@
+ 
+ static const VMStateDescription vmstate_nv2a = {
+     .name = "nv2a",
+-    .version_id = 6,
+-    .minimum_version_id = 6,
++    .version_id = 7,
++    .minimum_version_id = 7,
+     .post_save = nv2a_post_save,
+     .post_load = nv2a_post_load,
+     .pre_load = nv2a_pre_load,
+@@ -728,6 +745,7 @@
+         VMSTATE_TIMER_V(ptimer.timer, NV2AState, 4),
+         VMSTATE_BUFFER_UNSAFE(pgraph.vsh_carry_fog, NV2AState, 5,
+                               sizeof(((PGRAPHState *)0)->vsh_carry_fog)),
++        VMSTATE_TIMER_PTR_V(vblank_timer, NV2AState, 7),
+         VMSTATE_WITH_TMP(NV2AState, NV2AVertexStateGroup, vmstate_nv2a_vertex_group),
+         VMSTATE_END_OF_LIST()
+     },
+@@ -781,5 +799,8 @@
+     nv2a_init_memory(d, ram);
+     nv2a_init_vga(d);
+     ptimer_init(d);
++    d->vblank_timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, nv2a_vblank, d);
++    timer_mod(d->vblank_timer, qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) +
++              NV2A_VBLANK_PERIOD_NS);
+     qemu_add_vm_change_state_handler(nv2a_vm_state_change, d);
+ }

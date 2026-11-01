@@ -52,6 +52,8 @@ pub mod store;
 #[cfg(all(test, not(target_os = "android")))]
 mod tests;
 #[cfg(not(target_os = "android"))]
+mod vblank;
+#[cfg(not(target_os = "android"))]
 mod vertex_state;
 #[cfg(not(target_os = "android"))]
 mod x87_boundary;

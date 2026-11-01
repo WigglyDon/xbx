@@ -1,0 +1,311 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "purpose": "Carry the independently reproduced graphics-state and prelaunch corrections into the retained hardware backend; no old-state retag or fixed-counter configuration",
+  "native_identity": {
+    "base_core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+    "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+    "open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+    "qualified": false,
+    "state_layout_changed": true
+  },
+  "build_inputs": {
+    "additional_peak_bound_bytes": 2147483648,
+    "base_core": "276ec5a297d6c798abec469d262178c39ca16e7c178bd83565eb25902990c078",
+    "base_source": "76772b8ef68e0a64879f1d859bf62d4e5ced9f17c294ad2cd3931db0b60ad55e",
+    "compiler_jobs": 1,
+    "fixture_source": "d13a5f8b031172aef842fa443d832dde14a2de45c696f472c209ef5f4ed2b963",
+    "new_dependencies_or_downloads": false,
+    "patches": [
+      {
+        "path": "patches/xemu-vertex-fixture.patch",
+        "sha256": "2c47f188121b5d87738e3d4f65c3d4fa96fac5721fd882c0f2d6f0b7f9037eea"
+      },
+      {
+        "path": "patches/xemu-prelaunch-savevm.patch",
+        "sha256": "17baaa9974ece2575d78a66a950f2b94ca299b606dd608788605190d299c6c5e"
+      },
+      {
+        "path": "patches/xemu-vertex-state.patch",
+        "sha256": "441b215a7f5ff3f10c889018c5416d80f2307066e3adc12cd055daabe2c7d600"
+      }
+    ],
+    "planned_steps": 11,
+    "state_layout_changed": true
+  },
+  "build_result": {
+    "exit": 0,
+    "passed": true,
+    "retained_source_and_core_unchanged": true
+  },
+  "original_results": {
+    "kvm-first": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "runtime": "786bf28f56a74f10f12ba15c8de681f2612a32868026fcce5636a7a112ae3d15",
+      "state": {
+        "passed": true,
+        "populated": 16,
+        "vertex_bytes": 220,
+        "vertices": 3
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 12,
+        "reap_ms": 141,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    "kvm-return": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "runtime": "786bf28f56a74f10f12ba15c8de681f2612a32868026fcce5636a7a112ae3d15",
+      "state": {
+        "passed": true,
+        "populated": 16,
+        "vertex_bytes": 220,
+        "vertices": 3
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 14,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    "original-kvm-first": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 13,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      }
+    },
+    "original-kvm-return": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "runtime": "786bf28f56a74f10f12ba15c8de681f2612a32868026fcce5636a7a112ae3d15",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 6,
+        "reap_ms": 182,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "checkpoint_metadata_retagged": false,
+      "old_library_unchanged": true
+    }
+  },
+  "game_result_pending": false,
+  "host_counter_mismatch_corrected": false,
+  "default_or_android_changed": false,
+  "gl_game": {
+    "fresh_profile": true,
+    "actual_accelerator": {
+      "actual": {
+        "enabled": true,
+        "present": true
+      },
+      "kernel_irqchip": "split",
+      "requested": "kvm"
+    },
+    "visible_stages_reviewed": [
+      "intro character/logo animation",
+      "Press START",
+      "map imagery"
+    ],
+    "elapsed_ms": 2898794,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 16,
+      "reap_ms": 140,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 4,
+      "storage_synced": true
+    },
+    "complete_checkpoint_published": true,
+    "immutable_inputs_unchanged": true,
+    "gameplay_qualified": false,
+    "pacing_qualified": false,
+    "host_conditions": {
+      "lid_states": [
+        "closed"
+      ],
+      "cpu_khz": [
+        2899945,
+        2899608,
+        2898995,
+        2900070,
+        2849322,
+        2899919,
+        2860175,
+        2899994
+      ],
+      "memory_kib": {
+        "MemTotal": 16009556,
+        "MemAvailable": 7123180,
+        "SwapTotal": 8388604,
+        "SwapFree": 2863376
+      },
+      "display_power": [
+        "Off",
+        "Off",
+        "On",
+        "Off",
+        "Off"
+      ],
+      "xset_available": false,
+      "native_major_faults": 4,
+      "native_state": "S",
+      "native_memory_kib": {
+        "VmRSS": 474776,
+        "VmSwap": 0
+      }
+    },
+    "public_counter_sample": {
+      "seconds": 20.000115841,
+      "frames": 0,
+      "average_fps": 0,
+      "observed_flip_intervals": 0,
+      "flip_ms_median": null,
+      "flip_ms_p95": null,
+      "flip_ms_max": null,
+      "native_not_stopped": true,
+      "guest_contents_read": false,
+      "limits": "20ms polls may miss multiple fast flips; only named public host-native GPU scalars; host not reserved"
+    },
+    "counter_limit": "PGRAPH flip counter; does not measure all movie-overlay or UI presentations. Zero cannot establish a freeze.",
+    "cpu_time": {
+      "seconds": 20.025867417018162,
+      "vcpu_user_including_guest_seconds": 5.54,
+      "vcpu_host_kernel_seconds": 4.96,
+      "vcpu_guest_seconds": 3.33,
+      "vcpu_host_user_seconds": 2.21,
+      "scope": "Linux accounting on the only guest-executing thread; no guest memory or instruction reads",
+      "sample_exit": 0
+    },
+    "native_wait_sample": "one public native-only stack found the UI in Mesa st_glFinish/iris_fence_finish and the vCPU in KVM_RUN; not a causal attribution"
+  },
+  "vulkan_original_results": {
+    "kvm-vulkan-return": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "state": {
+        "passed": true,
+        "populated": 16,
+        "vertex_bytes": 220,
+        "vertices": 3
+      },
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 285,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 10,
+        "storage_synced": true
+      }
+    },
+    "original-kvm-vulkan-return": {
+      "passed": true,
+      "core": "da9595a13c0d7e557620d21b651b90f0652f9e3d6a59398dfba7e20fdcb9eebf",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 563,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 10,
+        "storage_synced": true
+      },
+      "checkpoint_metadata_retagged": false,
+      "old_library_unchanged": true
+    }
+  },
+  "vulkan_game": {
+    "pending": false,
+    "retained_gl_source_preserved": true,
+    "separate_app_profile_copy_under_both_leases": true,
+    "media_not_duplicated": true,
+    "actual_native_renderer_verified": "Vulkan",
+    "complete_checkpoint_restored": true,
+    "usable_gameplay_qualified": false,
+    "visible_result": "advancing map imagery; no usable gameplay established",
+    "elapsed_ms": 1582538,
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 10,
+      "reap_ms": 321,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 4,
+      "storage_synced": true
+    },
+    "continuation_checkpoint_published": true,
+    "immutable_inputs_unchanged": true,
+    "host_lid_remained_closed_at_recorded_checks": true,
+    "speedup_or_cause_claimed": false
+  }
+}

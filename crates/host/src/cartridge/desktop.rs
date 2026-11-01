@@ -302,7 +302,9 @@ impl Native {
             || r.manifest.core == super::smc::CORE
             || r.manifest.core == super::smc::INPUT_CORE
             || r.manifest.core == super::vertex_state::CORE
-            || r.manifest.core == super::vertex_state::BASE)
+            || r.manifest.core == super::vertex_state::BASE
+            || r.manifest.core == super::vertex_state::KVM_CORE
+            || r.manifest.core == super::vblank::CORE)
             && r.window
         {
             native.input(crate::input::Pad::default())?;

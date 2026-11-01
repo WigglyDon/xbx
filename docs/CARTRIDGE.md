@@ -942,3 +942,30 @@ translated execution and block lookup. The uncontrolled scenes/host differ from
 prior samples; no speedup or regression magnitude is established. Sound, ordinary
 save/cold reload, usable pacing and Android game acceptance remain unqualified.
 [Source, actual results and preservation](evidence/cartridge-vertex-state-20261101.json).
+
+The graphics-state repair also passes original state/RAM/save/input return on
+the retained KVM build. A separate GL-to-Vulkan original return preserves all
+attributes and ordinary synthetic storage/input. The changed-core game runs
+reach title/map imagery, with clean checkpointed returns, but establish no
+usable gameplay. Native Vulkan is verified independently of its GL UI. A native
+wait sample finds the UI in Mesa's completion wait and the vCPU in KVM; one
+sample does not attribute the hitch. PGRAPH flip counts do not measure every
+movie-overlay frame and cannot establish a movie freeze.
+[Actual comparison and limits](evidence/cartridge-vertex-kvm-20261101.json).
+
+A separate original PCRTC control exposes a public device defect:60 VBlank
+events per performance-counter second with a presenter and zero without one.
+The retained core generated this guest interrupt in its host display callback.
+The small correction preserves the qualified nominal60Hz mode on the virtual
+clock, removes duplicate presenter generation and serializes native timer phase.
+NV2A version7 requires the new phase; prior checkpoints and profiles remain
+preserved, with no state alias or metadata retag. Programmable PLL/scanline and
+PAL/interlaced accuracy remain unqualified.
+
+Corrected visible and headless controls both report60 events, and a genuinely
+fresh headless process restores the same cadence. Graphics-state and noninitial
+CPU/RAM/save/controller fresh-process checks also pass; all seven returns are
+clean. The first finite changed-core Fable run nevertheless finishes its budget
+in intro imagery and returns cleanly with a checkpoint. No playable result,
+timer-repair speedup, sound or commercial save acceptance follows from these
+original controls. [Pins, build failure and actual red/green](evidence/cartridge-vblank-20261101.json).
