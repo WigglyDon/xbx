@@ -402,3 +402,11 @@ serializer or game implementation. The Rust controller transport, qualification
 owner and original `native/fixtures/clock-continuity.S` are MIT. The clock fixture
 reuses xbx's original UART/envelope code and checks imports against the retained
 public ABI declaration, without copying a title or kernel implementation.
+
+`patches/xemu-smc-byte-range.patch` enables the retained overlap test in
+`accel/tcg/tb-maint.c` at the same pinned xemu source. The file's
+LGPL-2.1-or-later terms and upstream notices remain. It retains the existing
+precise self-modifying-code machinery. The Rust qualification owner and original
+`native/fixtures/smc-data-range.S` and `fp-continuity.S` remain MIT. Original
+controls establish the stated invalidation and CPU-state behavior, not a
+commercial game speedup or complete GPU-state acceptance.

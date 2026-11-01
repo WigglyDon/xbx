@@ -25,6 +25,8 @@ mod file_read;
 #[cfg(not(target_os = "android"))]
 mod flush_io;
 #[cfg(not(target_os = "android"))]
+mod fp_state;
+#[cfg(not(target_os = "android"))]
 mod host_accel;
 #[cfg(not(target_os = "android"))]
 mod host_clock;
@@ -44,6 +46,8 @@ pub mod player;
 #[cfg(not(target_os = "android"))]
 mod rebuild;
 pub mod resources;
+#[cfg(not(target_os = "android"))]
+mod smc;
 pub mod store;
 #[cfg(all(test, not(target_os = "android")))]
 mod tests;

@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "upstream": "03b988c9d76553b33ed712ba00822ffdf49f0e7d",
+  "source": "accel/tcg/tb-maint.c",
+  "patch_sha256": "574249e03a535b1e7b878449cf4656154e02bea130862996d7230ac303c24ec5",
+  "change": "Enable retained byte-overlap filter for Xbox; no fabricated exceptions or title special cases.",
+  "original_fixture": "same-page data stores and direct, physical-alias, cross-page and current-block code mutation",
+  "first_fixture_error": "Unmapped fixed physical alias; negative evidence retained. Corrected original uses public MmGetPhysicalAddress/MmMapIoSpace/MmUnmapIoSpace declarations.",
+  "baseline": {
+    "passed": true,
+    "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+    "fixture": "d53e9d970c30c38aef65e67ccaf14e63f760cf6a7c49937477681c7250ddef80",
+    "phases": [
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 191
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 190
+        },
+        "phase": "CONTROL",
+        "wall_ms": 32
+      },
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 10272
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 191
+        },
+        "phase": "DATA",
+        "wall_ms": 135
+      },
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 10284
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 10272
+        },
+        "phase": "MUTATE",
+        "wall_ms": 31
+      }
+    ],
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 0,
+      "reap_ms": 40,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 5,
+      "storage_synced": true
+    },
+    "observation_error": null,
+    "return_error": null
+  },
+  "candidate": {
+    "passed": true,
+    "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+    "fixture": "d53e9d970c30c38aef65e67ccaf14e63f760cf6a7c49937477681c7250ddef80",
+    "false_invalidations_eliminated": true,
+    "phases": [
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 182
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 182
+        },
+        "phase": "CONTROL",
+        "wall_ms": 34
+      },
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 182
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 182
+        },
+        "phase": "DATA",
+        "wall_ms": 34
+      },
+      {
+        "after": {
+          "buffer_flushes": 0,
+          "invalidations": 189
+        },
+        "before": {
+          "buffer_flushes": 0,
+          "invalidations": 182
+        },
+        "phase": "MUTATE",
+        "wall_ms": 34
+      }
+    ],
+    "native_return": {
+      "clean": true,
+      "forced": false,
+      "kill_attempted": false,
+      "native_exit": "exit status: 0",
+      "native_reaped": true,
+      "qmp_acknowledged": true,
+      "qmp_error": null,
+      "quit_ack_ms": 0,
+      "reap_ms": 60,
+      "shutdown_deadline_reached": false,
+      "shutdown_grace_seconds": 15,
+      "storage_sync_ms": 9,
+      "storage_synced": true
+    },
+    "observation_error": null,
+    "return_error": null
+  },
+  "session_controls": [
+    {
+      "passed": true,
+      "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 17,
+        "reap_ms": 182,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+      "returning": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 12,
+        "reap_ms": 141,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+      "returning": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 3,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 9,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "b98aa9b70788d28a292cb27b8752d67210fa608d9fe5e214d4ae7b3c8ca4f7d9",
+      "returning": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 6,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 24,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "b98aa9b70788d28a292cb27b8752d67210fa608d9fe5e214d4ae7b3c8ca4f7d9",
+      "returning": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 8,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 18,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    }
+  ],
+  "fp_controls": [
+    {
+      "passed": true,
+      "core": "f7b6e793d654ba58b73533263fe53766755551fb02c0f3a9d90d338b26f356ed",
+      "fixture": "f2da5c649b1df17187bfb7b9394a8c519ab03a18cacc7e533c71be72a22e31ee",
+      "mode": "base",
+      "restored": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 4,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 26,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+      "fixture": "f2da5c649b1df17187bfb7b9394a8c519ab03a18cacc7e533c71be72a22e31ee",
+      "mode": "cross",
+      "restored": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 1,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 33,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+      "fixture": "f2da5c649b1df17187bfb7b9394a8c519ab03a18cacc7e533c71be72a22e31ee",
+      "mode": "same-first",
+      "restored": false,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 18,
+        "reap_ms": 140,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 21,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    },
+    {
+      "passed": true,
+      "core": "e8daf375a6d28dd49c5ad38965cd66249167619792714fa81a3d5811c534512f",
+      "fixture": "f2da5c649b1df17187bfb7b9394a8c519ab03a18cacc7e533c71be72a22e31ee",
+      "mode": "same-return",
+      "restored": true,
+      "native_return": {
+        "clean": true,
+        "forced": false,
+        "kill_attempted": false,
+        "native_exit": "exit status: 0",
+        "native_reaped": true,
+        "qmp_acknowledged": true,
+        "qmp_error": null,
+        "quit_ack_ms": 9,
+        "reap_ms": 120,
+        "shutdown_deadline_reached": false,
+        "shutdown_grace_seconds": 15,
+        "storage_sync_ms": 8,
+        "storage_synced": true
+      },
+      "observation_error": null,
+      "return_error": null
+    }
+  ],
+  "fp_scope": "Original live x87 stack/control word, XMM0, MXCSR and RAM cookie only; no proof of every graphics device state.",
+  "fable_result": {
+    "observations": [
+      "byte-range candidate",
+      "controller-only control",
+      "candidate with exact-build cache namespace",
+      "exact original core isolated copy"
+    ],
+    "all_failed_after_native_load": true,
+    "new_healthy_continuation_checkpoint": false,
+    "native_signal": 8,
+    "native_signal_code": 1,
+    "native_public_symbol": "pgraph_gl_bind_inline_array",
+    "native_public_source": "hw/xbox/nv2a/pgraph/gl/vertex.c:221",
+    "native_failure": "integer division by zero in inline-array index count after restoration",
+    "source_gap": "nv2a vertex-attribute VMState descriptor has no fields; saved formats/counts/sizes are absent",
+    "attribution_limits": "Failure also occurs on exact original core. It is not evidence that the invalidation change caused the failure, nor a game speedup.",
+    "reaped_and_synced": true
+  },
+  "derived_cache_correction": "Bind namespace to actual core, open system, accelerator and renderer, independent of developer machine-state ABI aliases; retain prior directories.",
+  "validation": {
+    "strict_clippy_and_bins": true,
+    "cache_preservation_symlink_case": true,
+    "twelve_storage_regressions": true
+  },
+  "preservation": {
+    "prior_source_builds_profiles_checkpoints_media_evidence": true,
+    "default_and_installed_candidate_unchanged": true,
+    "paused_paths_untouched": 16,
+    "phones_and_siblings_untouched": true
+  },
+  "commercial_speedup_established": false
+}

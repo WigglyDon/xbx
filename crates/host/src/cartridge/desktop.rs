@@ -158,16 +158,31 @@ impl Native {
             c.args(["-cpu", cpu]);
         }
         // Derived host shader caches survive native process replacement. The
-        // profile lease owns their writer; the exact runtime identity separates
-        // incompatible builds. They are neither guest saves nor checkpoint RAM.
+        // profile lease owns their writer. Bind derived caches to the actual
+        // native build/configuration even when a developer has qualified a
+        // common machine-state ABI. They are not guest saves/checkpoint RAM.
         let host = p.root.join("host-cache");
         cache_directory(&host)?;
-        let cache = host.join(&r.identity);
+        let cache_key = super::digest(
+            format!(
+                "xbx-host-cache:{}:{}:{}:{}",
+                r.manifest.core,
+                r.manifest.open_system,
+                r.accelerator_argument(),
+                if r.presentation_vulkan {
+                    "vulkan"
+                } else {
+                    "opengl"
+                }
+            )
+            .as_bytes(),
+        );
+        let cache = host.join(&cache_key);
         cache_directory(&cache)?;
         write_new(
             &run.join("host-cache.json"),
             &super::json(
-                &json!({"runtime":r.identity,"root":cache,"scope":"derived host caches; not guest storage or checkpoint state"}),
+                &json!({"runtime":r.identity,"native_core":r.manifest.core,"cache_key":cache_key,"root":cache,"scope":"derived host caches; not guest storage or checkpoint state"}),
             )?,
         )?;
         for (key, name, persistent) in [
@@ -277,7 +292,11 @@ impl Native {
                 std::thread::sleep(Duration::from_millis(20));
             }
         }
-        if r.manifest.core == super::host_input::CORE && r.window {
+        if (r.manifest.core == super::host_input::CORE
+            || r.manifest.core == super::smc::CORE
+            || r.manifest.core == super::smc::INPUT_CORE)
+            && r.window
+        {
             native.input(crate::input::Pad::default())?;
         }
         Ok(native)

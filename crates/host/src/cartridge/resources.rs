@@ -70,6 +70,36 @@ pub struct Resources {
     pub(crate) native_dir: PathBuf,
 }
 impl Resources {
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn smc_fresh(root: &Path) -> io::Result<Self> {
+        Self::validated_core(root, super::smc::CORE, LOCAL_BASE_OPEN, true)
+    }
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn input_control_candidate(root: &Path) -> io::Result<Self> {
+        let mut r = Self::validated_core(root, super::smc::INPUT_CORE, LOCAL_BASE_OPEN, true)?;
+        r.identity = digest(
+            format!(
+                "xbx-state:{}:{}:{}:64:offline",
+                r.manifest.state_abi, APU_QUIESCENT_CORE, r.manifest.open_system
+            )
+            .as_bytes(),
+        );
+        Ok(r)
+    }
+    /// Developer candidate with unchanged native machine-state layout. Its
+    /// old-to-new restoration still requires actual original-code proof.
+    #[cfg(not(target_os = "android"))]
+    pub(super) fn smc_candidate(root: &Path) -> io::Result<Self> {
+        let mut r = Self::validated_core(root, super::smc::CORE, LOCAL_BASE_OPEN, true)?;
+        r.identity = digest(
+            format!(
+                "xbx-state:{}:{}:{}:64:offline",
+                r.manifest.state_abi, APU_QUIESCENT_CORE, r.manifest.open_system
+            )
+            .as_bytes(),
+        );
+        Ok(r)
+    }
     /// Developer-only cross-build qualification. The patch changes only host
     /// controller/HMP plumbing, not VMState. Keep the old state lineage without
     /// editing any checkpoint; game use additionally requires the actual old-

@@ -896,3 +896,22 @@ path omits the general byte-overlap filter. An original same-page data/code and
 actual code-change control must establish a safe correction before game use.
 The departure checkpoints, exits0, acknowledges quit, reaps and syncs storage.
 [Exact counters and limits](evidence/cartridge-tcg-invalidation-20261031.json).
+
+The original same-page workload now reproduces 10,081 unnecessary invalidations
+for 10,000 data updates. Enabling the retained byte-overlap filter eliminates
+those invalidations while direct, physical-alias, cross-page and current-block
+code modifications still execute their changed results. Original noninitial
+RAM/save/input return and a separate live FP-state control pass. These qualify
+the bounded native correction, not game performance.
+
+The latest village checkpoint then fails after native load on both candidates
+and its exact original core. A native-only signal catch locates integer division
+by zero in `pgraph_gl_bind_inline_array`, where restored vertex size is zero.
+The public source's vertex-attribute VMState descriptor is empty. Earlier
+successful village returns remain valid historical observations; this newest
+published checkpoint has no healthy return. All generations and failed attempts
+are retained. Correcting this missing device state requires a distinct native
+state identity and original fresh-process proof before a new game checkpoint.
+No missing state is fabricated in an old checkpoint. Derived host caches now
+bind the actual core/configuration independently of developer state-ABI aliases.
+[Scoped results and limits](evidence/cartridge-smc-continuity-20261101.json).

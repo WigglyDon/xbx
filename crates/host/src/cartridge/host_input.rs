@@ -237,8 +237,12 @@ fn wait(player: &mut c::desktop::Player, expected: &str, log: &mut String) -> Re
 }
 pub(super) fn baseline(root: &Path) -> Result<(), Error> {
     let out = root.join("host-input-v1/visible-baseline");
-    c::mkdir(&out)?;
     let r = resources::Resources::host_kvm(&root.join("host-kvm-v1/package"))?;
+    baseline_at(root, r, &out)
+}
+pub(super) fn baseline_at(root: &Path, r: resources::Resources, out: &Path) -> Result<(), Error> {
+    c::mkdir(out)?;
+    let core = r.manifest.core.clone();
     let mut player = c::desktop::Player::with_resources(&out.join("app"), r)?;
     let media = root.join("fixtures-v2/a.iso");
     if c::file_digest(&media)? != resources::ORIGINAL_FIXTURES[0] {
@@ -279,7 +283,7 @@ pub(super) fn baseline(root: &Path) -> Result<(), Error> {
     c::write_new(
         &out.join("result.json"),
         &c::json(
-            &json!({"passed":passed,"core":resources::HOST_KVM_CORE,"controller_topology":"visible Controller S; fresh generated original storage","native_run":run,"native_return":native,"guest_output":log,"observation_error":observed.err().map(|e|e.to_string()),"return_error":returned.err().map(|e|e.to_string())}),
+            &json!({"passed":passed,"core":core,"controller_topology":"visible Controller S; fresh generated original storage","native_run":run,"native_return":native,"guest_output":log,"observation_error":observed.err().map(|e|e.to_string()),"return_error":returned.err().map(|e|e.to_string())}),
         )?,
     )?;
     if !passed {
@@ -317,7 +321,27 @@ pub(super) fn original(root: &Path, returning: bool) -> Result<(), Error> {
         }
     }
     let r = resources::Resources::controller_candidate(&dir.join("package-signed"))?;
-    let mut player = c::desktop::Player::with_resources(&app, r)?;
+    original_at(
+        &old,
+        &app,
+        &out,
+        r,
+        resources::HOST_KVM_CORE,
+        &old_library,
+        returning,
+    )
+}
+pub(super) fn original_at(
+    old: &Path,
+    app: &Path,
+    out: &Path,
+    r: resources::Resources,
+    base_core: &str,
+    old_library: &str,
+    returning: bool,
+) -> Result<(), Error> {
+    let core = r.manifest.core.clone();
+    let mut player = c::desktop::Player::with_resources(app, r)?;
     let game = player.last_game()?.ok_or("retained original entry")?;
     let mut log = String::new();
     let mut run = None;
@@ -412,7 +436,7 @@ pub(super) fn original(root: &Path, returning: bool) -> Result<(), Error> {
     c::write_new(
         &out.join("result.json"),
         &c::json(
-            &json!({"passed":passed,"core":CORE,"base_state_core":resources::HOST_KVM_CORE,"runtime":player.resources.identity,"returning":returning,"native_run":run,"native_return":native,"old_library_unchanged":preserved,"checkpoint_metadata_retagged":false,"guest_output":log,"observation_error":observed.err().map(|e|e.to_string()),"return_error":returned.err().map(|e|e.to_string()),"game_qualified":false}),
+            &json!({"passed":passed,"core":core,"base_state_core":base_core,"runtime":player.resources.identity,"returning":returning,"native_run":run,"native_return":native,"old_library_unchanged":preserved,"checkpoint_metadata_retagged":false,"guest_output":log,"observation_error":observed.err().map(|e|e.to_string()),"return_error":returned.err().map(|e|e.to_string()),"game_qualified":false}),
         )?,
     )?;
     if !passed {

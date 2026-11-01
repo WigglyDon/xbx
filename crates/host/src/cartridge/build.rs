@@ -183,6 +183,29 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-host-tsc-return" => {
             super::host_clock::observe_tsc(repo, root, true, true, true)?
         }
+        "cartridge-smc-fixture" => super::smc::fixture(repo, root)?,
+        "cartridge-smc-baseline" => super::smc::baseline(repo, root)?,
+        "cartridge-smc-core" => super::smc::core(repo, root)?,
+        "cartridge-fp-state-build" => super::fp_state::build(repo, root)?,
+        "cartridge-fp-state-base" => super::fp_state::observe(repo, root, "base")?,
+        "cartridge-fp-state-cross" => super::fp_state::observe(repo, root, "cross")?,
+        "cartridge-fp-state-first" => super::fp_state::observe(repo, root, "same-first")?,
+        "cartridge-fp-state-return" => super::fp_state::observe(repo, root, "same-return")?,
+        "cartridge-smc-input-control-core" => super::smc::input_control_core(repo, root)?,
+        "cartridge-smc-package" => super::smc::package(root)?,
+        "cartridge-smc-input-package" => super::smc::input_package(root)?,
+        "cartridge-smc-input-cross" => super::smc::input_session(root, false)?,
+        "cartridge-smc-input-return" => super::smc::input_session(root, true)?,
+        "cartridge-smc-input-fable" => super::smc::input_fable(repo, root, false)?,
+        "cartridge-smc-input-fable-return" => super::smc::input_fable(repo, root, true)?,
+        "cartridge-smc-candidate" => super::smc::candidate(repo, root)?,
+        "cartridge-smc-session-baseline" => super::smc::session_baseline(root)?,
+        "cartridge-smc-session-cross" => super::smc::session(root, false)?,
+        "cartridge-smc-session-return" => super::smc::session(root, true)?,
+        "cartridge-smc-fable" => super::smc::fable(repo, root, false)?,
+        "cartridge-smc-cache-key-fable" => super::smc::keyed_fable(repo, root)?,
+        "cartridge-smc-base-copy-fable" => super::smc::base_copy_fable(repo, root)?,
+        "cartridge-smc-fable-return" => super::smc::fable(repo, root, true)?,
         "cartridge-controller-tsc-fable" => super::host_input::fable_xbox_tsc(repo, root, false)?,
         "cartridge-controller-tsc-return" => super::host_input::fable_xbox_tsc(repo, root, true)?,
         "cartridge-host-kvm-package" => super::host_accel::package(root)?,
@@ -547,6 +570,7 @@ pub(super) fn observe_logging_fable(
             interactive: false,
             existing_app: None,
             restore_existing: false,
+            hold_initial_resume: false,
         },
     )
 }
@@ -571,6 +595,7 @@ pub(super) fn observe_local_play(
             interactive: true,
             existing_app,
             restore_existing,
+            hold_initial_resume: false,
         },
     )
 }
@@ -582,6 +607,31 @@ struct FableObservation {
     interactive: bool,
     existing_app: Option<PathBuf>,
     restore_existing: bool,
+    hold_initial_resume: bool,
+}
+
+pub(super) fn observe_local_held_return(
+    repo: &Path,
+    root: &Path,
+    r: resources::Resources,
+    prefix: &str,
+    app: PathBuf,
+) -> Result<(), Error> {
+    observe_fable(
+        repo,
+        root,
+        r,
+        prefix,
+        FableObservation {
+            matched_media: true,
+            checkpoint_on_budget: true,
+            io_errors: false,
+            interactive: true,
+            existing_app: Some(app),
+            restore_existing: true,
+            hold_initial_resume: true,
+        },
+    )
 }
 
 fn observe_fable(
@@ -646,7 +696,9 @@ fn observe_fable(
             player.stop()?;
             return Err("a validated complete checkpoint is required for return".into());
         }
-        if !player.live.as_ref().ok_or("restored live session")?.paused {
+        if !player.live.as_ref().ok_or("restored live session")?.paused
+            && !recipe.hold_initial_resume
+        {
             player.resume()?;
         }
         true
