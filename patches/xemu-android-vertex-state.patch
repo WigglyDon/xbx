@@ -1,0 +1,161 @@
+--- a/hw/xbox/nv2a/nv2a.c
++++ b/hw/xbox/nv2a/nv2a.c
+@@ -655,10 +655,148 @@
+     }
+ };
+ 
++/* Targeted retained NV2A VMState extension, LGPL-2.0-or-later. */
++typedef struct NV2AVertexState {
++    bool dma_select;
++    uint64_t offset;
++    uint32_t inline_array_offset;
++    uint32_t inline_value_bits[4];
++    uint32_t format, size, count, stride;
++    bool needs_conversion;
++    bool populated;
++    uint32_t buffer_bytes;
++    uint8_t *buffer;
++} NV2AVertexState;
++
++typedef struct NV2AVertexStateGroup {
++    NV2AState *parent;
++    NV2AVertexState attr[NV2A_VERTEXSHADER_ATTRIBUTES];
++} NV2AVertexStateGroup;
++
++static int nv2a_vertex_pre_load(void *opaque)
++{
++    NV2AVertexStateGroup *s = opaque;
++    PGRAPHState *pg = &s->parent->pgraph;
++    if (pg->inline_buffer_length > NV2A_MAX_BATCH_LENGTH ||
++        pg->inline_array_length > NV2A_MAX_BATCH_LENGTH ||
++        pg->inline_elements_length > NV2A_MAX_BATCH_LENGTH) {
++        return -EINVAL;
++    }
++    for (int i = 0; i < NV2A_VERTEXSHADER_ATTRIBUTES; i++) {
++        s->attr[i].buffer = (uint8_t *)pg->vertex_attributes[i].inline_buffer;
++    }
++    return 0;
++}
++
++static int nv2a_vertex_pre_save(void *opaque)
++{
++    NV2AVertexStateGroup *s = opaque;
++    int ret = nv2a_vertex_pre_load(opaque);
++    if (ret) {
++        return ret;
++    }
++    PGRAPHState *pg = &s->parent->pgraph;
++    for (int i = 0; i < NV2A_VERTEXSHADER_ATTRIBUTES; i++) {
++        VertexAttribute *a = &pg->vertex_attributes[i];
++        NV2AVertexState *v = &s->attr[i];
++        v->dma_select = a->dma_select;
++        v->offset = a->offset;
++        v->inline_array_offset = a->inline_array_offset;
++        memcpy(v->inline_value_bits, a->inline_value, sizeof(v->inline_value_bits));
++        v->format = a->format;
++        v->size = a->size;
++        v->count = a->count;
++        v->stride = a->stride;
++        v->needs_conversion = a->needs_conversion;
++        v->populated = a->inline_buffer_populated;
++        /* Only defined pending vertices, never an uninitialized heap tail. */
++        v->buffer_bytes = v->populated ? pg->inline_buffer_length * 16 : 0;
++    }
++    return 0;
++}
++
++static bool nv2a_vertex_buffer_valid(void *opaque, int version_id)
++{
++    NV2AVertexState *v = opaque;
++    return v->buffer_bytes <= NV2A_MAX_BATCH_LENGTH * 16 &&
++           v->buffer_bytes % 16 == 0 && (v->populated || !v->buffer_bytes) &&
++           v->count <= 4 &&
++           (v->size == 0 || v->size == 1 || v->size == 2 || v->size == 4);
++}
++
++static int nv2a_vertex_post_load(void *opaque, int version_id)
++{
++    NV2AVertexStateGroup *s = opaque;
++    PGRAPHState *pg = &s->parent->pgraph;
++    for (int i = 0; i < NV2A_VERTEXSHADER_ATTRIBUTES; i++) {
++        NV2AVertexState *v = &s->attr[i];
++        if (v->buffer_bytes != (v->populated ? pg->inline_buffer_length * 16 : 0)) {
++            return -EINVAL;
++        }
++    }
++    pg->compressed_attrs = 0;
++    for (int i = 0; i < NV2A_VERTEXSHADER_ATTRIBUTES; i++) {
++        VertexAttribute *a = &pg->vertex_attributes[i];
++        NV2AVertexState *v = &s->attr[i];
++        a->dma_select = v->dma_select;
++        a->offset = v->offset;
++        a->inline_array_offset = v->inline_array_offset;
++        memcpy(a->inline_value, v->inline_value_bits, sizeof(a->inline_value));
++        a->format = v->format;
++        a->size = v->size;
++        a->count = v->count;
++        a->stride = v->stride;
++        a->needs_conversion = v->needs_conversion;
++        a->inline_buffer_populated = v->populated;
++        if (a->format == NV097_SET_VERTEX_DATA_ARRAY_FORMAT_TYPE_CMP) {
++            pg->compressed_attrs |= 1 << i;
++        }
++    }
++    return 0;
++}
++
++static const VMStateDescription vmstate_nv2a_vertex_state = {
++    .name = "nv2a/vertex-state",
++    .version_id = 0,
++    .minimum_version_id = 0,
++    .fields = (VMStateField[]) {
++        VMSTATE_BOOL(dma_select, NV2AVertexState),
++        VMSTATE_UINT64(offset, NV2AVertexState),
++        VMSTATE_UINT32(inline_array_offset, NV2AVertexState),
++        VMSTATE_UINT32_ARRAY(inline_value_bits, NV2AVertexState, 4),
++        VMSTATE_UINT32(format, NV2AVertexState),
++        VMSTATE_UINT32(size, NV2AVertexState),
++        VMSTATE_UINT32(count, NV2AVertexState),
++        VMSTATE_UINT32(stride, NV2AVertexState),
++        VMSTATE_BOOL(needs_conversion, NV2AVertexState),
++        VMSTATE_BOOL(populated, NV2AVertexState),
++        VMSTATE_UINT32(buffer_bytes, NV2AVertexState),
++        VMSTATE_VALIDATE("bounded-vertex-buffer", nv2a_vertex_buffer_valid),
++        VMSTATE_VBUFFER_UINT32(buffer, NV2AVertexState, 0, NULL, buffer_bytes),
++        VMSTATE_END_OF_LIST()
++    }
++};
++
++static const VMStateDescription vmstate_nv2a_vertex_group = {
++    .name = "nv2a/vertex-group",
++    .version_id = 0,
++    .minimum_version_id = 0,
++    .pre_load = nv2a_vertex_pre_load,
++    .pre_save = nv2a_vertex_pre_save,
++    .post_load = nv2a_vertex_post_load,
++    .fields = (VMStateField[]) {
++        VMSTATE_STRUCT_ARRAY(attr, NV2AVertexStateGroup,
++                             NV2A_VERTEXSHADER_ATTRIBUTES, 0,
++                             vmstate_nv2a_vertex_state, NV2AVertexState),
++        VMSTATE_END_OF_LIST()
++    }
++};
++
++
+ static const VMStateDescription vmstate_nv2a = {
+     .name = "nv2a",
+-    .version_id = 3,
+-    .minimum_version_id = 1,
++    .version_id = 4,
++    .minimum_version_id = 4,
+     .post_save = nv2a_post_save,
+     .post_load = nv2a_post_load,
+     .pre_load = nv2a_pre_load,
+@@ -777,6 +915,7 @@
+         VMSTATE_BOOL(pgraph.waiting_for_nop, NV2AState),
+         VMSTATE_UNUSED(1),
+         VMSTATE_BOOL(pgraph.waiting_for_context_switch, NV2AState),
++        VMSTATE_WITH_TMP(NV2AState, NV2AVertexStateGroup, vmstate_nv2a_vertex_group),
+         VMSTATE_END_OF_LIST()
+     },
+ };

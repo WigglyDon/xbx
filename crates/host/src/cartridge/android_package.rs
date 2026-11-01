@@ -26,6 +26,14 @@ fn java_files(dir: &Path, out: &mut Vec<PathBuf>) -> io::Result<()> {
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-bridge-v1", "android-package-v2")
 }
+pub(super) fn build_demo(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-demo-native-v2",
+        "android-demo-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -75,6 +83,12 @@ fn build_selected(
     let core_hash = c::file_digest(&native.join("libxemu.so"))?;
     let helper_hash = c::file_digest(&helper.join("libxbx-disk.so"))?;
     let seed_hash = c::file_digest(&helper.join("empty.qcow2"))?;
+    let demo = native_stage == "android-demo-native-v2";
+    let open_hash = if demo {
+        super::resources::LOCAL_BASE_OPEN
+    } else {
+        super::resources::OPEN
+    };
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     if native_identity["source_sha256"] != c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?
         || native_identity["bridge_abi"] != 4
@@ -122,7 +136,7 @@ fn build_selected(
         c::store::checked(Command::new("cargo").current_dir(&source).args(["build","--locked","--offline","-j","1","--release","--target","aarch64-linux-android","-p","xbx-host","--lib"])
         .env("CARGO_TARGET_DIR",root.join("android-app-target")).env("XBX_NATIVE_LIB_DIR",&native)
         .env("CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER",ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"))
-        .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash)
+        .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash).env("XBX_ANDROID_OPEN_SHA256",open_hash)
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
         root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
     };
@@ -133,11 +147,16 @@ fn build_selected(
     for dir in [&assets, &libs, &classes, &dex] {
         fs::create_dir_all(dir)?;
     }
-    let open = root
-        .parent()
-        .ok_or("project")?
-        .join("open-startup-v1/build-release-v3/bios.bin");
-    if c::file_digest(&open)? != super::resources::OPEN {
+    let open = if demo {
+        root.parent()
+            .ok_or("current workspace")?
+            .join("vblank-v1/package/open.bin")
+    } else {
+        root.parent()
+            .ok_or("project")?
+            .join("open-startup-v1/build-release-v3/bios.bin")
+    };
+    if c::file_digest(&open)? != open_hash {
         return Err("supported integrated open image differs".into());
     }
     fs::copy(open, assets.join("open.bin"))?;
@@ -165,9 +184,11 @@ fn build_selected(
         copying.as_bytes(),
     )?;
     fs::copy(
-        root.parent()
-            .ok_or("project")?
-            .join("open-startup-v1/source-v3/LICENSE"),
+        root.parent().ok_or("project")?.join(if demo {
+            "rebuilt-io-images-v3/source/LICENSE"
+        } else {
+            "open-startup-v1/source-v3/LICENSE"
+        }),
         assets.join("licenses/OXOS-GPL-2.0.txt"),
     )?;
     fs::copy(
@@ -177,7 +198,7 @@ fn build_selected(
     c::write_new(
         &assets.join("runtime.json"),
         &c::json(
-            &json!({"schema":1,"core":core_hash,"open_system":super::resources::OPEN,"image_helper":helper_hash,"empty_disk":seed_hash,"state_abi":1,"bridge_abi":4}),
+            &json!({"schema":1,"core":core_hash,"open_system":open_hash,"image_helper":helper_hash,"empty_disk":seed_hash,"state_abi":1,"bridge_abi":4}),
         )?,
     )?;
     for (from, name) in [
@@ -311,7 +332,7 @@ fn build_selected(
     c::write_new(
         &out.join("build.identity.json"),
         &c::json(
-            &json!({"apk_sha256":c::file_digest(&apk)?,"rust_library_sha256":c::file_digest(&libs.join("libxbx.so"))?,"core_sha256":core_hash,"helper_sha256":helper_hash,"generated_seed_sha256":seed_hash,"open_system_sha256":super::resources::OPEN,"manifest_sha256":c::file_digest(&repo.join("android/AndroidManifest.xml"))?,"java_source_sha256":java_hashes,"rust_source":rust_source,"retained_rust_package":reuse_rust,"build_owner_source":source,"signing":"existing XBX identity reused; no private key copied","version_code":100,"whole_core_rebuild":false,"device_operation":false,"lifecycle_qualified":false,"Fable_playable":false,"all_stages_retained":true}),
+            &json!({"apk_sha256":c::file_digest(&apk)?,"rust_library_sha256":c::file_digest(&libs.join("libxbx.so"))?,"core_sha256":core_hash,"helper_sha256":helper_hash,"generated_seed_sha256":seed_hash,"open_system_sha256":open_hash,"manifest_sha256":c::file_digest(&repo.join("android/AndroidManifest.xml"))?,"java_source_sha256":java_hashes,"rust_source":rust_source,"retained_rust_package":reuse_rust,"build_owner_source":source,"signing":"existing XBX identity reused; no private key copied","version_code":100,"whole_core_rebuild":false,"device_operation":false,"lifecycle_qualified":false,"Fable_playable":false,"all_stages_retained":true}),
         )?,
     )?;
     Ok(())

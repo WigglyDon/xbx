@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "assignment": "Direct owner continuation: playable, responsive end-to-end Pixel4 demo supersedes alternate-desktop-host ordering",
+  "achieved": "Changed integrated Android runtime installed without data loss; original noninitial RAM fresh-process restoration and Home/return visibly pass. Fable Android not yet run.",
+  "input_lineage": {
+    "retained_Android_source": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "retained_archive_sha256": "79bb4d479a57162d71118ffb133d8b8c9c0c8d3a3459958372305855140b3bba",
+    "compiled_native_units": 12,
+    "whole_core_rebuild": false,
+    "new_dependency_downloads": false,
+    "retained_Android_timing_changed": false,
+    "patch_sha256": {
+      "patches/xemu-android-image-reader.patch": "60f8772427f3b1397de85f221fac91dccc593a18a0a536c976889c8da229fc58",
+      "patches/xemu-android-session-monitor.patch": "c61d4e30c8b2ff551d2fcbafd26ee60a68dee60d33c8c0a2df16c73983eb9a4d",
+      "patches/xemu-android-vertex-state.patch": "a9add0e19946ce12f414663371bdd74a1120d839cc5331aea865c69d528aa0a9",
+      "patches/xemu-paused-savevm.patch": "2e2c0938a26487168b8ebebe80442296d7cccd35ee14e3cbc9980bfe5e7aa556",
+      "patches/xemu-prelaunch-savevm.patch": "17baaa9974ece2575d78a66a950f2b94ca299b606dd608788605190d299c6c5e",
+      "patches/xemu-reference-ramht.patch": "55c6d34d60f6468134272ee57c4f0ac447177de12c7bb590e882022816b73ee7",
+      "patches/xemu-x87-instruction-boundary.patch": "6c696f094770fb98d38565bbc675ade5976d61ef12ac0fafdf1ec14c8cf5c984"
+    }
+  },
+  "candidate": {
+    "apk_sha256": "7dfa9bc99db7ef15fa30a8669b7637cad968d0ac429d415494031d4f44745b0e",
+    "rust_library_sha256": "37f2d1cb041f93f793d7909258eb32dd4066492f152f283384819849d5dab28f",
+    "core_sha256": "358923d5e72c84d0dcb8e4bc6f264f038a5a2a3fe52e5f7032e844cf35d3feae",
+    "open_system_sha256": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059"
+  },
+  "packaging": {
+    "existing_signer_reused": true,
+    "signature_verified": true,
+    "alignment": "16KiB native-library alignment",
+    "package": "com.machinerhythm.xbx",
+    "target": "ARM64 Android",
+    "rollback_apk_sha256": "cacf0d1d9057238b2fd876810888986a94ef7be50d95e22fcb356f4763956f4a",
+    "all_existing_profile_files_and_library_controls_unchanged_by_install": true,
+    "installed_updates": 1,
+    "data_clear_or_uninstall": false
+  },
+  "changes": [
+    "Integrate already-qualified open kernel rather than obsolete Android kernel",
+    "Reuse accepted paused capture, prelaunch, RAMHT, image-helper, socket and event-loop registration, monitor and x87 repairs",
+    "Port accepted bounded vertex-state serializer to Android donor NV2A version4/minimum4; preserve incompatible old checkpoints",
+    "Bind immutable Android resource directories to core, open kernel, helper and generated seed; kernel-only changes cannot collide",
+    "Add five-second low-cost PGRAPH flip reporting, explicitly excluding movie overlays",
+    "Require exact retained compile input/output mapping; preserve first failed reconstruction"
+  ],
+  "actual_original_device": {
+    "configuration": "64MiB TCG, system Vulkan, offline",
+    "cold_boot": {
+      "RAM": 0,
+      "disk_marker": 1,
+      "cookie": "31415926"
+    },
+    "noninitial": {
+      "RAM": 1,
+      "disk_marker": 1,
+      "cookie": "4498F505"
+    },
+    "explicit_pause": true,
+    "ordinary_leave_then_OS_process_absent": true,
+    "genuinely_new_process": true,
+    "restored_after_query": {
+      "RAM": 1,
+      "disk_marker": 1,
+      "cookie": "4498F505"
+    },
+    "Home_then_return_then_new_action": {
+      "RAM": 2,
+      "disk_marker": 1,
+      "cookie": "57F090E4"
+    },
+    "captures_opened": true,
+    "source_entry_preserved": true,
+    "old_incompatible_checkpoint_retained": true,
+    "latest_departure_OS_process_absent": true,
+    "task_and_stock_return_verified": true,
+    "three_native_returns": {
+      "clean": true,
+      "QMP_acknowledged": true,
+      "machine_threads_joined": true,
+      "native_status": 0,
+      "storage_synced": true,
+      "OS_exit_verified_separately": true
+    }
+  },
+  "validation": {
+    "targeted_native_build": "pass",
+    "Android_Rust_release_build": "pass",
+    "Java_DEX_APK_signature_alignment": "pass",
+    "isolated_host_Clippy_warnings_denied": "pass",
+    "focused_storage_regressions": {
+      "passed": 12,
+      "failed": 0
+    },
+    "all_21_paused_signing_seed_hashes": "unchanged"
+  },
+  "limits": [
+    "Original fixture uses bidirectional UART rather than graphics/controller/game acceptance",
+    "No Android Fable boot, pacing, gameplay, audio or ordinary save qualification",
+    "No complete Android GPU snapshot claim follows from UART fixture",
+    "Sparse-read-only measurement does not itself authorize a new image or deletion",
+    "No attribution of game hitching to CPU hardware or a claim that desktop acceleration applies to ARM"
+  ],
+  "preservation": {
+    "previous_sources_builds_profiles_media_evidence_preserved": true,
+    "PSX_or_sibling_mutation": false,
+    "Fold_operations": false,
+    "peer_pauses_or_scheduler": false,
+    "public_binary_release": false
+  },
+  "private_evidence": "Task-local receipts, before/after install hashes, new-launch-only diagnostics, reviewed captures and finite custody returns remain private.",
+  "device_return": {
+    "all_completed_XBX_transactions_verified_return": true,
+    "physical_display_off": true,
+    "transport": "owner-selected USB",
+    "no_held_XBX_device_lease": true
+  }
+}

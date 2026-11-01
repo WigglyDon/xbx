@@ -4,6 +4,8 @@
 #[cfg(not(target_os = "android"))]
 mod android_build;
 #[cfg(not(target_os = "android"))]
+mod android_demo;
+#[cfg(not(target_os = "android"))]
 mod android_package;
 #[cfg(not(target_os = "android"))]
 mod apu_quiesce;

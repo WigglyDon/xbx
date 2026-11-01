@@ -29,7 +29,7 @@ pub(super) fn literal(path: &Path) -> Result<String, Error> {
     }
     Ok(s.into())
 }
-fn compile(
+pub(super) fn compile(
     old: &Path,
     source: &Path,
     base: &Path,
@@ -43,7 +43,10 @@ fn compile(
             .current_dir(old)
             .args(["-t", "commands", "-s", target]),
     )?;
-    if original.lines().count() != 1 || !original.contains(" -c ") {
+    if original.lines().count() != 1
+        || !original.contains(" -c ")
+        || !original.contains(&format!(" -o {target} "))
+    {
         return Err("expected one retained compile command".into());
     }
     let object = new.join(format!("{name}.c.o"));
@@ -57,7 +60,7 @@ fn compile(
         .replace(&literal(base)?, &literal(source)?);
     let command = command.replace(input, &literal(&source.join(relative))?);
     if !command.contains(&format!(" -c {}", literal(&source.join(relative))?))
-        || command.contains(&format!(" -o {target}"))
+        || !command.contains(&format!(" -o {} ", literal(&object)?))
     {
         return Err("retained compile mapping incomplete".into());
     }
@@ -328,7 +331,10 @@ pub(super) fn native(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 
 pub(super) fn image_helper(repo: &Path, root: &Path) -> Result<(), Error> {
-    let native = root.join("android-native-bridge-v1");
+    image_helper_for(repo, root, "android-native-bridge-v1")
+}
+pub(super) fn image_helper_for(repo: &Path, root: &Path, stage: &str) -> Result<(), Error> {
+    let native = root.join(stage);
     let old = repo.join(".local/build-android");
     let out = root.join("android-helper-v4");
     c::mkdir(&out)?;

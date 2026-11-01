@@ -351,7 +351,7 @@ impl Resources {
         if m.schema != 1
             || m.state_abi != 1
             || m.bridge_abi != 4
-            || m.open_system != OPEN
+            || m.open_system != option_env!("XBX_ANDROID_OPEN_SHA256").unwrap_or(OPEN)
             || m.core != expected_core
             || m.image_helper != expected_helper
             || m.empty_disk != expected_seed

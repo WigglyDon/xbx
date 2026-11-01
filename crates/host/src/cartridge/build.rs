@@ -331,6 +331,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-fault-fable" => super::fault_context::observe(repo, root, false, false)?,
         "cartridge-npx-values-build" => super::npx_port::values_fixture(repo, root)?,
         "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
+        "cartridge-android-demo-native" => super::android_demo::native(repo, root)?,
+        "cartridge-android-demo-helper" => {
+            super::android_build::image_helper_for(repo, root, "android-demo-native-v2")?
+        }
+        "cartridge-android-demo-package" => super::android_package::build_demo(repo, root)?,
         "cartridge-android-native" => super::android_build::native(repo, root)?,
         "cartridge-android-link" => super::android_build::link_adapters(repo, root)?,
         "cartridge-android-helper" => super::android_build::image_helper(repo, root)?,

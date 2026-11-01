@@ -157,7 +157,18 @@ fn resources(app: &Path) -> io::Result<c::resources::Resources> {
     let parent = app.join("resources");
     fs::create_dir_all(&parent)?;
     let _lease = crate::storage::ProfileLease::acquire(&parent)?;
-    let root = parent.join(id);
+    // A kernel-only package update must not reuse a prior immutable resource
+    // directory. Preserve every old package directory and checkpoint binding.
+    let key = c::digest(
+        format!(
+            "{id}:{}:{}:{}",
+            option_env!("XBX_ANDROID_OPEN_SHA256").unwrap_or(c::resources::OPEN),
+            option_env!("XBX_ANDROID_DISK_SHA256").unwrap_or("missing"),
+            option_env!("XBX_ANDROID_SEED_SHA256").unwrap_or("missing")
+        )
+        .as_bytes(),
+    );
+    let root = parent.join(key);
     if !root.exists() {
         let pending = parent.join(format!("pending-{}", c::new_id()?));
         c::mkdir(&pending)?;
@@ -744,7 +755,21 @@ pub(super) fn run() -> Result<i32, Box<dyn std::error::Error>> {
                 if good {
                     std::thread::spawn(|| {
                         let mut stopping = None;
+                        let mut sample = Instant::now();
+                        let mut flips = unsafe { xbx_engine_guest_flips() };
                         while !FINISHED.load(Ordering::SeqCst) {
+                            if sample.elapsed() >= Duration::from_secs(5) {
+                                let now = unsafe { xbx_engine_guest_flips() };
+                                if INPUT.load(Ordering::SeqCst) {
+                                    eprintln!(
+                                        "XBX cartridge flips={} interval_ms={} (PGRAPH flips; excludes movie overlays)",
+                                        now.wrapping_sub(flips),
+                                        sample.elapsed().as_millis()
+                                    );
+                                }
+                                sample = Instant::now();
+                                flips = now;
+                            }
                             if STOPPING.load(Ordering::SeqCst) {
                                 let since = stopping.get_or_insert_with(Instant::now);
                                 if since.elapsed() > Duration::from_secs(10) {

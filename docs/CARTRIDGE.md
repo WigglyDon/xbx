@@ -988,3 +988,37 @@ media. Do not transfer media or start another machine merely from that request.
 If no such host is available, a new CPU/timing implementation boundary needs
 Master's scoped architectural direction. Existing evidence does not support
 suppressing errors, another unchanged intro or a speculative game patch.
+
+## Pixel 4 demo priority, November 1
+
+The owner's continuation selects the Pixel 4 end-to-end demo as the next
+acceptance target. The alternate desktop counter-capability inquiry is parked;
+prior source and evidence remain preserved. Desktop pacing does not qualify ARM
+performance or justify replacing the owner's hardware.
+
+The Android integration reuses the retained 4967efd3 core archive and compiles
+only twelve required units. It carries the accepted x87, paused/prelaunch capture,
+RAMHT, monitor and registration repairs, and ports the bounded vertex serializer
+to the donor's NV2A version4/minimum4. Its existing Android timing code is retained.
+The package integrates the qualified3a0659bf open kernel, generated disk and exact
+build-time bindings. Immutable resource directories now also bind the kernel,
+helper and seed, preserving old directories on a kernel-only change.
+
+The same-signer7dfa9bc9 candidate is installed. All existing profile files and
+library controls hash identically before and after installation; exactcacf0d1d
+rollback is retained. Existing-entry cold boot visibly preserves disk marker1.
+After an explicit restart of the incompatible old checkpoint, noninitial RAM1 /
+cookie4498F505 survives ordinary Leave, actual OS process absence and a genuinely
+new process. Home/return permits a new action to RAM2 / cookie57F090E4 while
+marker1 remains. Three changed-core native returns acknowledge QMP, join the
+machine thread, report exit0 and sync storage; actual OS absence and stock device
+return are separately verified. Twelve storage regressions and strict isolated
+Clippy pass. [Scoped receipt](evidence/cartridge-pixel-demo-20261101.json).
+
+These original UART results do not qualify Android graphics, game controllers,
+Fable, sound or playable pacing. Fable is absent from the inspected phone input
+surfaces and the available allocation is insufficient for its full retained
+image. Read-only project-download sizing and any exact owner-approved reclaim
+remain separate custody operations. No sibling data deletion or capacity grant
+follows from the integration test. PGRAPH flip reporting excludes movie overlays
+and cannot establish movie frame rate.
