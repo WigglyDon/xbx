@@ -454,3 +454,9 @@ in retained `accel/tcg/cpu-exec.c` at the same Android pin, under its existing
 LGPL-2.1-or-later terms and notices. It is a separate ordinary-TCG developer
 comparison, not a replacement CPU or an attributed game fix. The Rust builder
 and ordinary integration-input qualification owner are MIT.
+
+`patches/oxos-startup-handoff.patch` adds bounded public thread-status and
+exception-code reporting to the same retained OXOS kernel under GPL-2.0.
+It contains no game code, caller address, stack contents or proprietary input.
+The Rust build and packaging owner remains MIT. The logging image is a
+separately bound developer candidate, with its prior sources and objects retained.

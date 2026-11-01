@@ -1129,3 +1129,15 @@ Fable nevertheless makes the same type1 / reason1 / code1 dashboard-error reques
 The app exits normally from its error dialog; process absence and stock return
 are verified. No further speculative optimizer change is justified by this result.
 [Input and baseline receipt](evidence/cartridge-inputs-and-tcg-baseline-20261101.json).
+
+The separately bound `cartridge-android-startup-handoff` developer image adds
+bounded public thread creation/return, termination and exception-code logging.
+It collects no caller addresses, stack contents, launch payloads or game code.
+Only `ps/thread.cpp` and `ke/except.cpp` rebuild; all other retained objects and
+the ordinary TCG native core stay unchanged. Package signature, alignment,
+native/helper/seed/UI identity and strict isolated Clippy checks pass. The
+prepared finite device check first requires a changed-image original boot/action
+and clean departure, then one focused Fable startup. Its submission is pending;
+no installation or new game outcome is claimed. The last installed baseline and
+its completed fresh-process restoration proof remain preserved.
+[Preparation receipt](evidence/cartridge-android-handoff-20261101.json).

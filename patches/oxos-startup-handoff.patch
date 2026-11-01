@@ -1,0 +1,88 @@
+--- a/kernel/src/ps/thread.cpp
++++ b/kernel/src/ps/thread.cpp
+@@ -1,6 +1,7 @@
+ // Process structure: system threads as objects (spec/stock/07 "Thread creation", spec/stock/10 §6).
+ #include <xk/ps.h>
+ #include <xk/rtl.h>
++#include <xk/serial.h>
+ 
+ static void NTAPI PspDeleteThread(PVOID Object) {
+     auto t = (ETHREAD *)Object;
+@@ -13,6 +14,7 @@
+ 
+ static PCREATE_THREAD_NOTIFY_ROUTINE PspCreateThreadNotifyRoutines[8];
+ static volatile LONG PspThreadCount;
++static volatile ULONG XbxThreadCreates, XbxThreadExits;
+ 
+ XBAPI NTSTATUS NTAPI PsSetCreateThreadNotifyRoutine(PCREATE_THREAD_NOTIFY_ROUTINE NotifyRoutine) {
+     for (auto &slot : PspCreateThreadNotifyRoutines)
+@@ -33,11 +35,19 @@
+                                             ULONG TlsDataSize, PHANDLE ThreadId, PVOID StartContext1,
+                                             PVOID StartContext2, BOOLEAN CreateSuspended, BOOLEAN DebuggerThread,
+                                             PKSYSTEM_ROUTINE SystemRoutine) {
++    ULONG sequence = __atomic_add_fetch(&XbxThreadCreates, 1, __ATOMIC_RELAXED);
++    bool report = sequence <= 16;
++    if (report)
++        XK_SERIAL("xbxhandoff: create=%lu stack=%lu tls=%lu extension=%lu suspended=%u\n", sequence,
++                  KernelStackSize, TlsDataSize, ThreadExtensionSize, (unsigned)CreateSuspended);
+     ETHREAD *t;
+     ULONG size = sizeof(ETHREAD) + ThreadExtensionSize;
+     NTSTATUS status = ObCreateObject(&PsThreadObjectType, nullptr, size, (PVOID *)&t);
+-    if (!NT_SUCCESS(status))
+-        return status;
++    if (!NT_SUCCESS(status)) {
++        if (report)
++            XK_SERIAL("xbxhandoff: created=%lu status=%08lx\n", sequence, (ULONG)status);
++        return status;
++    }
+     RtlZeroMemory(t, size);
+     InitializeListHead(&t->ReaperListEntry);
+     InitializeListHead(&t->IrpList);
+@@ -46,6 +56,8 @@
+         stackSize = 0x3000;
+     PVOID stack = MmCreateKernelStack(stackSize, DebuggerThread);
+     if (!stack) {
++        if (report)
++            XK_SERIAL("xbxhandoff: created=%lu status=c000009a\n", sequence);
+         ObfDereferenceObject(t);
+         return (NTSTATUS)0xC000009A;
+     }
+@@ -77,6 +89,8 @@
+     KiReadyThread(&t->Tcb);
+     KiUnlockDispatcherDatabase(old);
+     ObfDereferenceObject(t);
++    if (report)
++        XK_SERIAL("xbxhandoff: created=%lu status=%08lx\n", sequence, (ULONG)status);
+     return status;
+ }
+ 
+@@ -95,6 +109,9 @@
+ }
+ 
+ XBAPI void NTAPI PsTerminateSystemThread(NTSTATUS ExitStatus) {
++    ULONG sequence = __atomic_add_fetch(&XbxThreadExits, 1, __ATOMIC_RELAXED);
++    if (sequence <= 16)
++        XK_SERIAL("xbxhandoff: terminate=%lu status=%08lx\n", sequence, (ULONG)ExitStatus);
+     auto t = (ETHREAD *)KeGetCurrentThread();
+     t->Tcb.HasTerminated = TRUE;
+     KfLowerIrql(PASSIVE_LEVEL);
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -1,6 +1,7 @@
+ // Structured exception handling: trap translation, handler dispatch, raise, unwind, stack walks (spec/stock/14).
+ #include <xk/arch.h>
+ #include <xk/ke.h>
++#include <xk/serial.h>
+ 
+ constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
+                 EXCEPTION_NESTED_CALL = 0x10;
+@@ -58,6 +59,9 @@
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+ static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++    static volatile ULONG reports;
++    if (__atomic_add_fetch(&reports, 1, __ATOMIC_RELAXED) <= 8)
++        XK_SERIAL("xbxhandoff: exception=%08lx flags=%08lx\n", Record->ExceptionCode, Record->ExceptionFlags);
+     for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
+         if (((ULONG)r & 3) || (ULONG)r < 0x10000)
+             break; // corrupt chain

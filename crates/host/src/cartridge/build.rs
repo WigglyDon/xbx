@@ -347,6 +347,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
             super::android_package::build_tcg_fault(repo, root)?
         }
         "cartridge-android-launch-status" => super::android_launch::build(repo, root)?,
+        "cartridge-android-startup-handoff" => super::android_launch::handoff(repo, root)?,
+        "cartridge-android-handoff-package" => super::android_package::build_handoff(repo, root)?,
         "cartridge-android-launch-package" => super::android_package::build_launch(repo, root)?,
         "cartridge-android-serial-contract" => super::serial_watch::contract(repo, root)?,
         "cartridge-android-serial-package" => super::android_package::build_serial(repo, root)?,

@@ -45,6 +45,14 @@ pub(super) fn build_tcg_baseline(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-tcg-baseline-package-v1",
     )
 }
+pub(super) fn build_handoff(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-handoff-package-v1",
+    )
+}
 pub(super) fn build_tcg_fault(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -125,6 +133,7 @@ fn build_selected(
     let reporting = package_stage == "android-serial-io-package-v1";
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";
+    let handoff = package_stage == "android-handoff-package-v1";
     let launch = package_stage == "android-launch-package-v2" || fault || baseline;
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     let launch_identity: serde_json::Value = if launch {
@@ -132,7 +141,24 @@ fn build_selected(
     } else {
         json!(null)
     };
-    let open_hash = if launch {
+    let handoff_identity: serde_json::Value = if handoff {
+        c::read_json(&root.join("android-handoff-v1/identity.json"))?
+    } else {
+        json!(null)
+    };
+    let open_hash = if handoff {
+        if handoff_identity["native_core"] != core_hash
+            || handoff_identity["parent_open_system"]
+                != c::file_digest(&root.join("android-launch-v2/build/bios.bin"))?
+            || handoff_identity["patch"]
+                != c::file_digest(&repo.join("patches/oxos-startup-handoff.patch"))?
+        {
+            return Err("public startup-handoff candidate bindings differ".into());
+        }
+        handoff_identity["open_system"]
+            .as_str()
+            .ok_or("handoff image binding")?
+    } else if launch {
         let parent_core = if baseline {
             native_identity["open_image_native_parent"]
                 .as_str()
@@ -218,7 +244,9 @@ fn build_selected(
     for dir in [&assets, &libs, &classes, &dex] {
         fs::create_dir_all(dir)?;
     }
-    let open = if launch {
+    let open = if handoff {
+        root.join("android-handoff-v1/build/bios.bin")
+    } else if launch {
         root.join("android-launch-v2/build/bios.bin")
     } else if reporting {
         root.parent()

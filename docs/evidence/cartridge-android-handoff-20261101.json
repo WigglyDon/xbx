@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "bounded public Android startup handoff reporting",
+  "source_pin": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "patch": "patches/oxos-startup-handoff.patch",
+  "image": "38987d278c4104523af94bf1bfca6eea0b9cf854a5e7e83622cc1001855e6306",
+  "parent_image": "191dbdb9a30ba69646f8670914f4d6ab218aea210d4008c7410ff0b7126efc54",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "changed_objects": [
+    "ke/except.obj",
+    "ps/thread.obj"
+  ],
+  "compared_objects": 70,
+  "native_core_rebuilt": false,
+  "maximum_per_boot": {
+    "thread_creations": 16,
+    "thread_terminations": 16,
+    "exception_dispatch_reports": 8
+  },
+  "new_fields": [
+    "thread creation sequence, requested stack/TLS/extension sizes and suspended flag",
+    "thread creation return status",
+    "thread termination sequence and exit status",
+    "exception code and flags"
+  ],
+  "caller_addresses_stack_or_game_code_collected": false,
+  "validation": {
+    "strict_isolated_Clippy": true,
+    "owned_Rust_formatting": true,
+    "signature_and_alignment": true,
+    "same_native_helper_generated_seed_UI_manifest": true,
+    "all_21_protected_identities_unchanged": true
+  },
+  "device": {
+    "finite_request_submitted_once": true,
+    "state": "pending_admission",
+    "installation": false,
+    "changed_image_original_control": false,
+    "Fable_observation": false,
+    "last_installed_candidate_preserved": true,
+    "prior_completed_original_fresh_process_gate_reused": true,
+    "host_only_observation": "USB present, ADB absent; actual custody unavailable; no reset or preemption"
+  },
+  "remaining": "actual device admission, changed-image original control and focused Fable public handoff attribution"
+}
