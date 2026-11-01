@@ -428,3 +428,12 @@ with the existing native serializer. It does not establish programmable scan,
 PLL or PAL/interlaced timing accuracy. The original PCRTC counter fixture
 `native/fixtures/vblank-cadence.S` and Rust qualification owner are MIT. No game
 or private firmware implementation is copied.
+
+`patches/xemu-serial-watch-source.patch` modifies retained public xemu/X1 BOX
+`4967efd3ee594cc236869a45ee4cb396e25af1ac` character frontend and UART code
+(`chardev/char-fe.c`, `hw/char/serial.c` and their two headers). Their original
+Bellard permissive notices and applicable file terms remain; the combined core's
+GPL obligations remain unchanged. The Rust owner and original MIT
+`native/fixtures/serial-watch-context.c` are qualification machinery. The
+generated private test includes preserve the native source notices and unchanged
+function bodies. No title or private firmware implementation is included.

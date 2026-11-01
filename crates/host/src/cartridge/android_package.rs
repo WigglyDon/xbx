@@ -34,6 +34,17 @@ pub(super) fn build_demo(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-demo-package-v1",
     )
 }
+pub(super) fn build_serial(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, "android-serial-v1", "android-serial-package-v1")
+}
+pub(super) fn build_serial_io(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-serial-v1",
+        "android-serial-io-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -83,8 +94,13 @@ fn build_selected(
     let core_hash = c::file_digest(&native.join("libxemu.so"))?;
     let helper_hash = c::file_digest(&helper.join("libxbx-disk.so"))?;
     let seed_hash = c::file_digest(&helper.join("empty.qcow2"))?;
-    let demo = native_stage == "android-demo-native-v2";
-    let open_hash = if demo {
+    let demo = matches!(native_stage, "android-demo-native-v2" | "android-serial-v1");
+    // A separately bound developer candidate reuses the accepted bounded I/O
+    // reporter. There is no runtime firmware selector or checkpoint retagging.
+    let reporting = package_stage == "android-serial-io-package-v1";
+    let open_hash = if reporting {
+        super::resources::LOCAL_IO_OPEN
+    } else if demo {
         super::resources::LOCAL_BASE_OPEN
     } else {
         super::resources::OPEN
@@ -147,7 +163,11 @@ fn build_selected(
     for dir in [&assets, &libs, &classes, &dex] {
         fs::create_dir_all(dir)?;
     }
-    let open = if demo {
+    let open = if reporting {
+        root.parent()
+            .ok_or("current workspace")?
+            .join("rebuilt-io-images-v3/reporting/bios.bin")
+    } else if demo {
         root.parent()
             .ok_or("current workspace")?
             .join("vblank-v1/package/open.bin")

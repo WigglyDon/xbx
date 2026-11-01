@@ -1016,9 +1016,45 @@ return are separately verified. Twelve storage regressions and strict isolated
 Clippy pass. [Scoped receipt](evidence/cartridge-pixel-demo-20261101.json).
 
 These original UART results do not qualify Android graphics, game controllers,
-Fable, sound or playable pacing. Fable is absent from the inspected phone input
-surfaces and the available allocation is insufficient for its full retained
-image. Read-only project-download sizing and any exact owner-approved reclaim
-remain separate custody operations. No sibling data deletion or capacity grant
-follows from the integration test. PGRAPH flip reporting excludes movie overlays
-and cannot establish movie frame rate.
+Fable, sound or playable pacing. At that handback the phone lacked the input and
+space for the full image. The subsequent exact owner-approved four-download
+retirement is complete; the relevant project owner was notified privately.
+Installed applications and saves remain untouched. The complete referenced
+game-partition range now has verified full size and digest on the phone, with
+the host source preserved. A host reflink shares its original extents instead
+of allocating another full game copy. No game-file bytes were changed.
+PGRAPH flip reporting excludes movie overlays and cannot establish movie FPS.
+
+The first ordinary Android Fable launch reproduced a native UART assertion on a
+guest reboot. The character frontend attaches its writable source to a custom
+GLib context, but UART reset attempted cancellation by an ID searched in the
+default context. The surviving callback then accessed reset transmitter state.
+`patches/xemu-serial-watch-source.patch` retains the source itself and cancels it
+by destroy/unref. The old integer-return frontend API remains available. Reset,
+backend replacement and unrealize cancel the owned source; callback dispatch
+drops its owner reference before retry. No assertion or guest error is hidden.
+
+`cartridge-android-serial-contract` compiles the actual before/after native
+function bodies against real GLib and socket backpressure. The original default
+context and retry controls pass; only the original custom-context reset aborts
+with the observed assertion. All three corrected cases pass. Controlled device
+declarations limit this test to callback ownership, not the Android device ABI.
+`cartridge-android-serial-native` recompiles the seven retained units embedding
+or using that UART layout and relinks the existing core. Its host-only pointer
+is not serialized; no checkpoint is retagged as compatible.
+
+The separately packaged same-signer candidate preserves every existing profile
+file through installation. The original cartridge again performs a new action,
+ordinary Leave and genuinely fresh-process restoration of noninitial RAM, then
+a further action; its two new native returns are clean. The following Fable
+retry no longer asserts: the title loads and returns, then the guest attempts
+the absent dashboard and reaches fatal error21. The app reports the unhealthy
+machine and retains current saves and the failed run. Cleanup retires only the
+task-owned app, verifies OS process absence and stock device return. This is
+not playable Fable or a performance measurement.
+
+`cartridge-android-serial-io-package` separately binds the already-qualified
+bounded public I/O reporting image to the same corrected native core. It does
+not rebuild firmware, expose a user firmware selector, or alter ordinary saves.
+Its Android observation is pending at this source checkpoint.
+[Scoped repair and outcomes](evidence/cartridge-android-serial-watch-20261101.json).

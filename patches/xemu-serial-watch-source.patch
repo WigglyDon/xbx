@@ -1,0 +1,165 @@
+--- a/chardev/char-fe.c
++++ b/chardev/char-fe.c
+@@ -346,26 +346,35 @@
+     }
+ }
+ 
++GSource *qemu_chr_fe_add_watch_source(CharFrontend *c, GIOCondition cond,
++                            FEWatchFunc func, void *user_data)
++{
++    Chardev *s = c->chr;
++    GSource *src;
++
++    if (!s || CHARDEV_GET_CLASS(s)->chr_add_watch == NULL) {
++        return NULL;
++    }
++
++    src = CHARDEV_GET_CLASS(s)->chr_add_watch(s, cond);
++    if (!src) {
++        return NULL;
++    }
++
++    g_source_set_callback(src, (GSourceFunc)func, user_data, NULL);
++    g_source_attach(src, s->gcontext);
++    return src;
++}
++
+ guint qemu_chr_fe_add_watch(CharFrontend *c, GIOCondition cond,
+                             FEWatchFunc func, void *user_data)
+ {
+-    Chardev *s = c->chr;
+-    GSource *src;
+-    guint tag;
+-
+-    if (!s || CHARDEV_GET_CLASS(s)->chr_add_watch == NULL) {
++    GSource *source = qemu_chr_fe_add_watch_source(c, cond, func, user_data);
++    if (!source) {
+         return 0;
+     }
+-
+-    src = CHARDEV_GET_CLASS(s)->chr_add_watch(s, cond);
+-    if (!src) {
+-        return 0;
+-    }
+-
+-    g_source_set_callback(src, (GSourceFunc)func, user_data, NULL);
+-    tag = g_source_attach(src, s->gcontext);
+-    g_source_unref(src);
+-
++    guint tag = g_source_get_id(source);
++    g_source_unref(source);
+     return tag;
+ }
+ 
+--- a/include/chardev/char-fe.h
++++ b/include/chardev/char-fe.h
+@@ -217,6 +217,12 @@
+ guint qemu_chr_fe_add_watch(CharFrontend *c, GIOCondition cond,
+                             FEWatchFunc func, void *user_data);
+ 
++/* Owning variant: the caller retains a reference to the attached source.
++ * Destroy and unref it to cancel, independently of its GMainContext. */
++GSource *qemu_chr_fe_add_watch_source(CharFrontend *c, GIOCondition cond,
++                                    FEWatchFunc func, void *user_data);
++
++
+ /**
+  * qemu_chr_fe_write:
+  * @buf: the data
+--- a/include/hw/char/serial.h
++++ b/include/hw/char/serial.h
+@@ -58,7 +58,7 @@
+     int last_break_enable;
+     uint32_t baudbase;
+     uint32_t tsr_retry;
+-    guint watch_tag;
++    GSource *watch_source; /* host-only; never serialized */
+     bool wakeup;
+ 
+     /* Time when the last byte was successfully sent out of the tsr */
+--- a/hw/char/serial.c
++++ b/hw/char/serial.c
+@@ -220,11 +220,21 @@
+     }
+ }
+ 
++static void serial_remove_watch(SerialState *s)
++{
++    GSource *source = s->watch_source;
++    s->watch_source = NULL;
++    if (source) {
++        g_source_destroy(source);
++        g_source_unref(source);
++    }
++}
++
+ static gboolean serial_watch_cb(void *do_not_use, GIOCondition cond,
+                                 void *opaque)
+ {
+     SerialState *s = opaque;
+-    s->watch_tag = 0;
++    g_clear_pointer(&s->watch_source, g_source_unref);
+     serial_xmit(s);
+     return G_SOURCE_REMOVE;
+ }
+@@ -261,11 +271,11 @@
+             if ((rc == 0 ||
+                  (rc == -1 && errno == EAGAIN)) &&
+                 s->tsr_retry < MAX_XMIT_RETRY) {
+-                assert(s->watch_tag == 0);
+-                s->watch_tag =
+-                    qemu_chr_fe_add_watch(&s->chr, G_IO_OUT | G_IO_HUP,
++                assert(s->watch_source == NULL);
++                s->watch_source =
++                    qemu_chr_fe_add_watch_source(&s->chr, G_IO_OUT | G_IO_HUP,
+                                           serial_watch_cb, s);
+-                if (s->watch_tag > 0) {
++                if (s->watch_source) {
+                     s->tsr_retry++;
+                     return;
+                 }
+@@ -667,8 +677,8 @@
+             s->tsr_retry = MAX_XMIT_RETRY;
+         }
+ 
+-        assert(s->watch_tag == 0);
+-        s->watch_tag = qemu_chr_fe_add_watch(&s->chr, G_IO_OUT | G_IO_HUP,
++        assert(s->watch_source == NULL);
++        s->watch_source = qemu_chr_fe_add_watch_source(&s->chr, G_IO_OUT | G_IO_HUP,
+                                              serial_watch_cb, s);
+     } else {
+         /* tsr_retry == 0 implies LSR.TEMT = 1 (transmitter empty).  */
+@@ -855,10 +865,7 @@
+ {
+     SerialState *s = opaque;
+ 
+-    if (s->watch_tag > 0) {
+-        g_source_remove(s->watch_tag);
+-        s->watch_tag = 0;
+-    }
++    serial_remove_watch(s);
+ 
+     s->rbr = 0;
+     s->ier = 0;
+@@ -910,9 +917,9 @@
+         serial_update_tiocm(s);
+     }
+ 
+-    if (s->watch_tag > 0) {
+-        g_source_remove(s->watch_tag);
+-        s->watch_tag = qemu_chr_fe_add_watch(&s->chr, G_IO_OUT | G_IO_HUP,
++    if (s->watch_source) {
++        serial_remove_watch(s);
++        s->watch_source = qemu_chr_fe_add_watch_source(&s->chr, G_IO_OUT | G_IO_HUP,
+                                              serial_watch_cb, s);
+     }
+ 
+@@ -938,6 +945,8 @@
+ static void serial_unrealize(DeviceState *dev)
+ {
+     SerialState *s = SERIAL(dev);
++
++    serial_remove_watch(s);
+ 
+     qemu_chr_fe_deinit(&s->chr, false);
+ 

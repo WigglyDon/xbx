@@ -49,6 +49,8 @@ pub mod player;
 mod rebuild;
 pub mod resources;
 #[cfg(not(target_os = "android"))]
+mod serial_watch;
+#[cfg(not(target_os = "android"))]
 mod smc;
 pub mod store;
 #[cfg(all(test, not(target_os = "android")))]

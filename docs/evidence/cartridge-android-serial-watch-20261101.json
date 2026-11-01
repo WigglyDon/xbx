@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "Pixel4 ordinary Fable startup and supported UART source ownership repair",
+  "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+  "patch": "patches/xemu-serial-watch-source.patch",
+  "patch_sha256": "74017b4f86d4d89933480c237ff9baa9d82b943269fab481287647ce25e5d4a4",
+  "media": {
+    "phone_full_size_verified": true,
+    "phone_full_digest_verified": true,
+    "game_file_bytes_changed": false,
+    "host_source_preserved": true,
+    "host_view_additional_exclusive_data_bytes": 0,
+    "device_return_verified_after_transfer": true
+  },
+  "cleanup": {
+    "exact_owner_approved_downloads_removed": 4,
+    "logical_bytes": 2248856977,
+    "project_owner_notified_privately": true,
+    "installed_apps_and_saves_preserved": true,
+    "further_deletion_authorized": false
+  },
+  "host_contract": {
+    "cases": [
+      {
+        "case": "default-reset",
+        "exit": 0,
+        "expected_result": true,
+        "signal": null,
+        "version": "before"
+      },
+      {
+        "case": "retry",
+        "exit": 0,
+        "expected_result": true,
+        "signal": null,
+        "version": "before"
+      },
+      {
+        "case": "custom-reset",
+        "exit": null,
+        "expected_result": true,
+        "signal": 6,
+        "version": "before"
+      },
+      {
+        "case": "default-reset",
+        "exit": 0,
+        "expected_result": true,
+        "signal": null,
+        "version": "after"
+      },
+      {
+        "case": "retry",
+        "exit": 0,
+        "expected_result": true,
+        "signal": null,
+        "version": "after"
+      },
+      {
+        "case": "custom-reset",
+        "exit": 0,
+        "expected_result": true,
+        "signal": null,
+        "version": "after"
+      }
+    ],
+    "controlled_declarations_not_Android_ABI": true,
+    "game_executed": false,
+    "real_GLib_and_socket_backpressure": true,
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "unchanged_function_bodies": true
+  },
+  "build": {
+    "native_units_recompiled": 7,
+    "whole_core_rebuild": false,
+    "new_dependencies": false,
+    "strict_isolated_Clippy_passed": true,
+    "formatted_owned_sources": true,
+    "Android_release_package_signature_alignment_passed": true,
+    "earlier_artifacts_retained": true
+  },
+  "changed_candidate_original": {
+    "all_existing_profile_files_identical_across_update": true,
+    "same_signer": true,
+    "noninitial_RAM_restored_in_genuinely_fresh_process": true,
+    "new_action_after_restore": true,
+    "new_clean_native_return_records": 2,
+    "OS_processes_absent_after_departure": true,
+    "device_return_verified": true
+  },
+  "Fable": {
+    "original_core": "custom_context_UART_reset_assertion_after_title_load_and_guest_reboot",
+    "corrected_core": "no_UART_assertion_title_loaded_returned_quick_dashboard_attempt_missing_dashboard_then_fatal21_app_unhealthy_dialog",
+    "game_menu_observed": false,
+    "gameplay_observed": false,
+    "pacing_measured": false,
+    "cause_of_dashboard_restart_attributed": false,
+    "healthy_game_checkpoint_published": false,
+    "failed_runs_and_current_saves_retained": true,
+    "task_owned_app_forced_retirement_during_cleanup": true,
+    "OS_processes_absent_after_cleanup": true,
+    "device_return_verified": true
+  },
+  "next": "one prepared matched Android observation using retained qualified bounded public IO reporter; pending normal custody, no capacity or phone held",
+  "privacy": "Full APK/input identities, captures, raw logs, custody records and exact cross-project cleanup details retained privately; no public binary release",
+  "paused_paths_preserved": 16
+}

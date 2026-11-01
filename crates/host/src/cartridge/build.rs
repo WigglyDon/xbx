@@ -332,6 +332,12 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-npx-values-build" => super::npx_port::values_fixture(repo, root)?,
         "cartridge-npx-layout-build" => super::npx_port::layout_fixture(repo, root)?,
         "cartridge-android-demo-native" => super::android_demo::native(repo, root)?,
+        "cartridge-android-serial-native" => super::serial_watch::build(repo, root)?,
+        "cartridge-android-serial-contract" => super::serial_watch::contract(repo, root)?,
+        "cartridge-android-serial-package" => super::android_package::build_serial(repo, root)?,
+        "cartridge-android-serial-io-package" => {
+            super::android_package::build_serial_io(repo, root)?
+        }
         "cartridge-android-demo-helper" => {
             super::android_build::image_helper_for(repo, root, "android-demo-native-v2")?
         }
