@@ -45,6 +45,11 @@ internal disk. Qualify a new explicit local output directory against current
 host accounting and the actual reconstruction peak first. Read shared SDKs in
 place; a directory's historical product name does not establish its current owner.
 
+Read `.local/collection-update-20261101.txt` before using media references from
+before the owner's collection shuffle. Existing entry identities and document
+grants remain attached to their preserved active inputs; do not reimport merely
+to adopt collection naming. Media verification supplies no runtime acceptance.
+
 Compile only the unfinished slice and its necessary runtime dependencies. Do not
 repopulate old diagnostic caches or restart closed experiments after cleanup.
 Preserve all paused edits. For source checks, export the committed tree to an
