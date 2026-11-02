@@ -91,5 +91,12 @@
     "reporting_limit_observed": false,
     "raw_read_bound_hit": false
   },
-  "next_work": "retained original kernel FP ownership regression on Android; checkpoint FP proof does not cover thread-switch API ownership"
+  "next_work": "retained original kernel FP ownership regression on Android; checkpoint FP proof does not cover thread-switch API ownership",
+  "classification_review": {
+    "observed_UI_label": "native machine became unhealthy",
+    "source_boundary": "Android diagnostics detects the guest fatal-boot marker, pauses the guest and formerly stored it as native readiness status -4",
+    "native_core_crash_established": false,
+    "guest_boot_failure_remains_unresolved": true,
+    "Rust_classification_and_dedicated_serial_detection_correction": "in_progress_no_new_game_result"
+  }
 }

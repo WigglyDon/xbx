@@ -1,5 +1,5 @@
 {
-  "Android_execution": false,
+  "Android_execution": true,
   "fixture_iso": "6f5af6d56ea66783ce93330cf94111904fcecf332ac77441ddd0a5ebdc4d4b73",
   "generated_source": "9236b3e0aec5c170d3ddae333f8d27699dff50d132b4f99068fdc64fa4ca69f3",
   "kernel_or_core_build": false,
@@ -14,5 +14,41 @@
   "new_APK_install": false,
   "strict_isolated_Clippy": true,
   "commercial_acceptance": false,
-  "current_state": "prepared_waiting_normal_custody"
+  "current_state": "passed_clean_native_and_stock_return",
+  "original_result": {
+    "completed": true,
+    "passed": true,
+    "observation": {
+      "thread_boot": true,
+      "thread_pass": true,
+      "thread_failed": false,
+      "thread_results": [
+        "THREAD RESULT=544C5301"
+      ],
+      "io_failures": [],
+      "cold_boots": 1,
+      "quick_boots": 0,
+      "title_handoff": true,
+      "title_return": false,
+      "fatal21": false,
+      "uart_assert": false,
+      "read_pass": false,
+      "data_pass": false,
+      "expected_errors_pass": false,
+      "demand_header_pass": false,
+      "demand_pages_pass": false,
+      "fixture_failure": false,
+      "truncated_at_bound": false
+    },
+    "commercial_acceptance": false
+  },
+  "native_return": {
+    "records": 1,
+    "all_clean": true,
+    "OS_processes_absent": true
+  },
+  "stock_return_verified": true,
+  "other_profiles_unchanged": true,
+  "owned_processes_absent": true,
+  "Fable_cause_established": false
 }
