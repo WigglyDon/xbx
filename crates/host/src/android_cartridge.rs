@@ -621,8 +621,12 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             match l.native.serial.read(&mut data) {
                 Ok(n) if n > 0 => {
                     let text = String::from_utf8_lossy(&data[..n]);
-                    eprintln!("{text}");
-                    if c::resources::ORIGINAL_FIXTURES.contains(&l.binding.media.as_str()) {
+                    // Serial reads are arbitrary stream chunks. Preserve their
+                    // bytes so a split line or failure marker stays intact.
+                    eprint!("{text}");
+                    if c::resources::ORIGINAL_FIXTURES.contains(&l.binding.media.as_str())
+                        || c::resources::ORIGINAL_IO_FIXTURES.contains(&l.binding.media.as_str())
+                    {
                         media::status(&text);
                     }
                 }

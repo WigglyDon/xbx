@@ -42,6 +42,12 @@ pub const ORIGINAL_FIXTURES: [&str; 2] = [
     "317e10827bc88ae6e5dcb768c242867d7bc7d6dde963ae9e567a9340179c591a",
     "85a173c73aa642fd82f64146149c6a37c38720ac8a020eb03d0c4f34de6c3255",
 ];
+// Retained original public I/O controls. Status display only; they do not gain
+// the interactive cartridge-counter command route.
+pub const ORIGINAL_IO_FIXTURES: [&str; 2] = [
+    "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
+    "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
+];
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Manifest {

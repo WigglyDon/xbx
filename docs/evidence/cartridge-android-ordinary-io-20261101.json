@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "ordinary Android serial-stream logging and original public I/O integration",
+  "first_party_change": "preserve serial chunks without inserting new line separators; display status only for pinned original I/O fixtures",
+  "ordinary_open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "kernel_or_core_rebuilt": false,
+  "new_game_memory_operations": false,
+  "original_fixture_bytes": 327680,
+  "fixtures": [
+    {
+      "source": "file-io-errors-v1/original.iso",
+      "sha256": "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6"
+    },
+    {
+      "source": "file-cache-demand-v3/original.iso",
+      "sha256": "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126"
+    }
+  ],
+  "validation": {
+    "isolated_strict_Clippy": true,
+    "Android_release_package_built": true,
+    "signature_alignment_and_components": true,
+    "ordinary_image_exact": true,
+    "trusted_artifacts_prepared_off_device": true
+  },
+  "device": {
+    "single_finite_request_submitted": true,
+    "state": "capture_step_failed_after_two_completed_controls_return_verified",
+    "original_IO_contracts_qualified": true,
+    "Fable_observation_claimed": true,
+    "original_IO_cases": [
+      {
+        "case": "io",
+        "original_artifact_reused": true,
+        "Android_public_contract_pass": true,
+        "fresh_entry": true,
+        "observed": {
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "title_handoff": true,
+          "title_return": false,
+          "fatal21": false,
+          "uart_assert": false,
+          "read_pass": true,
+          "data_pass": true,
+          "expected_errors_pass": true,
+          "demand_header_pass": false,
+          "demand_pages_pass": false,
+          "fixture_failure": false,
+          "truncated_at_bound": false
+        },
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      },
+      {
+        "case": "demand",
+        "original_artifact_reused": true,
+        "Android_public_contract_pass": true,
+        "fresh_entry": true,
+        "observed": {
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "title_handoff": true,
+          "title_return": false,
+          "fatal21": false,
+          "uart_assert": false,
+          "read_pass": true,
+          "data_pass": true,
+          "expected_errors_pass": false,
+          "demand_header_pass": true,
+          "demand_pages_pass": true,
+          "fixture_failure": false,
+          "truncated_at_bound": false
+        },
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      }
+    ],
+    "original_captures_reviewed": 2,
+    "Fable_public_result": {
+      "outcome": "native_unhealthy_dialog",
+      "public_log": [
+        {
+          "cold_boots": 2,
+          "quick_boots": 1,
+          "title_handoff": true,
+          "title_return": true,
+          "fatal21": true,
+          "uart_assert": false,
+          "read_pass": false,
+          "data_pass": false,
+          "expected_errors_pass": false,
+          "demand_header_pass": false,
+          "demand_pages_pass": false,
+          "fixture_failure": false,
+          "truncated_at_bound": false
+        }
+      ],
+      "gameplay_claimed": false
+    },
+    "Fable_captures_obtained": 0,
+    "Fable_menu_play_audio_save_resume_qualified": false,
+    "script_failure": "fresh own-focus capture assertion after native-unhealthy UI text; no game frame obtained",
+    "data_preserving_update": true,
+    "original_host_and_phone_inputs_retained": true,
+    "stock_return_under_lease": true,
+    "own_processes_absent": true,
+    "forced_task_app_retirement": true
+  },
+  "next": "retain the two completed Android original I/O gates; inspect/reuse the original FP fixture for remaining ordinary platform qualification; no unchanged Fable retry"
+}

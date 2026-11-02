@@ -1186,3 +1186,43 @@ definition is compared as a reference, without copying its implementation. Build
 strict isolated Clippy, package and component checks pass; its finite original
 control and one-record device observation are pending admission.
 [One-word preparation](evidence/cartridge-android-fault-word-20261101.json).
+
+The bounded observation completes with its original boot/action control passing.
+All four retained captures are opened: two original-state views and two black
+Fable game areas with touch controls. No menu or play is observed. Task-owned
+app retirement is forced after the record; actual process absence and stock
+return are verified, with no healthy game checkpoint claimed. It identifies no
+public-platform cause and reads no title bytes. Further game-memory investigation
+is paused; all artifacts remain retained.
+
+Review of the retained output identifies an ordinary Rust logging defect:
+`eprintln!` appended a line separator after arbitrary serial stream chunks.
+Consequently a complete guest line could appear split in the diagnostic file.
+The stream fix preserves the supplied text without adding separators. Prior
+fragmented lines alone do not prove that the guest stopped producing output.
+
+The new ordinary package reuses the accepted open image and corrected native
+baseline, without a kernel/core rebuild or private-context image. Two unchanged
+original I/O artifacts are prepared for their first checks on this Android
+integration path. Only their exact original hashes gain status display; cartridge
+counter commands remain restricted to the original counter fixtures. Signature,
+alignment, component, Android package and strict isolated Clippy checks pass.
+Its finite device request is pending; normal Fable startup requires both original
+contracts and actual native returns first.
+[Ordinary integration preparation](evidence/cartridge-android-ordinary-io-20261101.json).
+
+Both original I/O cases now pass on Android through normal scoped imports and
+fresh independent entries. Data, expected missing-file/EOF behavior and the
+demand-buffer header/page checks are verified by the original programs. Both
+actual captures are opened and show their PASS output. Each native return records
+acknowledged quit, joined machine thread, synchronized storage and clean status;
+OS process absence precedes the next entry. No input artifact is rebuilt.
+
+The subsequent ordinary Fable startup enters and returns from the title, then
+quick-reboots to fatal21 and the native-unhealthy UI text. The fresh own-focus
+assertion prevents its screenshot, so no game frame is obtained. The overall
+recipe ends FAILED with verified return: cleanup forcibly retires only its XBX
+processes, preserves all data and confirms stock return. This does not invalidate
+the two completed original gates or establish Fable menu/play acceptance.
+The installed ordinary candidate and all preceding artifacts remain retained;
+no unchanged Fable retry follows from this receipt.

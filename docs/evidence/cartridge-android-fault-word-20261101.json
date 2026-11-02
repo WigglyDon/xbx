@@ -21,8 +21,19 @@
   },
   "device": {
     "single_finite_request_submitted": true,
-    "state": "pending_admission",
-    "new_observation_claimed": false
+    "state": "completed_and_return_verified",
+    "new_observation_claimed": true,
+    "original_boot_action_passed": true,
+    "original_captures_reviewed": 2,
+    "Fable_captures_reviewed": 2,
+    "Fable_visible_result": "black game area with XBX touch controls; no observed menu or play",
+    "minimum_record_retrieved": true,
+    "public_contract_attributed": false,
+    "title_bytes_read": 0,
+    "forced_task_app_retirement": true,
+    "own_processes_absent": true,
+    "stock_return_under_lease": true,
+    "healthy_game_checkpoint_claimed": false
   },
-  "remaining": "qualify original changed image, retrieve the minimum caller/origin record, independently attribute a public contract before correcting it"
+  "remaining": "game-memory investigation paused; ordinary Android logging and original public-I/O qualification continue"
 }

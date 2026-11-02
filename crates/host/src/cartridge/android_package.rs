@@ -45,6 +45,16 @@ pub(super) fn build_tcg_baseline(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-tcg-baseline-package-v1",
     )
 }
+pub(super) fn build_ordinary(repo: &Path, root: &Path) -> Result<(), Error> {
+    // Reuse the accepted ordinary open image and corrected native baseline.
+    // No diagnostic kernel, firmware rebuild or checkpoint alias is introduced.
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-ordinary-package-v1",
+    )
+}
 pub(super) fn build_handoff(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,

@@ -340,6 +340,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-tcg-fault-contract" => super::tcg_fault::contract(repo, root)?,
         "cartridge-android-tcg-fault-native" => super::tcg_fault::build(repo, root)?,
         "cartridge-android-tcg-baseline-native" => super::tcg_fault::baseline(repo, root)?,
+        "cartridge-android-ordinary-package" => super::android_package::build_ordinary(repo, root)?,
         "cartridge-android-tcg-baseline-package" => {
             super::android_package::build_tcg_baseline(repo, root)?
         }
