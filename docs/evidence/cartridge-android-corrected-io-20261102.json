@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "previously unqualified corrected Android core plus retained bounded public I/O reporter",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+  "native_or_kernel_rebuilt": false,
+  "same_signer_helper_seed_DEX_manifest_verified": true,
+  "Android_release_package_built": true,
+  "isolated_Clippy_warnings_denied": true,
+  "prior_reporting_APK_core": "8633ca5c3e3290fb17f284fabdfb4dfb76e207ad50d47f9bcc8e46db19510891",
+  "qualification_required_before_Fable": "existing original I/O errors fixture must PASS and emit bounded expected error statuses on this combination",
+  "existing_entries_reused_no_import": true,
+  "observability": "public operation kind/status/byte-count/flags only; no paths, payloads, callers or stacks",
+  "current_state": "prepared_waiting_normal_custody",
+  "device_execution_completed": false,
+  "Fable_new_result": false,
+  "source_or_artifact_preservation": true
+}

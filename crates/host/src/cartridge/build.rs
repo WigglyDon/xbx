@@ -341,6 +341,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-tcg-fault-native" => super::tcg_fault::build(repo, root)?,
         "cartridge-android-tcg-baseline-native" => super::tcg_fault::baseline(repo, root)?,
         "cartridge-android-ordinary-package" => super::android_package::build_ordinary(repo, root)?,
+        "cartridge-android-corrected-io-package" => {
+            super::android_package::build_corrected_io(repo, root)?
+        }
         "cartridge-fp-state-sse1-build" => super::fp_state::build_sse1(repo, root)?,
         "cartridge-android-original-fp-package" => {
             super::android_package::build_original_fp(repo, root)?

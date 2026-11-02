@@ -121,6 +121,14 @@ pub(super) fn build_serial_io(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-serial-io-package-v1",
     )
 }
+pub(super) fn build_corrected_io(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-corrected-io-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -179,7 +187,10 @@ fn build_selected(
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
-    let reporting = package_stage == "android-serial-io-package-v1";
+    let reporting = matches!(
+        package_stage,
+        "android-serial-io-package-v1" | "android-corrected-io-package-v1"
+    );
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";
     let fault_word = package_stage == "android-fault-word-package-v1";
