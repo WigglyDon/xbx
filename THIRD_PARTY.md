@@ -460,3 +460,9 @@ exception-code reporting to the same retained OXOS kernel under GPL-2.0.
 It contains no game code, caller address, stack contents or proprietary input.
 The Rust build and packaging owner remains MIT. The logging image is a
 separately bound developer candidate, with its prior sources and objects retained.
+
+`patches/oxos-android-fault-record.patch` adds one private access-violation
+context record per boot to the same GPL-2.0 OXOS exception dispatcher. It records
+register/status fields, with no instruction bytes, memory payload, stack walk or
+game implementation copied into source. Its output stays private. The Rust
+builder retains distinct parent-image/native bindings and prior artifacts.

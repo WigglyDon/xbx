@@ -34,13 +34,19 @@
   },
   "device": {
     "finite_request_submitted_once": true,
-    "state": "pending_admission",
-    "installation": false,
-    "changed_image_original_control": false,
-    "Fable_observation": false,
+    "state": "completed_and_return_verified",
+    "installation": true,
+    "changed_image_original_control": true,
+    "Fable_observation": true,
     "last_installed_candidate_preserved": true,
     "prior_completed_original_fresh_process_gate_reused": true,
-    "host_only_observation": "USB present, ADB absent; actual custody unavailable; no reset or preemption"
+    "own_processes_absent": true,
+    "stock_return_verified_under_lease": true,
+    "original_captures_reviewed": 2,
+    "Fable_captures_reviewed": 6,
+    "Fable_visible_result": "black game area with XBX touch controls; no menu or play",
+    "public_handoff": "three successful thread-creation returns, ordinary thread exits, then access violation C0000005; cause unassigned",
+    "retained_log_read_bound_truncated": false
   },
-  "remaining": "actual device admission, changed-image original control and focused Fable public handoff attribution"
+  "remaining": "minimum private exception context needed for independently supported platform attribution; no mobile menu, play, sound or pacing acceptance"
 }

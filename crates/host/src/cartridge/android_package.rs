@@ -53,6 +53,14 @@ pub(super) fn build_handoff(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-handoff-package-v1",
     )
 }
+pub(super) fn build_fault_record(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-fault-package-v1",
+    )
+}
 pub(super) fn build_tcg_fault(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -133,7 +141,21 @@ fn build_selected(
     let reporting = package_stage == "android-serial-io-package-v1";
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";
-    let handoff = package_stage == "android-handoff-package-v1";
+    let fault_record = package_stage == "android-fault-package-v1";
+    let handoff = package_stage == "android-handoff-package-v1" || fault_record;
+    let (handoff_stage, handoff_parent, handoff_patch) = if fault_record {
+        (
+            "android-fault-v1",
+            "android-handoff-v1",
+            "patches/oxos-android-fault-record.patch",
+        )
+    } else {
+        (
+            "android-handoff-v1",
+            "android-launch-v2",
+            "patches/oxos-startup-handoff.patch",
+        )
+    };
     let launch = package_stage == "android-launch-package-v2" || fault || baseline;
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     let launch_identity: serde_json::Value = if launch {
@@ -142,16 +164,15 @@ fn build_selected(
         json!(null)
     };
     let handoff_identity: serde_json::Value = if handoff {
-        c::read_json(&root.join("android-handoff-v1/identity.json"))?
+        c::read_json(&root.join(handoff_stage).join("identity.json"))?
     } else {
         json!(null)
     };
     let open_hash = if handoff {
         if handoff_identity["native_core"] != core_hash
             || handoff_identity["parent_open_system"]
-                != c::file_digest(&root.join("android-launch-v2/build/bios.bin"))?
-            || handoff_identity["patch"]
-                != c::file_digest(&repo.join("patches/oxos-startup-handoff.patch"))?
+                != c::file_digest(&root.join(handoff_parent).join("build/bios.bin"))?
+            || handoff_identity["patch"] != c::file_digest(&repo.join(handoff_patch))?
         {
             return Err("public startup-handoff candidate bindings differ".into());
         }
@@ -245,7 +266,7 @@ fn build_selected(
         fs::create_dir_all(dir)?;
     }
     let open = if handoff {
-        root.join("android-handoff-v1/build/bios.bin")
+        root.join(handoff_stage).join("build/bios.bin")
     } else if launch {
         root.join("android-launch-v2/build/bios.bin")
     } else if reporting {

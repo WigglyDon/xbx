@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "owner-authorized single private Android access-violation context",
+  "source_pin": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "patch": "patches/oxos-android-fault-record.patch",
+  "image": "513f14de7ac72e00f7271d23559d1e94031b77588b40c1495f672de4508369e9",
+  "parent_image": "38987d278c4104523af94bf1bfca6eea0b9cf854a5e7e83622cc1001855e6306",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "changed_objects": [
+    "ke/except.obj"
+  ],
+  "compared_objects": 70,
+  "native_core_rebuilt": false,
+  "maximum_context_records_per_boot": 1,
+  "output_private": true,
+  "memory_instruction_bytes_or_stack_read": false,
+  "validation": {
+    "strict_isolated_Clippy": true,
+    "owned_Rust_formatting": true,
+    "same_signer_and_alignment": true,
+    "same_native_helper_generated_seed_UI_manifest": true
+  },
+  "device": {
+    "finite_request_submitted_once": true,
+    "state": "pending_admission",
+    "changed_image_original_qualified": false,
+    "Fable_context_retrieved": false,
+    "menu_play_sound_save_or_resume_claimed": false
+  },
+  "remaining": "actual original changed-image control, one private context, independently supported attribution and correction"
+}

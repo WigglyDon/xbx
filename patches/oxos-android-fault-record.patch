@@ -1,0 +1,21 @@
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -59,6 +59,18 @@
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+ static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++    // Private developer image: one precise access-violation record, no memory
++    // reads, instruction bytes, caller frames, strings or launch payloads.
++    static volatile ULONG XbxFaultRecords;
++    if (Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ &&
++        __atomic_add_fetch(&XbxFaultRecords, 1, __ATOMIC_RELAXED) == 1) {
++        XK_SERIAL("xbxfault: pc=%08lx access=%lu address=%08lx flags=%08lx\n", Context->Eip,
++                  Record->ExceptionInformation[0], Record->ExceptionInformation[1], Context->EFlags);
++        XK_SERIAL("xbxfault: eax=%08lx ebx=%08lx ecx=%08lx edx=%08lx\n", Context->Eax, Context->Ebx,
++                  Context->Ecx, Context->Edx);
++        XK_SERIAL("xbxfault: esi=%08lx edi=%08lx ebp=%08lx esp=%08lx\n", Context->Esi, Context->Edi,
++                  Context->Ebp, Context->Esp);
++    }
+     static volatile ULONG reports;
+     if (__atomic_add_fetch(&reports, 1, __ATOMIC_RELAXED) <= 8)
+         XK_SERIAL("xbxhandoff: exception=%08lx flags=%08lx\n", Record->ExceptionCode, Record->ExceptionFlags);

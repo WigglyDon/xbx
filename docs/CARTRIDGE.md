@@ -1137,7 +1137,24 @@ Only `ps/thread.cpp` and `ke/except.cpp` rebuild; all other retained objects and
 the ordinary TCG native core stay unchanged. Package signature, alignment,
 native/helper/seed/UI identity and strict isolated Clippy checks pass. The
 prepared finite device check first requires a changed-image original boot/action
-and clean departure, then one focused Fable startup. Its submission is pending;
-no installation or new game outcome is claimed. The last installed baseline and
-its completed fresh-process restoration proof remain preserved.
+and clean departure, then one focused Fable startup. That finite check completes:
+the compatible update preserves every prior profile file, the original cartridge
+boots and accepts an action with its ordinary save marker unchanged, and actual
+device return and process absence are verified. Both original images and all six
+Fable captures are opened. Fable shows a black game area with touch controls;
+public status records show successful thread creation then an access violation,
+without assigning its cause. No menu, play, sound or pacing is observed. The
+preceding native baseline and its completed fresh-process proof remain retained.
 [Preparation receipt](evidence/cartridge-android-handoff-20261101.json).
+
+The subsequent `cartridge-android-fault-record` developer image records one
+minimal access-violation context per boot under the owner's continuing private
+debugging authorization. No memory, instruction bytes or caller frames are read.
+Only the exception object rebuilds; the prior native core, helper, generated seed,
+media, UI and manifest remain fixed. Signature/alignment, exact component checks,
+formatting and isolated strict Clippy pass. A finite check is prepared and queued
+after the completed handoff observation. It first requires an original boot/action
+and clean departure; after retaining the failing game's record it retires only
+the task-owned app and preserves dirty-generation recovery without publishing a
+healthy game checkpoint. No new title outcome is claimed by preparation.
+[Private-context preparation receipt](evidence/cartridge-android-fault-record-20261101.json).
