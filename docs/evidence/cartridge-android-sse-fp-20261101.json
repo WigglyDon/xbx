@@ -120,10 +120,10 @@
     "commercial_audio_save_resume_and_pacing_unqualified": true
   },
   "host_return": {
-    "fresh_available_MiB": 52184,
-    "usable_metadata_MiB": 1818,
     "emergency_reserve_used": false,
     "shared_floor_GiB": 12,
-    "held_build_or_storage_lease": false
+    "held_build_or_storage_lease": false,
+    "capacity_and_metadata_guard_passed": true,
+    "detailed_measurements": "retained privately"
   }
 }
