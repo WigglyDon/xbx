@@ -280,6 +280,33 @@ fn fixture(repo: &Path, root: &Path, dir: &Path, llvm: &Path, values: bool) -> R
     Ok(())
 }
 
+pub(super) fn android_guest_failure_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?.replace("NPX OWNERSHIP BOOT", "*** fatal error 99");
+    let generated = format!(
+        ".text\n.globl _start\n_start:\n    cld\n    call npx_serial_init\n1:  sti\n    hlt\n    jmp 1b\n.data\n.globl thunks\nthunks: .long 0\n{uart}"
+    );
+    let dir = root.join("android-guest-failure-original-v1");
+    c::mkdir(&dir)?;
+    let iso = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &generated,
+        "xbx original boot failure signal",
+        0x58424645,
+    )?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({"fixture_iso":iso,
+            "uart_adapter":c::file_digest(&adapter)?,
+            "generated_source":c::file_digest(&dir.join("original.S"))?,
+            "original_signal_only":true,"expected_fatal_code":99,
+            "purpose":"guest failure classification; no compatibility claim",
+            "kernel_or_core_build":false,"Android_execution":false}))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_thread_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/thread-startup.S");
     if c::file_digest(&source)?

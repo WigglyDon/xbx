@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "ordinary Rust guest-boot-failure classification and serial boundary",
+  "problem": "guest fatal marker formerly reused native readiness status -4 and surfaced as native machine unhealthy",
+  "change": "separate latched guest-failure flag; dedicated guest serial detection across reads; existing asynchronous backstop retained; first observer owns pause/notification",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+  "kernel_or_core_rebuild": false,
+  "validation": {
+    "focused_startup_tests_passed": 5,
+    "strict_isolated_Clippy": true,
+    "Android_release_build": true,
+    "source_input_hashes_unchanged_during_build": 65,
+    "same_native_open_helper_seed_DEX_manifest_signer": true,
+    "signature_and_alignment_verified": true
+  },
+  "original_negative_fixture": {
+    "bytes": 131072,
+    "sha256": "fa22d893c114c1a1141b23474b8085062c5a2c409b4827735e6af237a7cda6fc",
+    "purpose": "deliberate original fatal signal, not a game compatibility result"
+  },
+  "device": {
+    "state": "prepared_pending_normal_custody",
+    "execution_completed": false,
+    "installation_claimed": false,
+    "required_proof": "new label, no accepted failed checkpoint, unrelated profiles unchanged, actual process absence and verified stock return"
+  },
+  "preservation": {
+    "protected_hashes_unchanged": 21,
+    "prior_candidates_and_profiles_retained": true
+  },
+  "new_Fable_trial": false,
+  "Fable_cause_established": false,
+  "Fable_playable": false
+}

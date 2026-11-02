@@ -193,6 +193,7 @@ fn available(app: &Path) -> io::Result<()> {
 struct Native {
     monitor: c::monitor::Monitor,
     serial: UnixStream,
+    boot_failure: crate::startup::GuestBootFailureDetector,
     directory: PathBuf,
     run: PathBuf,
     qmp: PathBuf,
@@ -308,6 +309,7 @@ impl Engine for Native {
         Ok(Self {
             monitor,
             serial,
+            boot_failure: Default::default(),
             directory: dir.into(),
             run,
             qmp,
@@ -525,9 +527,12 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
     let mut running = false;
     loop {
         if !STARTUP.ready() {
-            return Err(
-                "native machine became unhealthy; session and current saves retained".into(),
-            );
+            return Err(if STARTUP.guest_boot_failed() {
+                "Game startup failed. Your current saves and diagnostics were retained."
+            } else {
+                "native machine became unhealthy; session and current saves retained"
+            }
+            .into());
         }
         let paused = player.live.as_ref().is_some_and(|l| l.paused);
         let allow = FOREGROUND.load(Ordering::SeqCst)
@@ -629,6 +634,13 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             let mut data = [0; 4096];
             match l.native.serial.read(&mut data) {
                 Ok(n) if n > 0 => {
+                    if l.native.boot_failure.observe(&data[..n])
+                        && STARTUP.report_guest_boot_failure()
+                    {
+                        INPUT.store(false, Ordering::SeqCst);
+                        neutral();
+                        unsafe { xbx_engine_pause() };
+                    }
                     let text = String::from_utf8_lossy(&data[..n]);
                     // Serial reads are arbitrary stream chunks. Preserve their
                     // bytes so a split line or failure marker stays intact.
@@ -751,6 +763,9 @@ pub(super) fn run() -> Result<i32, Box<dyn std::error::Error>> {
                         STARTUP.report(status);
                         if unsafe { xbx_engine_display_poll_ready() } {
                             STARTUP.display_ready();
+                        }
+                        if STARTUP.guest_boot_failed() {
+                            return Err("Game startup failed. Your current saves and diagnostics were retained.".into());
                         }
                         if status < 0
                             || FINISHED.load(Ordering::SeqCst)

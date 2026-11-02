@@ -429,14 +429,15 @@ fn diagnostics(root: &Path) -> std::io::Result<std::thread::JoinHandle<()>> {
                     .any(|s| s == b"*** fatal error ")
                 {
                     guest_failed = true;
-                    STARTUP.report(-4);
-                    neutral();
-                    unsafe {
-                        xbx_engine_pause();
+                    if STARTUP.report_guest_boot_failure() {
+                        neutral();
+                        unsafe {
+                            xbx_engine_pause();
+                        }
+                        media::status(
+                            "The guest reported a boot failure. Diagnostic evidence was preserved.",
+                        );
                     }
-                    media::status(
-                        "The guest reported a boot failure. Diagnostic evidence was preserved.",
-                    );
                 }
                 if recent.len() > 64 {
                     recent.drain(..recent.len() - 64);

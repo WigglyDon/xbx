@@ -129,6 +129,14 @@ pub(super) fn build_corrected_io(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-corrected-io-package-v1",
     )
 }
+pub(super) fn build_guest_status(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-guest-status-package-v3",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -189,7 +197,11 @@ fn build_selected(
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let reporting = matches!(
         package_stage,
-        "android-serial-io-package-v1" | "android-corrected-io-package-v1"
+        "android-serial-io-package-v1"
+            | "android-corrected-io-package-v1"
+            | "android-guest-status-package-v1"
+            | "android-guest-status-package-v2"
+            | "android-guest-status-package-v3"
     );
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";

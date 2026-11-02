@@ -324,6 +324,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-npx-build" => super::npx_port::build(repo, root)?,
         "cartridge-android-npx-fixture" => super::npx_port::android_fixture(repo, root)?,
         "cartridge-android-thread-fixture" => super::npx_port::android_thread_fixture(repo, root)?,
+        "cartridge-android-guest-failure-fixture" => {
+            super::npx_port::android_guest_failure_fixture(repo, root)?
+        }
         "cartridge-x87-build" => super::x87_boundary::build(repo, root)?,
         "cartridge-x87-original" => super::x87_boundary::original(repo, root)?,
         "cartridge-npx-observe" => super::npx_port::observe(repo, root)?,
@@ -345,6 +348,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-ordinary-package" => super::android_package::build_ordinary(repo, root)?,
         "cartridge-android-corrected-io-package" => {
             super::android_package::build_corrected_io(repo, root)?
+        }
+        "cartridge-android-guest-status-package" => {
+            super::android_package::build_guest_status(repo, root)?
         }
         "cartridge-fp-state-sse1-build" => super::fp_state::build_sse1(repo, root)?,
         "cartridge-android-original-fp-package" => {

@@ -89,7 +89,9 @@
     "only_reported_Fable_failure": "missing-name open, insufficient to attribute startup failure",
     "successful_operations_not_reported": true,
     "reporting_limit_observed": false,
-    "raw_read_bound_hit": false
+    "raw_read_bound_flag_reported": false,
+    "prefilter_byte_count_retained": false,
+    "truncation_accounting_note": "Prior client evaluated its flag after removing host statistics; the retained flag is not a prefilter-size guarantee. Records remain bounded observations."
   },
   "next_work": "retained original kernel FP ownership regression on Android; checkpoint FP proof does not cover thread-switch API ownership",
   "classification_review": {
