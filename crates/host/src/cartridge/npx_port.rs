@@ -280,6 +280,29 @@ fn fixture(repo: &Path, root: &Path, dir: &Path, llvm: &Path, values: bool) -> R
     Ok(())
 }
 
+pub(super) fn android_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let dir = root.join("android-npx-original-v1");
+    if c::file_digest(&repo.join("native/fixtures/npx-ownership.S"))? != ORIGINAL {
+        return Err("retained original ownership regression differs".into());
+    }
+    c::mkdir(&dir)?;
+    let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
+        .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
+    fixture(repo, root, &dir, &llvm, false)?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":ORIGINAL,
+            "uart_adapter":c::file_digest(&repo.join("native/fixtures/npx-uart.S"))?,
+            "fixture_iso":c::file_digest(&dir.join("original.iso"))?,
+            "generated_source":c::file_digest(&dir.join("original-uart.S"))?,
+            "original_code_and_checks_reused":true,
+            "kernel_or_core_build":false,"Android_execution":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn values_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let dir = root.join("npx-owner-port-v1/values-v3");
     c::mkdir(&dir)?;

@@ -322,6 +322,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-lifetime-build" => super::lifetime::build(repo, root)?,
         "cartridge-lifetime-observe" => super::lifetime::observe(repo, root)?,
         "cartridge-npx-build" => super::npx_port::build(repo, root)?,
+        "cartridge-android-npx-fixture" => super::npx_port::android_fixture(repo, root)?,
         "cartridge-x87-build" => super::x87_boundary::build(repo, root)?,
         "cartridge-x87-original" => super::x87_boundary::original(repo, root)?,
         "cartridge-npx-observe" => super::npx_port::observe(repo, root)?,

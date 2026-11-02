@@ -1,0 +1,19 @@
+{
+  "Android_execution": false,
+  "fixture_iso": "372b08bfa9b9022b74985a088ecae10eeea7e25cf61823db6b0242f23b19123e",
+  "generated_source": "d0d16069b164247650d1b9ddef7d3a6abf9c58ed74a6ac848e648a0adda335f0",
+  "kernel_or_core_build": false,
+  "original_code_and_checks_reused": true,
+  "original_source": "70d6e0a45c60dcc9b2b0b524c3dd6f8a07d5558c78cc31074db90e00bf278591",
+  "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5",
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "retained original public kernel FP ownership regression, first current Android qualification",
+  "fixture_bytes": 131072,
+  "installed_candidate_reused": true,
+  "kernel_or_core_rebuild": false,
+  "source_build_and_strict_Clippy": true,
+  "commercial_acceptance": false,
+  "closed_desktop_comparisons_replayed": false,
+  "current_state": "prepared_waiting_normal_custody"
+}

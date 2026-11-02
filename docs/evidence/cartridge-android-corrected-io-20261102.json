@@ -12,11 +12,84 @@
   "qualification_required_before_Fable": "existing original I/O errors fixture must PASS and emit bounded expected error statuses on this combination",
   "existing_entries_reused_no_import": true,
   "observability": "public operation kind/status/byte-count/flags only; no paths, payloads, callers or stacks",
-  "current_state": "waiting_for_verified_prior_custodian_recovery_and_return",
-  "device_execution_completed": false,
-  "Fable_new_result": false,
+  "current_state": "completed_stock_return_verified",
+  "device_execution_completed": true,
+  "Fable_new_result": true,
   "source_or_artifact_preservation": true,
-  "device_admission_blocker": "standing_lab_device_recovery_pending",
-  "required_external_action": "prior custodian cleanup-only recovery and verified return",
-  "XBX_device_or_storage_lease_held": false
+  "XBX_device_or_storage_lease_held": false,
+  "original_IO_result": [
+    {
+      "case": "io",
+      "original_artifact_reused": true,
+      "Android_public_contract_pass": true,
+      "fresh_entry": false,
+      "observed": {
+        "io_failures": [
+          "xbxio: kind=0 status=c0000034 bytes=0 flags=00000064",
+          "xbxio: kind=2 status=c0000011 bytes=0 flags=00000090",
+          "xbxio: kind=1 status=c0000011 bytes=2048 flags=00000000"
+        ],
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "title_handoff": true,
+        "title_return": false,
+        "fatal21": false,
+        "uart_assert": false,
+        "read_pass": true,
+        "data_pass": true,
+        "expected_errors_pass": true,
+        "demand_header_pass": false,
+        "demand_pages_pass": false,
+        "fixture_failure": false,
+        "truncated_at_bound": false
+      },
+      "native_return": {
+        "records": 2,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    }
+  ],
+  "reviewed_captures": {
+    "original_PASS": 1,
+    "Fable_black_with_controls_no_menu": 1
+  },
+  "Fable_result": {
+    "outcome": "native_unhealthy_dialog",
+    "public_log": [
+      {
+        "io_failures": [
+          "xbxio: kind=0 status=c0000034 bytes=0 flags=00000060"
+        ],
+        "cold_boots": 2,
+        "quick_boots": 1,
+        "title_handoff": true,
+        "title_return": true,
+        "fatal21": true,
+        "uart_assert": false,
+        "read_pass": false,
+        "data_pass": false,
+        "expected_errors_pass": false,
+        "demand_header_pass": false,
+        "demand_pages_pass": false,
+        "fixture_failure": false,
+        "truncated_at_bound": false
+      }
+    ],
+    "gameplay_claimed": false
+  },
+  "stock_return_verified": true,
+  "owned_processes_absent": true,
+  "existing_profile_files_unchanged_by_update": true,
+  "Fable_clean_checkpoint_or_resume_claimed": false,
+  "reporter_interpretation": {
+    "kind0": "open failure; bytes field zero",
+    "kind1": "immediate read/write return; bytes field is requested Length, not transferred amount",
+    "kind2": "IRP completion; bytes field is IoStatus.Information",
+    "only_reported_Fable_failure": "missing-name open, insufficient to attribute startup failure",
+    "successful_operations_not_reported": true,
+    "reporting_limit_observed": false,
+    "raw_read_bound_hit": false
+  },
+  "next_work": "retained original kernel FP ownership regression on Android; checkpoint FP proof does not cover thread-switch API ownership"
 }
