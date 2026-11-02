@@ -12,8 +12,11 @@
   "qualification_required_before_Fable": "existing original I/O errors fixture must PASS and emit bounded expected error statuses on this combination",
   "existing_entries_reused_no_import": true,
   "observability": "public operation kind/status/byte-count/flags only; no paths, payloads, callers or stacks",
-  "current_state": "prepared_waiting_normal_custody",
+  "current_state": "waiting_for_verified_prior_custodian_recovery_and_return",
   "device_execution_completed": false,
   "Fable_new_result": false,
-  "source_or_artifact_preservation": true
+  "source_or_artifact_preservation": true,
+  "device_admission_blocker": "standing_lab_device_recovery_pending",
+  "required_external_action": "prior custodian cleanup-only recovery and verified return",
+  "XBX_device_or_storage_lease_held": false
 }
