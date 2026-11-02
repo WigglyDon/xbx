@@ -48,6 +48,8 @@ pub const ORIGINAL_IO_FIXTURES: [&str; 2] = [
     "f1e46094955b06096eada46bbc5a740f36e5ae1d50f91deb9d7bbfd6265945c6",
     "ccc5d1c6f07024ff18c95e7e3f3d4508c92a4c24f601d14b06ca96777cef7126",
 ];
+pub const ORIGINAL_FP_FIXTURE: &str =
+    "90ccee65b38ff84291389b917cb0a4e6abb57de063049a91ea05b3e0f1a7f856";
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Manifest {

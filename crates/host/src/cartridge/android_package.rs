@@ -55,6 +55,21 @@ pub(super) fn build_ordinary(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-ordinary-package-v1",
     )
 }
+pub(super) fn build_original_fp(repo: &Path, root: &Path) -> Result<(), Error> {
+    let fixture = root
+        .parent()
+        .ok_or("workspace")?
+        .join("fp-state-sse1-v1/original.iso");
+    if c::file_digest(&fixture)? != super::resources::ORIGINAL_FP_FIXTURE {
+        return Err("pinned original SSE fixture differs".into());
+    }
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-original-fp-package-v1",
+    )
+}
 pub(super) fn build_handoff(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,

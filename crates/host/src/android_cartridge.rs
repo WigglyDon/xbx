@@ -567,6 +567,13 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
                             items.push((n.into(), format!("fixture-{k}")));
                         }
                     }
+                    if player
+                        .live
+                        .as_ref()
+                        .is_some_and(|l| l.binding.media == c::resources::ORIGINAL_FP_FIXTURE)
+                    {
+                        items.push(("Verify original FP state".into(), "fixture-v".into()));
+                    }
                     choices("Game", &items)?;
                 }
                 "__pause__" => {
@@ -603,11 +610,13 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
                 }
                 value if value.starts_with("fixture-") => {
                     let l = player.live.as_mut().ok_or("no game")?;
-                    if c::resources::ORIGINAL_FIXTURES.contains(&l.binding.media.as_str()) {
-                        let text = &value[8..];
-                        if ["a", "s", "?"].contains(&text) {
-                            l.native.serial.write_all(text.as_bytes())?;
-                        }
+                    let text = &value[8..];
+                    let allowed = (c::resources::ORIGINAL_FIXTURES
+                        .contains(&l.binding.media.as_str())
+                        && ["a", "s", "?"].contains(&text))
+                        || (l.binding.media == c::resources::ORIGINAL_FP_FIXTURE && text == "v");
+                    if allowed {
+                        l.native.serial.write_all(text.as_bytes())?;
                     }
                 }
                 _ => {}
@@ -626,6 +635,7 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
                     eprint!("{text}");
                     if c::resources::ORIGINAL_FIXTURES.contains(&l.binding.media.as_str())
                         || c::resources::ORIGINAL_IO_FIXTURES.contains(&l.binding.media.as_str())
+                        || l.binding.media == c::resources::ORIGINAL_FP_FIXTURE
                     {
                         media::status(&text);
                     }

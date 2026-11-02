@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "original SSE1 floating-point continuity through existing Android cartridge path",
+  "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+  "machine_default_source": "hw/xbox/xbox.c:676 pentium3",
+  "original_source": "5122827bcf820972d011ca9cc70abea9b6336092697b87578c0f3b3eb48ec6ba",
+  "original_uart_helper_source": "219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60",
+  "fixture_sha256": "90ccee65b38ff84291389b917cb0a4e6abb57de063049a91ea05b3e0f1a7f856",
+  "fixture_bytes": 131072,
+  "original_fixture_preserved": true,
+  "source_adaptation": "exactly two MOVDQU bit transfers become SSE1 MOVUPS; old source and artifact retained",
+  "ordinary_open_system": "3a0659bf1f51609308fddea38eeaa19d778f0bb2e14cd0e168b95079ba7c950c",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "core_or_kernel_rebuild": false,
+  "trusted_fixture_only_command": "v for this exact original fixture; existing A/B commands unchanged",
+  "validation": {
+    "isolated_strict_Clippy": true,
+    "Android_release_build": true,
+    "signing_and_alignment_verified": true,
+    "native_helper_seed_DEX_manifest_reused": true
+  },
+  "prior_observation": {
+    "cold_original_READY_observed": true,
+    "initial_capture_opened": true,
+    "original_PASS_reconstructed": true,
+    "raw_marker_split_by_disabled_native_statistics": true,
+    "exact_native_reports_removed_in_private_parser": 187,
+    "raw_evidence_retained": true,
+    "initial_job": "cancelled_at_safe_boundary_return_verified",
+    "fresh_process_proof": false
+  },
+  "continuation": {
+    "existing_candidate_installed": true,
+    "existing_import_preserved": true,
+    "reinstall": false,
+    "reimport": false,
+    "status": "pending_normal_custody",
+    "fresh_process_proof": false
+  },
+  "collection_maintenance": {
+    "private_handoff_read": true,
+    "active_game_document_name_preserved": true,
+    "retired_host_media_not_recreated": true,
+    "media_availability_is_not_runtime_acceptance": true
+  },
+  "preservation": {
+    "protected_source_signing_recovery_hashes": 21,
+    "all_match": true,
+    "paused_paths": 16,
+    "prior_builds_and_profiles_retained": true
+  },
+  "Fable_playable": false,
+  "Fable_cause_established": false,
+  "new_Fable_trial": false,
+  "new_game_memory_operations": false
+}

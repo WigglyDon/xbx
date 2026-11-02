@@ -11,7 +11,17 @@ use std::{
 };
 type Error = Box<dyn std::error::Error>;
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let dir = root.join("fp-state-v1");
+    build_for(repo, root, false)
+}
+pub(super) fn build_sse1(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_for(repo, root, true)
+}
+fn build_for(repo: &Path, root: &Path, sse1: bool) -> Result<(), Error> {
+    let dir = root.join(if sse1 {
+        "fp-state-sse1-v1"
+    } else {
+        "fp-state-v1"
+    });
     c::mkdir(&dir)?;
     let source = repo.join("native/fixtures/fp-continuity.S");
     let uart_source = repo.join("native/fixtures/startup-lifetime.S");
@@ -23,21 +33,31 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         .split_once(".balign 4\n")
         .ok_or("UART end")?
         .0;
-    let generated = format!(
-        "{}\n.text\nserial_init:\n{uart}",
-        fs::read_to_string(&source)?
-    );
+    let original = fs::read_to_string(&source)?;
+    let adapted = if sse1 {
+        if original.matches("movdqu").count() != 2 {
+            return Err("original FP transfer sites differ; no adaptation".into());
+        }
+        original.replace("movdqu", "movups")
+    } else {
+        original
+    };
+    let generated = format!("{adapted}\n.text\nserial_init:\n{uart}");
     let fixture = super::cpu_performance::assemble_two_page(
         &root.join("fixtures-v2/a.iso"),
         &dir,
         &generated,
-        "xbx original FP continuity",
-        0x58424650,
+        if sse1 {
+            "xbx original SSE FP continuity"
+        } else {
+            "xbx original FP continuity"
+        },
+        if sse1 { 0x58424651 } else { 0x58424650 },
     )?;
     c::write_new(
         &dir.join("build.json"),
         &c::json(
-            &json!({"source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,"fixture":fixture,"original_only":true,"kernel_changed":false,"contract":"noninitial live x87 stack/control word, XMM0, MXCSR and RAM cookie survive the native checkpoint","commercial_acceptance":false}),
+            &json!({"source":c::file_digest(&source)?,"uart_source":c::file_digest(&uart_source)?,"fixture":fixture,"original_only":true,"kernel_changed":false,"SSE1_bit_transfer_adaptation":sse1,"original_artifact_retained":true,"contract":"noninitial live x87 stack/control word, XMM0, MXCSR and RAM cookie survive the native checkpoint","commercial_acceptance":false}),
         )?,
     )?;
     Ok(())
