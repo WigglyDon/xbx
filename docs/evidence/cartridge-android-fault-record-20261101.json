@@ -23,10 +23,21 @@
   },
   "device": {
     "finite_request_submitted_once": true,
-    "state": "pending_admission",
-    "changed_image_original_qualified": false,
+    "state": "completed_and_return_verified",
+    "changed_image_original_qualified": true,
     "Fable_context_retrieved": false,
-    "menu_play_sound_save_or_resume_claimed": false
+    "menu_play_sound_save_or_resume_claimed": false,
+    "original_captures_reviewed": 2,
+    "Fable_captures_reviewed": 1,
+    "visible_Fable_result": "black game area then native-unhealthy UI; no menu or play",
+    "public_observation": "serial output stops within startup lines; quick boot and fatal21 are observed; no new access-violation context captured",
+    "retained_read_at_byte_bound": false,
+    "prior_actual_native_return_records_retrieved": 10,
+    "prior_records_all_clean": true,
+    "compatible_update_all_prior_profile_files_preserved": true,
+    "own_processes_absent": true,
+    "stock_return_verified_under_lease": true,
+    "forced_task_app_retirement": false
   },
-  "remaining": "actual original changed-image control, one private context, independently supported attribution and correction"
+  "remaining": "restore reliable bounded serial observation; minimum context and public-platform attribution are unmet"
 }

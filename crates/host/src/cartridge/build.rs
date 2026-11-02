@@ -349,6 +349,14 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-launch-status" => super::android_launch::build(repo, root)?,
         "cartridge-android-startup-handoff" => super::android_launch::handoff(repo, root)?,
         "cartridge-android-fault-record" => super::android_launch::fault(repo, root)?,
+        "cartridge-android-serial-yield" => super::android_launch::serial_yield(repo, root)?,
+        "cartridge-android-fault-word" => super::android_launch::fault_word(repo, root)?,
+        "cartridge-android-fault-word-package" => {
+            super::android_package::build_fault_word(repo, root)?
+        }
+        "cartridge-android-serial-yield-package" => {
+            super::android_package::build_serial_yield(repo, root)?
+        }
         "cartridge-android-fault-record-package" => {
             super::android_package::build_fault_record(repo, root)?
         }

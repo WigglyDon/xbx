@@ -1,0 +1,19 @@
+--- a/kernel/src/hal/serial.cpp
++++ b/kernel/src/hal/serial.cpp
+@@ -51,11 +51,15 @@
+ }
+ 
+ static bool HalpSerialPut(UCHAR c) {
+-    for (ULONG i = 0; i < SERIAL_TIMEOUT; i++)
++    for (ULONG i = 0; i < SERIAL_TIMEOUT; i++) {
+         if (inb(UART_LSR) & 0x20) {
+             outb(UART_THR, c);
+             return true;
+         }
++        // A normal x86 spin hint also lets retained TCG service its event loop.
++        // Keep the same finite poll budget and absent-device behavior.
++        __asm__ volatile("pause");
++    }
+     HalpSerialPresent = FALSE; // stuck or removed: stop rather than slow every line down
+     return false;
+ }

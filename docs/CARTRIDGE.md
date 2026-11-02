@@ -1156,5 +1156,33 @@ formatting and isolated strict Clippy pass. A finite check is prepared and queue
 after the completed handoff observation. It first requires an original boot/action
 and clean departure; after retaining the failing game's record it retires only
 the task-owned app and preserves dirty-generation recovery without publishing a
-healthy game checkpoint. No new title outcome is claimed by preparation.
-[Private-context preparation receipt](evidence/cartridge-android-fault-record-20261101.json).
+healthy game checkpoint. That attempt now completes with the original action
+control passing and actual stock/process return verified. All three captures
+are opened: the game area remains black before native-unhealthy recovery. Serial
+output stops within startup lines; quick reboot and fatal21 are observed, but
+no exception record is captured. This is a failed observation boundary, without
+new fault attribution or menu/play acceptance. The minimum reader remains unused.
+A separate one-object candidate adds the normal x86 PAUSE spin hint to serial
+polling. The original finite200000-poll timeout and absent-device policy remain.
+The retained core's pause helper exits to its event loop; this targeted hint
+addresses the observed logging limitation and claims no game correction.
+[Private-context result receipt](evidence/cartridge-android-fault-record-20261101.json).
+
+The serial polling hint passes the actual changed-image original boot/action
+control and allows the focused Fable attempt to retain all requested full-width
+exception fields. The timeout and absent-device policy are unchanged. The recorded
+control location and read address are zero; this does not identify the caller or
+a failing public contract. The bounded instruction reader refuses that unmapped
+location, so no title bytes are read. Both original captures are opened; no Fable
+frame is obtained before native-unhealthy recovery. Actual process absence and
+stock return are verified, with the preceding candidates and all data retained.
+This is an observation improvement, not a demonstrated game correction.
+[Serial-yield result](evidence/cartridge-android-serial-yield-20261101.json).
+
+The next separately identified developer image adds only the exception-origin
+tag and one guarded four-byte top-of-stack word. Both address endpoints must be
+mapped; no stack walk or instruction bytes are collected. The public nxdk context
+definition is compared as a reference, without copying its implementation. Build,
+strict isolated Clippy, package and component checks pass; its finite original
+control and one-record device observation are pending admission.
+[One-word preparation](evidence/cartridge-android-fault-word-20261101.json).

@@ -10,6 +10,8 @@ enum Image {
     Launch,
     Handoff,
     Fault,
+    Yield,
+    Word,
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -20,6 +22,12 @@ pub(super) fn handoff(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 pub(super) fn fault(repo: &Path, root: &Path) -> Result<(), Error> {
     build_selected(repo, root, Image::Fault)
+}
+pub(super) fn serial_yield(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(repo, root, Image::Yield)
+}
+pub(super) fn fault_word(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(repo, root, Image::Word)
 }
 fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
     let retained = root
@@ -58,6 +66,22 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
             root.join("android-handoff-v1/build"),
             "android-fault-v1",
             "patches/oxos-android-fault-record.patch",
+            "android-tcg-baseline-v1",
+            &["kernel/src/ke/except.cpp"],
+        ),
+        Image::Yield => (
+            root.join("android-fault-v1/source"),
+            root.join("android-fault-v1/build"),
+            "android-fault-yield-v1",
+            "patches/oxos-serial-poll-yield.patch",
+            "android-tcg-baseline-v1",
+            &["kernel/src/hal/serial.cpp"],
+        ),
+        Image::Word => (
+            root.join("android-fault-yield-v1/source"),
+            root.join("android-fault-yield-v1/build"),
+            "android-fault-word-v1",
+            "patches/oxos-android-fault-word.patch",
             "android-tcg-baseline-v1",
             &["kernel/src/ke/except.cpp"],
         ),
@@ -106,7 +130,9 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
             "source_date_epoch":"1792632338","jobs":1,
             "public_launch_header_fields_only":matches!(image, Image::Launch),
             "bounded_public_thread_and_exception_fields":!matches!(image, Image::Launch),
-            "private_single_exception_context":matches!(image, Image::Fault),
+            "private_single_exception_context":matches!(image, Image::Fault | Image::Yield | Image::Word),
+            "serial_spin_pause_hint":matches!(image, Image::Yield | Image::Word),
+            "maximum_guarded_stack_words":if matches!(image, Image::Word) { 1 } else { 0 },
             "private_game_code_inspection":false,
             "prior_sources_and_objects_retained":true,"ordinary_default_changed":false,
             "original_or_Fable_qualified":false

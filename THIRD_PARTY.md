@@ -466,3 +466,13 @@ context record per boot to the same GPL-2.0 OXOS exception dispatcher. It record
 register/status fields, with no instruction bytes, memory payload, stack walk or
 game implementation copied into source. Its output stays private. The Rust
 builder retains distinct parent-image/native bindings and prior artifacts.
+
+`patches/oxos-serial-poll-yield.patch` adds an x86 PAUSE spin hint to retained
+GPL-2.0 OXOS serial polling, retaining its original finite timeout and absent-device
+policy. The pinned xemu pause helper supplies the existing event-loop yield;
+no new CPU implementation or game code is included.
+
+`patches/oxos-android-fault-word.patch` refines that same GPL-2.0 developer
+exception record with an origin tag and one mapped-address-validated stack word.
+It performs no stack walk and includes no game bytes. All resulting values remain
+private; the Rust owner retains separate source/image/native bindings.

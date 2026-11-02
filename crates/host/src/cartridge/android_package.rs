@@ -61,6 +61,22 @@ pub(super) fn build_fault_record(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-fault-package-v1",
     )
 }
+pub(super) fn build_serial_yield(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-fault-yield-package-v1",
+    )
+}
+pub(super) fn build_fault_word(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-fault-word-package-v1",
+    )
+}
 pub(super) fn build_tcg_fault(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -141,9 +157,23 @@ fn build_selected(
     let reporting = package_stage == "android-serial-io-package-v1";
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";
-    let fault_record = package_stage == "android-fault-package-v1";
+    let fault_word = package_stage == "android-fault-word-package-v1";
+    let serial_yield = package_stage == "android-fault-yield-package-v1" || fault_word;
+    let fault_record = package_stage == "android-fault-package-v1" || serial_yield;
     let handoff = package_stage == "android-handoff-package-v1" || fault_record;
-    let (handoff_stage, handoff_parent, handoff_patch) = if fault_record {
+    let (handoff_stage, handoff_parent, handoff_patch) = if fault_word {
+        (
+            "android-fault-word-v1",
+            "android-fault-yield-v1",
+            "patches/oxos-android-fault-word.patch",
+        )
+    } else if serial_yield {
+        (
+            "android-fault-yield-v1",
+            "android-fault-v1",
+            "patches/oxos-serial-poll-yield.patch",
+        )
+    } else if fault_record {
         (
             "android-fault-v1",
             "android-handoff-v1",

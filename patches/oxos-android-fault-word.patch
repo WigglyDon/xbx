@@ -1,0 +1,50 @@
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -2,6 +2,7 @@
+ #include <xk/arch.h>
+ #include <xk/ke.h>
+ #include <xk/serial.h>
++#include <xk/mm.h>
+ 
+ constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
+                 EXCEPTION_NESTED_CALL = 0x10;
+@@ -57,13 +58,20 @@
+ volatile ULONG KiExceptionsDispatched; // diagnostics
+ 
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+-static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
++static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context, ULONG Origin) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
+     // Private developer image: one precise access-violation record, no memory
+     // reads, instruction bytes, caller frames, strings or launch payloads.
+     static volatile ULONG XbxFaultRecords;
+     if (Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ &&
+         __atomic_add_fetch(&XbxFaultRecords, 1, __ATOMIC_RELAXED) == 1) {
++        // One guarded stack word identifies a possible null-transfer caller;
++        // this is not a stack walk or an instruction/memory dump.
++        ULONG sp = Context->Esp;
++        BOOLEAN valid = sp >= 0x10000 && sp <= 0xFFFFFFFC && MmIsAddressValid((PVOID)sp) &&
++                        MmIsAddressValid((PVOID)(sp + 3));
++        ULONG word = valid ? *(volatile ULONG *)sp : 0;
++        XK_SERIAL("xbxfault_word: valid=%u word=%08lx origin=%lu\n", (unsigned)valid, word, Origin);
+         XK_SERIAL("xbxfault: pc=%08lx access=%lu address=%08lx flags=%08lx\n", Context->Eip,
+                   Record->ExceptionInformation[0], Record->ExceptionInformation[1], Context->EFlags);
+         XK_SERIAL("xbxfault: eax=%08lx ebx=%08lx ecx=%08lx edx=%08lx\n", Context->Eax, Context->Ebx,
+@@ -178,7 +186,7 @@
+     context.Ecx = Frame->Ecx, context.Eax = Frame->Eax, context.Ebp = Frame->Ebp, context.Eip = Frame->Eip;
+     context.SegCs = Frame->SegCs, context.EFlags = Frame->EFlags, context.Esp = (ULONG)(&Frame->EFlags + 1);
+     context.SegSs = 0x10;
+-    BOOLEAN handled = RtlpDispatchException(&record, &context);
++    BOOLEAN handled = RtlpDispatchException(&record, &context, vector);
+     KiDispatchDepth = KiDispatchDepth - 1;
+     if (!handled)
+         KiUnhandled(&record, vector, Frame->ErrorCode);
+@@ -193,7 +201,7 @@
+ // Called by RtlRaiseException with the caller's context.
+ extern "C" [[noreturn]] void KiRaiseException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     Record->ExceptionAddress = (PVOID)Context->Eip;
+-    if (!RtlpDispatchException(Record, Context))
++    if (!RtlpDispatchException(Record, Context, 0x100))
+         KiUnhandled(Record, 0xFF, 0);
+     KiContinueContext(Context);
+ }

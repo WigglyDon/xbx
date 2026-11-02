@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "scope": "one private guarded top-of-stack word and trap origin after the captured null PC",
+  "patch": "patches/oxos-android-fault-word.patch",
+  "image": "367dd6895414e5134c322c7626d8eff778b0d26b6edf2a2b118ac2442b82900f",
+  "parent_image": "8b6bf5b1a2b69f941e8f4979923754a99250d606eee107b3bdc3351b6dd04637",
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "changed_objects": [
+    "ke/except.obj"
+  ],
+  "compared_objects": 70,
+  "maximum_stack_memory_bytes_read": 4,
+  "both_address_endpoints_require_mapped_validation": true,
+  "stack_walk_or_instruction_bytes_read": false,
+  "native_core_helper_seed_media_UI_unchanged": true,
+  "source_signature_alignment_and_component_checks_pass": true,
+  "original_context_reference": {
+    "kind": "public source comparison, not independent execution",
+    "url": "https://github.com/XboxDev/nxdk/blob/f8c52e4be65bab7d6e10455db8d86d69d232bbe3/lib/xboxkrnl/xboxdef.h"
+  },
+  "device": {
+    "single_finite_request_submitted": true,
+    "state": "pending_admission",
+    "new_observation_claimed": false
+  },
+  "remaining": "qualify original changed image, retrieve the minimum caller/origin record, independently attribute a public contract before correcting it"
+}
