@@ -1,0 +1,18 @@
+{
+  "Android_execution": false,
+  "fixture_iso": "6f5af6d56ea66783ce93330cf94111904fcecf332ac77441ddd0a5ebdc4d4b73",
+  "generated_source": "9236b3e0aec5c170d3ddae333f8d27699dff50d132b4f99068fdc64fa4ca69f3",
+  "kernel_or_core_build": false,
+  "original_checks_reused": true,
+  "original_source": "c9e756a701b39bcdd74ff1d5544f00896baebfcf26932101fca088ff6cb3d95d",
+  "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5",
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "retained original thread/TLS ABI, current Android target",
+  "fixture_bytes": 131072,
+  "installed_candidate_reused": true,
+  "new_APK_install": false,
+  "strict_isolated_Clippy": true,
+  "commercial_acceptance": false,
+  "current_state": "prepared_waiting_normal_custody"
+}

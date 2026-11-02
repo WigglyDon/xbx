@@ -280,6 +280,47 @@ fn fixture(repo: &Path, root: &Path, dir: &Path, llvm: &Path, values: bool) -> R
     Ok(())
 }
 
+pub(super) fn android_thread_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/thread-startup.S");
+    if c::file_digest(&source)?
+        != "c9e756a701b39bcdd74ff1d5544f00896baebfcf26932101fca088ff6cb3d95d"
+    {
+        return Err("retained original thread ABI regression differs".into());
+    }
+    let original = fs::read_to_string(&source)?;
+    let body = &original[original.find(".text\n").ok_or("original text")?..];
+    if body.matches("call *_XkThunks+24").count() != 2 {
+        return Err("original thread result sites differ".into());
+    }
+    let adapted = body
+        .replace("_XkTitleEntry", "_start")
+        .replace("_start:\n", "_start:\n    call npx_serial_init\n")
+        .replace("call *_XkThunks+24", "call npx_report")
+        .replace("_XkThunks", "thunks");
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "THREAD ABI BOOT")
+        .replace("NPX RESULT=", "THREAD RESULT=");
+    let dir = root.join("android-thread-original-v1");
+    c::mkdir(&dir)?;
+    let iso = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &format!("{adapted}\n{uart}"),
+        "xbx original thread ABI",
+        0x58425453,
+    )?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({"original_source":c::file_digest(&source)?,
+            "uart_adapter":c::file_digest(&adapter)?,"fixture_iso":iso,
+            "generated_source":c::file_digest(&dir.join("original.S"))?,
+            "original_checks_reused":true,"kernel_or_core_build":false,
+            "Android_execution":false}))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let dir = root.join("android-npx-original-v1");
     if c::file_digest(&repo.join("native/fixtures/npx-ownership.S"))? != ORIGINAL {
