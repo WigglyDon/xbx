@@ -545,6 +545,59 @@ pub(super) fn android_copy_fixture(repo: &Path, root: &Path) -> Result<(), Error
     Ok(())
 }
 
+/// Cover an actually protected image page, preserving all original copy checks.
+pub(super) fn copy_protection(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/copy-dispatch.S");
+    let gate = repo.join("native/fixtures/copy-protection.S");
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let original = fs::read_to_string(&source)?;
+    if original.matches("    call npx_serial_init\n").count() != 1
+        || original.matches("thunks: .long 0\n").count() != 1
+    {
+        return Err("original copy fixture insertion boundary differs".into());
+    }
+    let generated = original
+        .replace(
+            "    call npx_serial_init\n",
+            "    call npx_serial_init\n    call check_copy_protection\n",
+        )
+        .replace("thunks: .long 0\n", "thunks: .long 0x800000d9, 0\n");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "COPY PROTECT BOOT")
+        .replace("NPX RESULT=", "COPY PROTECT RESULT=");
+    let dir = root.join("android-copy-protection-v1");
+    c::mkdir(&dir)?;
+    let writable = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &format!("{generated}\n{}\n{uart}", fs::read_to_string(&gate)?),
+        "xbx original copy protection",
+        0x58424351,
+    )?;
+    let mut bytes = fs::read(dir.join("original.iso"))?;
+    let flags = 34 * 2048 + 0x348;
+    if bytes.get(flags..flags + 4) != Some(6_u32.to_le_bytes().as_slice()) {
+        return Err("original image code-section flags differ".into());
+    }
+    put(&mut bytes, flags, 0x36);
+    c::write_new(&dir.join("readonly.iso"), &bytes)?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":c::file_digest(&source)?,"protection_gate":c::file_digest(&gate)?,
+            "UART":c::file_digest(&adapter)?,"generated_source":c::file_digest(&dir.join("original.S"))?,
+            "writable_iso":writable,"readonly_iso":c::digest(&bytes),
+            "only_envelope_difference":"code section flags 6 -> 0x36; same code, data, imports and checks",
+            "query_contract":"NtQueryVirtualMemory ordinal217 stdcall8; status0, committed region covering page; effective Protect4 control, Protect2 readonly",
+            "expected_markers":{"writable":["00000000","00000004","00000104","52455041"],
+                "readonly":["00000000","00000002","00000104","52455041"]},
+            "counts":"0..=64","destination_alignments":4,"expected_cases":260,
+            "kernel_core_APK_rebuilt":false,"Android_execution":false,"game_bytes_used":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 /// Run the same original checks directly on the host's x86 CPU. Only the UART
 /// transport is replaced; Rust checks both emitted words before acceptance.
 pub(super) fn copy_host_control(repo: &Path, root: &Path) -> Result<(), Error> {

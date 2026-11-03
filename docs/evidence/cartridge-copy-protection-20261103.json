@@ -1,0 +1,123 @@
+{
+  "Android_execution": true,
+  "UART": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5",
+  "counts": "0..=64",
+  "destination_alignments": 4,
+  "expected_cases": 260,
+  "expected_markers": {
+    "readonly": [
+      "00000000",
+      "00000002",
+      "00000104",
+      "52455041"
+    ],
+    "writable": [
+      "00000000",
+      "00000004",
+      "00000104",
+      "52455041"
+    ]
+  },
+  "game_bytes_used": false,
+  "generated_source": "4a05edeeb5afa5ce3fe9dfd5fdb5f63ee216154b3b008d1688246f95564ba425",
+  "kernel_core_APK_rebuilt": false,
+  "only_envelope_difference": "code section flags 6 -> 0x36; same code, data, imports and checks",
+  "original_source": "b1a2d5b62d53655e9c3000f60f41f13be192d3209068db9aec7c80d31dd06f86",
+  "protection_gate": "57c07ffab430e4f5a143446eb6ef2234a968eed19a1ce3b1400c742f86e656f3",
+  "query_contract": "NtQueryVirtualMemory ordinal217 stdcall8; status0, committed region covering page; effective Protect4 control, Protect2 readonly",
+  "readonly_iso": "026bf768027f4ddd5ffd29525dab7c144a119ced077bbfe1afae9b6037a6a45c",
+  "writable_iso": "2dba4b5c25dd5b4e9aff7a6da4c3ec08e4446374324b14739b59967d624dc950",
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "decision": "Owner-delegated XBX-local Master: one original-only effective readonly page copy/dispatch boundary, no further commercial inspection or title replay",
+  "rationale": "Prior one-page flags6 fixture loader rounding skipped effective code-page protection; its readonly declaration alone did not qualify readonly dispatch",
+  "public_source": "Pinned OXOS kernel exports.tsv ordinal217 stdcall8, include/xk/mm.h MEMORY_BASIC_INFORMATION, src/mm/virtual.cpp effective PTE query and src/xe/loader.cpp head/tail protection",
+  "host_build_and_Clippy_warnings_denied": true,
+  "owned_formatting_and_diff_check": true,
+  "device": "Completed v2 original-only comparison and verified return; writable passed; protected variant did not complete",
+  "Fable_acceptance": false,
+  "saves_and_paused_paths": "protected; no old checkpoints retagged or rebuilt",
+  "public_contract_source_sha256": {
+    "exports.tsv": "aa5c07f0bb9a0c1053dc9aadd4d4271ba53d3a8b69c49356d8479faeb66d7e7b",
+    "include/xk/mm.h": "0fd40e90c2a437e6f4a39db438636f1f85be73febcd0a592a3aded61f5545cb5",
+    "src/mm/virtual.cpp": "5b58f7e8017d55496e393c9f2bf4d81e58f4222bac5bac4fb73543cf8a42d3d1",
+    "src/xe/loader.cpp": "4ed17c3828ffa76657429bf8248d8d54b348d449b8aebeba1db5e269f16790fc"
+  },
+  "retained_APK_sha256": "992d017d77b8e8a26542aae3f137b75359a19e29ec0a9bc0aeda17b7220a5665",
+  "retained_core_sha256": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "retained_open_system_sha256": "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563",
+  "prior_client_failure": {
+    "writable_query_status": 0,
+    "writable_Protect": 4,
+    "copy_cases_passed": 260,
+    "client_error": "KeyError on case-specific result name after generic copy_pass result; corrected one lookup in separate fresh task",
+    "readonly_executed": false,
+    "clean_native_Leave_qualified": false,
+    "failed_synthetic_state_retained_without_checkpoint": true,
+    "exact_original_data_and_stock_return_verified": true
+  },
+  "retained_structural_metadata_rationale": {
+    "no_new_title_bytes_read": true,
+    "sampled_table_in_expected_loader_readonly_interval": true
+  },
+  "controls": [
+    {
+      "case": "writable",
+      "completed": true,
+      "passed": true,
+      "observation": {
+        "markers": [
+          "COPY PROTECT BOOT",
+          "COPY PROTECT RESULT=00000000",
+          "COPY PROTECT RESULT=00000004",
+          "COPY PROTECT RESULT=00000104",
+          "COPY PROTECT RESULT=52455041"
+        ],
+        "copy_pass": true,
+        "failed": false,
+        "guest_fatal": false,
+        "title_handoff": true,
+        "title_return": false,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "commercial_context_collected": false
+      },
+      "commercial_acceptance": false,
+      "native_return": {
+        "records": 1,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    },
+    {
+      "case": "readonly",
+      "completed": false,
+      "reason": "original response deadline"
+    }
+  ],
+  "protected_launch_retained_log": {
+    "retrieved_only_this_new_original_log": true,
+    "query_status": 0,
+    "effective_Protect": 2,
+    "UART_text_labels_missing": true,
+    "terminal": "bug check1e access violation c0000005 at zero",
+    "copy_completion_marker": false,
+    "minimum_marker_filter_missed_bugcheck": true,
+    "no_game_read_or_replay": true,
+    "retrieval_work_seconds": 13.76212646998465,
+    "exact_canonical_data_APK_and_stock_return_verified": true
+  },
+  "return": {
+    "original_root_hashes_restored": true,
+    "namespace_restored": true,
+    "fresh_namespace_retained": true,
+    "returned_under_lease": true,
+    "own_processes_absent": true,
+    "protected_failed_state_retained_without_checkpoint": true,
+    "protected_clean_native_departure": false,
+    "work_seconds": 135.89662414701888
+  },
+  "finding": "Original positive writable copy+dispatch versus query-confirmed readonly variant demonstrates an independent public-runtime failure, without attributing Fable yet.",
+  "next_public_source_hypothesis": "Pinned fastmem unmap replaces a mirrored page with anonymous PROT_NONE and leaves a stale writable alias. reset_dirty unconditionally mprotects that alias PROT_READ, potentially making anonymous zero pages readable. Verify actual public function bodies with original native mapping regression before correcting; no further title inspection."
+}
