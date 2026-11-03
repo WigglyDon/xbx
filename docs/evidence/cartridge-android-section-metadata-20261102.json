@@ -40,8 +40,53 @@
     "host_and_Android_warnings_denied_compile": true,
     "APK_core_kernel_rebuilt": false
   },
-  "device": "prepared; new metadata control and commercial metadata/Fable path not yet run",
+  "device": "completed; new original metadata control and real107-section mapping passed, Fable guest failure; original APK/data and stock return verified",
   "privacy": "structural numeric fields only; no instructions, section payloads, names, keys or full media copy",
   "preservation": "prior tools, recipes, data and raw evidence retained; original emulator gates reused; current APK/collection restored before stock return if conditional update occurs",
-  "Fable_qualified": false
+  "Fable_qualified": false,
+  "actual_Android": {
+    "original_65_section_Android_metadata_control": {
+      "passed": true,
+      "sections": 65,
+      "known_original_fields_matched": true,
+      "synthetic_metadata_only_not_emulated": true
+    },
+    "actual_media_section_count": 107,
+    "media_size_mtime_unchanged": true,
+    "new_Fable_entry_and_profile": true,
+    "old_saves_copied": false,
+    "Fable": {
+      "outcome": "guest_startup_failure_after_handoff_return_and_reboot",
+      "handoff": true,
+      "entry_return": true,
+      "quick_boots": 1,
+      "cold_boots": 2,
+      "guest_fatal": true,
+      "fatal21": true,
+      "truncated": false,
+      "covered_IO_failures": [],
+      "covered_successful_reads": [],
+      "guarded_word_valid_nonzero": true,
+      "candidate_in_file_backed_game_executable_section": true,
+      "candidate_is_proven_caller": false,
+      "public_failing_contract_attributed": false,
+      "game_instruction_bytes_read": 0,
+      "raw_word_and_section_offsets_published": false,
+      "actual_visible": "black game region and touch controls, then Game startup failed dialog; current saves and diagnostics retained",
+      "captures_opened_and_reviewed": 2,
+      "normal_OK_departure": true,
+      "input_after_terminal_failure": false,
+      "Fable_qualified": false
+    },
+    "original_collection_inode_and_all_file_hashes_restored": true,
+    "original_APK_restored": true,
+    "fresh_output_retained_separately": true,
+    "OS_processes_absent": true,
+    "stock_return_verified": true,
+    "forced_retirement": false,
+    "Fable_per_field_native_receipt": "retained with inactive fresh output; not separately retrieved to host; no explicit per-field clean native claim",
+    "work_seconds": 108.96785140701104,
+    "work_seconds_is_performance_measurement": false
+  },
+  "conclusion": "The diagnostic64-section limit caused the metadata-reader refusal; corrected reader maps all107 actual sections. Fable itself still fails. One valid nonzero frame candidate maps to file-backed executable content, but EBP-derived metadata alone does not establish a true caller or failing platform contract. Instruction inspection remains paused."
 }
