@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "scope": "Private ordinary runner continuation; not a product storage reset",
+  "decision": "Continue retained coherent namespace without copying or rewriting session, under both existing app leases and new return journal; preserve prior original, profiles and every file",
+  "identity": {
+    "source": "2f82683fc241b22fb54a7a25ca747b54c33b08e2f50d83e8f6316e48eadb7799",
+    "storage_source": "0b008c94d58f5501361a86c5777b4d67bf5b9c1c084a71cad44b566e5d62e603",
+    "binary": "63e9dd98c84fc5f0c61495e0aa14044ba175ad1a7130adfb62fd6f71644826d5",
+    "tests_passed": 7,
+    "target": "aarch64-linux-android",
+    "warnings_denied": true,
+    "previous_helper_preserved": true,
+    "no_device_execution_yet": true
+  },
+  "tests": [
+    "prior begin/restore preservation and interruption",
+    "exclusive-busy/collision refusal",
+    "continuation retains directory inode and checkpoint bytes",
+    "busy or mismatched prior namespace refuses before mutation",
+    "interruption before adoption preserves prior session"
+  ],
+  "device_execution": false
+}

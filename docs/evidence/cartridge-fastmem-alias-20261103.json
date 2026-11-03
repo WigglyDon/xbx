@@ -68,6 +68,134 @@
   },
   "APK_signature_and_alignment_pass": true,
   "open_system_rebuilt": false,
-  "device": "prepared; original red/green Android and Fable observation unexecuted",
-  "Fable_cause_established": false
+  "device": "completed and returned; both original gates and focused Fable observation executed",
+  "Fable_cause_established": false,
+  "host_all_target_Clippy_warnings_denied": true,
+  "owned_formatting_passed": true,
+  "original_Android": [
+    {
+      "case": "writable",
+      "passed": true,
+      "original": {
+        "original_pass": true,
+        "original_markers": [
+          "COPY PROTECT BOOT",
+          "COPY PROTECT RESULT=00000000",
+          "COPY PROTECT RESULT=00000004",
+          "COPY PROTECT RESULT=00000104",
+          "COPY PROTECT RESULT=52455041"
+        ],
+        "guest_fatal": false,
+        "fatal21": false,
+        "title_handoff": true,
+        "title_return": false,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "io_failures": [],
+        "game_context_or_instructions_collected": false
+      },
+      "native_return": {
+        "records": 1,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    },
+    {
+      "case": "readonly",
+      "passed": true,
+      "original": {
+        "original_pass": true,
+        "original_markers": [
+          "COPY PROTECT BOOT",
+          "COPY PROTECT RESULT=00000000",
+          "COPY PROTECT RESULT=00000002",
+          "COPY PROTECT RESULT=00000104",
+          "COPY PROTECT RESULT=52455041"
+        ],
+        "guest_fatal": false,
+        "fatal21": false,
+        "title_handoff": true,
+        "title_return": false,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "io_failures": [],
+        "game_context_or_instructions_collected": false
+      },
+      "native_return": {
+        "records": 1,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    }
+  ],
+  "Fable": {
+    "public_status": [
+      {
+        "original_pass": false,
+        "original_markers": [],
+        "guest_fatal": false,
+        "fatal21": false,
+        "title_handoff": true,
+        "title_return": true,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "io_failures": [
+          [
+            "0",
+            "c000003a",
+            "0",
+            "00000060"
+          ],
+          [
+            "0",
+            "c0000034",
+            "0",
+            "00000064"
+          ]
+        ],
+        "game_context_or_instructions_collected": false
+      }
+    ],
+    "captures_taken": 14,
+    "captures_opened": [
+      1,
+      3,
+      6,
+      8,
+      11,
+      13,
+      14
+    ],
+    "observed": [
+      "initial black controls",
+      "rendered publisher intro",
+      "advancing cinematic",
+      "Press START screen",
+      "Start press followed by actual main menu with New Game selected"
+    ],
+    "ordinary_input": "initial two preview-scaled touches not credited; corrected original-resolution Start, then Start on Press START produced main menu; later A request arrived after bounded observation and was not executed",
+    "menu_and_Start_response_qualified": true,
+    "gameplay_audio_save_pacing_resume_qualified": false,
+    "actual_native_quit_join_sync": true,
+    "fresh_media_and_storage_identity": {
+      "same_media": true,
+      "new_entry_and_profile": true,
+      "old_saves_copied": false
+    },
+    "further_game_code_or_memory_read": false
+  },
+  "verified_return": {
+    "original_APK_restored": true,
+    "original_root_hashes_restored": true,
+    "namespace_restored": true,
+    "fresh_namespace_retained": true,
+    "returned_under_lease": true,
+    "own_processes_absent": true
+  },
+  "work_seconds": 468.80432070302777,
+  "qualification_limit": "Independent original defect repaired and Android protected-page regression passes; Fable advances from prior startup failure to observed menu and Start response. Gameplay, sound, save, pacing and Fable checkpoint return remain separate unearned milestones.",
+  "continuation": "Use exact retained candidate and preserved session for normal fresh-process return and onward gameplay qualification; no unchanged kernel/core/APK rebuild or repeat intro campaign."
 }

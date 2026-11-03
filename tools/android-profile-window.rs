@@ -45,6 +45,9 @@ impl Window {
     fn begin(&self) -> io::Result<()> {
         let inode = Self::inode(&self.current)?;
         let _lease = storage::ProfileLease::acquire(&self.current)?;
+        self.begin_locked(inode)
+    }
+    fn begin_locked(&self, inode: u64) -> io::Result<()> {
         if self.original.try_exists()? || self.fresh.try_exists()? || self.journal.try_exists()? {
             return Err(io::Error::other(
                 "existing window evidence retained; no replay",
@@ -67,6 +70,36 @@ impl Window {
             return Err(io::Error::other("original identity changed"));
         }
         // The ordinary product creates its own fresh collection/storage here.
+        Ok(())
+    }
+    // Continue a fully returned qualification namespace without copying or
+    // rewriting any session. A new window journal remains the return owner.
+    fn continue_from(&self, prior: &Self) -> io::Result<()> {
+        let expected: u64 = fs::read_to_string(&prior.journal)?
+            .trim()
+            .parse()
+            .map_err(|_| io::Error::other("invalid prior receipt"))?;
+        if self.parent != prior.parent
+            || self.journal == prior.journal
+            || Self::inode(&self.current)? != expected
+            || prior.original.try_exists()?
+        {
+            return Err(io::Error::other(
+                "prior window has not returned this original",
+            ));
+        }
+        let fresh_inode = Self::inode(&prior.fresh)?;
+        let _original = storage::ProfileLease::acquire(&self.current)?;
+        let _fresh = storage::ProfileLease::acquire(&prior.fresh)?;
+        self.begin_locked(expected)?;
+        // If interrupted before this rename, restore returns the original and
+        // leaves prior.fresh intact. After it, restore retains this namespace
+        // as self.fresh. Neither outcome removes a file or overwrites a path.
+        fs::rename(&prior.fresh, &self.current)?;
+        self.sync()?;
+        if Self::inode(&self.current)? != fresh_inode {
+            return Err(io::Error::other("continued namespace identity differs"));
+        }
         Ok(())
     }
     fn restore(&self) -> io::Result<()> {
@@ -110,9 +143,9 @@ impl Window {
 }
 fn main() -> io::Result<()> {
     let args: Vec<_> = std::env::args().collect();
-    if args.len() != 4 {
+    if !((args.len() == 4 && args[1] != "continue") || (args.len() == 5 && args[1] == "continue")) {
         return Err(io::Error::other(
-            "expected begin|restore PRIVATE_FILES WINDOW_ID",
+            "expected begin|restore PRIVATE_FILES WINDOW_ID, or continue PRIVATE_FILES NEW_ID PRIOR_ID",
         ));
     }
     let window = Window::new(Path::new(&args[2]), &args[3])?;
@@ -120,6 +153,7 @@ fn main() -> io::Result<()> {
         "probe" => {}
         "begin" => window.begin()?,
         "restore" => window.restore()?,
+        "continue" => window.continue_from(&Window::new(Path::new(&args[2]), &args[4])?)?,
         _ => return Err(io::Error::other("unknown window operation")),
     }
     println!("window {} verified; all data retained", args[1]);
@@ -198,5 +232,67 @@ mod tests {
         assert!(!w.fresh.exists());
         assert!(w.begin().is_err());
         fs::remove_dir_all(w.parent).unwrap();
+    }
+    #[test]
+    fn continued_checkpoint_keeps_inode_bytes_and_original_save() {
+        let prior = fixture();
+        prior.begin().unwrap();
+        fs::create_dir(&prior.current).unwrap();
+        fs::write(
+            prior.current.join("checkpoint"),
+            b"complete unsaved session",
+        )
+        .unwrap();
+        let inode = Window::inode(&prior.current).unwrap();
+        prior.restore().unwrap();
+        let next = Window::new(&prior.parent, "112233445566778899aabbccddeeff00").unwrap();
+        next.continue_from(&prior).unwrap();
+        assert_eq!(Window::inode(&next.current).unwrap(), inode);
+        assert_eq!(
+            fs::read(next.current.join("checkpoint")).unwrap(),
+            b"complete unsaved session"
+        );
+        next.restore().unwrap();
+        assert_eq!(Window::inode(&next.fresh).unwrap(), inode);
+        assert!(next.current.join("saved-session").exists());
+        assert!(next.continue_from(&prior).is_err());
+        fs::remove_dir_all(prior.parent).unwrap();
+    }
+    #[test]
+    fn busy_continuation_refuses_before_original_moves() {
+        let prior = fixture();
+        prior.begin().unwrap();
+        fs::create_dir(&prior.current).unwrap();
+        prior.restore().unwrap();
+        let next = Window::new(&prior.parent, "112233445566778899aabbccddeeff00").unwrap();
+        let lease = storage::ProfileLease::acquire(&prior.fresh).unwrap();
+        assert!(next.continue_from(&prior).is_err());
+        assert!(next.current.join("saved-session").exists());
+        assert!(!next.journal.exists());
+        drop(lease);
+        // A changed original identity also refuses without creating a journal.
+        fs::rename(&next.current, prior.parent.join("displaced-original")).unwrap();
+        fs::create_dir(&next.current).unwrap();
+        assert!(next.continue_from(&prior).is_err());
+        assert!(!next.journal.exists());
+        fs::remove_dir_all(prior.parent).unwrap();
+    }
+    #[test]
+    fn interrupted_continuation_before_adoption_keeps_prior_session() {
+        let prior = fixture();
+        prior.begin().unwrap();
+        fs::create_dir(&prior.current).unwrap();
+        fs::write(prior.current.join("checkpoint"), b"retained session").unwrap();
+        prior.restore().unwrap();
+        let next = Window::new(&prior.parent, "112233445566778899aabbccddeeff00").unwrap();
+        next.begin().unwrap(); // interruption before the adoption rename
+        next.restore().unwrap();
+        assert_eq!(
+            fs::read(prior.fresh.join("checkpoint")).unwrap(),
+            b"retained session"
+        );
+        assert!(next.current.join("saved-session").exists());
+        assert!(next.continue_from(&prior).is_err());
+        fs::remove_dir_all(prior.parent).unwrap();
     }
 }
