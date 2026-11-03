@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "parent": "docs/evidence/cartridge-fastmem-alias-20261103.json",
+  "decision": "Ordinary serial-off qualification candidate; exact functional open source and corrected native core retained",
+  "source": {
+    "source_manifest": "55265e32d42549665931f4802b827db0ecb6b066f832799c198e00a65065cfdd",
+    "source_entries": 424,
+    "source_bytes_changed": false,
+    "source_date_epoch": "1792632338",
+    "serial": false,
+    "trace_imports": false,
+    "selftest": false,
+    "proprietary_boot_inputs": false
+  },
+  "components": {
+    "apk_sha256": "58c6637db41e59e42419557f57c221e4f0aaa7d4bbd2e3d5b994acd56549c11f",
+    "core_sha256": "5042323792e178072d2351e5d4043540706c7bcbd8ec2f321a787cbe117d9a15",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059",
+    "open_system_sha256": "672e27b10bfc44bf770876c76b1a79b142fb739d17d08becc452375035e590f3",
+    "rust_library_sha256": "115d5e4e6d10665ffc0a93983611f7f5e6cfeef124f151d353d31b297811c4c2"
+  },
+  "whole_core_rebuild": false,
+  "checkpoint_bindings_retagged": false,
+  "packaged_component_digests_verified": true,
+  "signature_v3_verified": true,
+  "zip_alignment_verified": true,
+  "isolated_source_matches_four_owned_files": true,
+  "host_and_Android_Rust_builds_passed": true,
+  "owned_formatting_and_diff_check_passed": true,
+  "Clippy": "not run; current guard refused before Cargo because one-GiB check envelope plus twelve-GiB floor unavailable",
+  "capacity": {
+    "initial_two_GiB_guard_refused_before_packaging": true,
+    "packaging_estimate": "retained complete145MiB stage plus entire220MiB Android target plus659MiB temporary envelope rounded to oneGiB",
+    "packaging_one_GiB_phase_admitted_and_postcheck_passed": true,
+    "twelve_GiB_floor_and_metadata_global_reserve_checks_unchanged": true,
+    "no_cleanup_guard_reduction_or_retired_workspace": true,
+    "no_storage_lease_while_device_request_pending": true
+  },
+  "device": "one prepared finite normal-custody request pending; no device operation, original-gate result or Fable acceptance for this candidate",
+  "changed_input_gate": "retained original readonly260 copy/dispatch control, then ordinary-save Fable cold comparison; incompatible checkpoints retained, explicit product Restart only",
+  "Fable_playable": false,
+  "default_installed_candidate_changed": false,
+  "prior_sources_builds_profiles_media_and_paused_work_preserved": true,
+  "public_binary_release": false
+}

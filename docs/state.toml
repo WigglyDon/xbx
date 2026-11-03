@@ -252,3 +252,7 @@ cartridge_android_Fable_menu_return_receipt = "docs/evidence/cartridge-Fable-men
 
 cartridge_android_fable_initial_save_cold_world_observed = true
 cartridge_android_fable_cold_world_receipt = "docs/evidence/cartridge-Fable-cold-world-20261103.json"
+
+cartridge_android_fastmem_serial_off_candidate_built = true
+cartridge_android_fastmem_serial_off_candidate_qualified = false
+cartridge_android_fastmem_serial_off_receipt = "docs/evidence/cartridge-fastmem-serial-off-20261103.json"

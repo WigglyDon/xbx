@@ -217,3 +217,87 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     )?;
     Ok(())
 }
+
+fn source_manifest(dir: &Path, base: &Path, rows: &mut Vec<(String, String)>) -> Result<(), Error> {
+    for item in fs::read_dir(dir)? {
+        let item = item?;
+        if item.file_name() == ".git" {
+            continue;
+        }
+        let path = item.path();
+        let ty = item.file_type()?;
+        if ty.is_dir() {
+            source_manifest(&path, base, rows)?;
+        } else if ty.is_file() || ty.is_symlink() {
+            let relative = path.strip_prefix(base)?.to_string_lossy().into_owned();
+            let hash = if ty.is_symlink() {
+                c::digest(fs::read_link(&path)?.as_os_str().as_encoded_bytes())
+            } else {
+                c::file_digest(&path)?
+            };
+            rows.push((relative, hash));
+        } else {
+            return Err("unexpected non-source object; preserve tree".into());
+        }
+    }
+    rows.sort();
+    Ok(())
+}
+
+/// Ordinary serial-off candidate; preserve the exact functional source and core.
+pub(super) fn release_open(root: &Path) -> Result<(), Error> {
+    let parent = root.join("io-read-status-v1");
+    let identity: serde_json::Value = c::read_json(&parent.join("identity.json"))?;
+    let expected = "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563";
+    if identity["open_system"] != expected
+        || c::file_digest(&parent.join("build/bios.bin"))? != expected
+        || !parent
+            .join("source/third_party/cromwell/boot_rom/Xcodes.h")
+            .is_file()
+    {
+        return Err("qualified open source/image or retained boot dependency absent".into());
+    }
+    let android = root.join("android-demo-v1");
+    let native: serde_json::Value =
+        c::read_json(&android.join("android-fastmem-alias-v1/build.identity.json"))?;
+    let out = android.join("android-fastmem-release-open-v1");
+    c::mkdir(&out)?;
+    let source = out.join("source");
+    let mut before = Vec::new();
+    source_manifest(&parent.join("source"), &parent.join("source"), &mut before)?;
+    c::store::checked(
+        Command::new("cp")
+            .args(["-a", "--reflink=always"])
+            .arg(parent.join("source"))
+            .arg(&source),
+    )?;
+    let mut copied = Vec::new();
+    source_manifest(&source, &source, &mut copied)?;
+    if copied != before {
+        return Err("release source copy differs".into());
+    }
+    let build = out.join("build");
+    c::mkdir(&build)?;
+    let llvm =
+        super::buffer_probe::compile_image_with_serial(&source, &build, Some("1792632338"), false)?;
+    let mut after = Vec::new();
+    source_manifest(&source, &source, &mut after)?;
+    if before != after {
+        return Err("release build changed functional source".into());
+    }
+    c::write_new(&out.join("source.manifest.json"), &c::json(&before)?)?;
+    c::write_new(
+        &out.join("identity.json"),
+        &c::json(&json!({
+            "parent_open_system":expected,"open_system":c::file_digest(&build.join("bios.bin"))?,
+            "kernel":c::file_digest(&build.join("xboxkrnl.exe"))?,"map":c::file_digest(&build.join("xboxkrnl.map"))?,
+            "source":identity["source"],"source_manifest":c::file_digest(&out.join("source.manifest.json"))?,
+            "source_entries":before.len(),"source_bytes_changed":false,"native_core":native["library_sha256"],
+            "serial":false,"trace_imports":false,"selftest":false,"source_date_epoch":"1792632338",
+            "compiler":c::file_digest(&llvm.join("clang++"))?,"jobs":1,"core_rebuilt":false,
+            "proprietary_boot_inputs":false,"native_or_Fable_qualified":false,
+            "old_checkpoints_retagged":false,"prior_sources_builds_and_profiles_preserved":true
+        }))?,
+    )?;
+    Ok(())
+}

@@ -177,6 +177,14 @@ pub(super) fn build_fastmem_alias(repo: &Path, root: &Path) -> Result<(), Error>
         "android-fastmem-alias-package-v1",
     )
 }
+pub(super) fn build_fastmem_release(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-fastmem-alias-v1",
+        "android-fastmem-release-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -238,6 +246,7 @@ fn build_selected(
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
+    let serial_off = package_stage == "android-fastmem-release-package-v1";
     let dispatch = package_stage == "android-dispatch-package-v5";
     let frame =
         package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
@@ -325,7 +334,26 @@ fn build_selected(
     } else {
         json!(null)
     };
-    let open_hash = if read_status {
+    let release_identity: serde_json::Value = if serial_off {
+        c::read_json(&root.join("android-fastmem-release-open-v1/identity.json"))?
+    } else {
+        json!(null)
+    };
+    let open_hash = if serial_off {
+        if release_identity["serial"] != false
+            || release_identity["trace_imports"] != false
+            || release_identity["selftest"] != false
+            || release_identity["native_core"] != core_hash
+            || release_identity["source_bytes_changed"] != false
+            || release_identity["parent_open_system"]
+                != "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563"
+        {
+            return Err("serial-off release component bindings differ".into());
+        }
+        release_identity["open_system"]
+            .as_str()
+            .ok_or("release image binding")?
+    } else if read_status {
         if read_status_identity["parent_open_system"] != super::resources::LOCAL_IO_OPEN
             || read_status_identity["patch"]
                 != c::file_digest(&repo.join("patches/oxos-read-status.patch"))?
@@ -448,7 +476,9 @@ fn build_selected(
     for dir in [&assets, &libs, &classes, &dex] {
         fs::create_dir_all(dir)?;
     }
-    let open = if handoff {
+    let open = if serial_off {
+        root.join("android-fastmem-release-open-v1/build/bios.bin")
+    } else if handoff {
         root.join(handoff_stage).join("build/bios.bin")
     } else if launch {
         root.join("android-launch-v2/build/bios.bin")

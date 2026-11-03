@@ -342,6 +342,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-copy-protection" => super::npx_port::copy_protection(repo, root)?,
         "cartridge-fastmem-alias-contract" => super::fastmem_alias::contract(repo, root)?,
         "cartridge-fastmem-alias-native" => super::fastmem_alias::build(repo, root)?,
+        "cartridge-fastmem-release-open" => super::fastmem_alias::release_open(root)?,
+        "cartridge-fastmem-release-package" => {
+            super::android_package::build_fastmem_release(repo, root)?
+        }
         "cartridge-fastmem-alias-package" => {
             super::android_package::build_fastmem_alias(repo, root)?
         }

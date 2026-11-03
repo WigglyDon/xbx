@@ -165,6 +165,14 @@ pub(super) fn compile_image(
     out: &Path,
     epoch: Option<&str>,
 ) -> Result<std::path::PathBuf, Error> {
+    compile_image_with_serial(source, out, epoch, true)
+}
+pub(super) fn compile_image_with_serial(
+    source: &Path,
+    out: &Path,
+    epoch: Option<&str>,
+    serial: bool,
+) -> Result<std::path::PathBuf, Error> {
     let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
         .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     let mut paths = vec![llvm.clone()];
@@ -189,8 +197,8 @@ pub(super) fn compile_image(
                 "BIOS_BASE=",
                 "MCPX_ROM=",
                 "STOCK_MCPX=",
-                "SERIAL=1",
             ])
+            .arg(if serial { "SERIAL=1" } else { "SERIAL=0" })
             .arg(format!("BUILD={}", out.display()))
             .arg(format!("CC={}", llvm.join("clang").display()))
             .arg(format!(
