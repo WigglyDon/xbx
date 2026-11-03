@@ -380,6 +380,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-startup-handoff" => super::android_launch::handoff(repo, root)?,
         "cartridge-android-fault-record" => super::android_launch::fault(repo, root)?,
         "cartridge-android-serial-yield" => super::android_launch::serial_yield(repo, root)?,
+        "cartridge-android-frame-word" => super::android_launch::frame_word(repo, root)?,
+        "cartridge-android-frame-word-package" => {
+            super::android_package::build_frame_word(repo, root)?
+        }
         "cartridge-android-frame-classification" => super::android_launch::frame(repo, root)?,
         "cartridge-android-frame-classification-package" => {
             super::android_package::build_frame_classification(repo, root)?

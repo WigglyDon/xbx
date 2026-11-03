@@ -13,6 +13,7 @@ enum Image {
     Yield,
     Word,
     Frame,
+    FrameWord,
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -33,6 +34,9 @@ pub(super) fn fault_word(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn frame(repo: &Path, root: &Path) -> Result<(), Error> {
     build_selected(repo, root, Image::Frame)
 }
+pub(super) fn frame_word(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(repo, root, Image::FrameWord)
+}
 fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
     let retained = root
         .parent()
@@ -49,6 +53,14 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
         _,
         &[&str],
     ) = match image {
+        Image::FrameWord => (
+            root.join("android-frame-classification-v1/source"),
+            root.join("android-frame-classification-v1/build"),
+            "android-frame-word-v1",
+            "patches/oxos-frame-private-word.patch",
+            "android-tcg-baseline-v1",
+            &["kernel/src/ke/except.cpp"],
+        ),
         Image::Frame => (
             root.parent()
                 .ok_or("workspace")?
@@ -108,6 +120,11 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
     {
         return Err("qualified current read-status image differs".into());
     }
+    if matches!(image, Image::FrameWord)
+        && parent_image != "6e41ef97adc7890b604950508abf68a66f5cda8541e52777d1f9368e36ac4afa"
+    {
+        return Err("qualified frame-classification parent differs".into());
+    }
     let dir = root.join(stage);
     c::mkdir(&dir)?;
     let source = dir.join("source");
@@ -151,10 +168,11 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
             "source_date_epoch":"1792632338","jobs":1,
             "public_launch_header_fields_only":matches!(image, Image::Launch),
             "bounded_public_thread_and_exception_fields":!matches!(image, Image::Launch),
-            "private_single_exception_context":matches!(image, Image::Fault | Image::Yield | Image::Word),
+            "private_single_exception_context":matches!(image, Image::Fault | Image::Yield | Image::Word | Image::FrameWord),
             "serial_spin_pause_hint":matches!(image, Image::Yield | Image::Word),
             "public_kernel_return_classification_only":matches!(image, Image::Frame),
-            "maximum_guarded_stack_words":if matches!(image, Image::Word | Image::Frame) { 1 } else { 0 },
+            "private_guarded_frame_word":matches!(image, Image::FrameWord),
+            "maximum_guarded_stack_words":if matches!(image, Image::Word | Image::Frame | Image::FrameWord) { 1 } else { 0 },
             "private_game_code_inspection":false,
             "prior_sources_and_objects_retained":true,"ordinary_default_changed":false,
             "original_or_Fable_qualified":false

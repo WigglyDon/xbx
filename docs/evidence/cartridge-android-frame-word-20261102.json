@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "scope": "Retain the same guarded four-byte frame candidate privately; map only structural image metadata, no instruction or section payload inspection.",
+  "basis": "Actual prior control-qualified Fable candidate is valid/nonzero/outside public kernel text, but classifier deliberately omitted its value, so no caller site was identified.",
+  "parent_result": "docs/evidence/cartridge-android-frame-classification-20261102.json",
+  "source": {
+    "patch": "patches/oxos-frame-private-word.patch",
+    "patch_sha256": "6ddd6d0566835089c74f1da00f185fd9a5ed81d9a0600cb2aa4d71b4e58d51da",
+    "parent_open": "6e41ef97adc7890b604950508abf68a66f5cda8541e52777d1f9368e36ac4afa",
+    "open_image": "561bcaafb6994f1cfacd474e3229282dd0244296cbd76dca7f258cfcb7bc681a",
+    "APK": "2fd56bd5957bf96da59e55e5bce53e68a6a7d77267bdb40b8d6b8adbf6a3ec29",
+    "guard_read_and_classification_logic_identical": true,
+    "only_changed_kernel_object": [
+      "ke/except.obj"
+    ],
+    "kernel_objects_compared": 66,
+    "core_helper_seed_unchanged": true
+  },
+  "validation": {
+    "offline_isolated_build": true,
+    "warnings_denied_Clippy": true,
+    "same_signer": true,
+    "alignment": "compressed libraries extracted by declared extractNativeLibs; zipalign -c -P16 4 passed; ELF LOAD segments satisfy 16KiB",
+    "runtime_manifest_changed_field": "open_system only",
+    "reused_completed_classification_controls": true,
+    "new_field_control": "same original fixture; retained value must equal its known frame_original_return label before Fable",
+    "structural_metadata_tool": {
+      "source_sha256": "baeb3c34ccaeade6f9d91c044f1ca1c5e67e1a4ca19eb0008856e2ab45458ef4",
+      "disc_parser_sha256": "95dcce8684ffc16e3113e4534294d3567351333f77e76b23d53e34f0a2775648",
+      "Android_binary_sha256": "76b6479d444f469ba0ad4dd524c2f4660240470d98b00602018e1377cdf06035",
+      "Android_binary_bytes": 334216,
+      "host_original_control": "PASS; known original return label maps to its executable section",
+      "metadata_only": true,
+      "instruction_or_section_payload_reads": false,
+      "Android_execution": false
+    }
+  },
+  "privacy_and_bounds": {
+    "guarded_guest_stack_bytes_per_boot": 4,
+    "raw_word_publication": false,
+    "instruction_or_section_payload_read": false,
+    "full_game_copy_or_private_firmware_acquisition": false,
+    "paused_edits_and_broader_campaigns_preserved": true
+  },
+  "device": "one finite request pending; no Android result claimed",
+  "preservation": "whole original collection inode/file hashes and current installed APK restored before verified process and stock return; retain every fresh output",
+  "Fable_qualified": false
+}

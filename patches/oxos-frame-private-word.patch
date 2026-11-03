@@ -1,0 +1,22 @@
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -58,7 +58,7 @@
+ volatile ULONG KiExceptionsDispatched; // diagnostics
+ 
+ // Developer attribution only. Inspect our own mapped PE headers and classify
+-// one saved return word; never emit a non-kernel address or read instructions.
++// one saved return word. Its raw value stays private; never read instructions.
+ static ULONG XbxPublicKernelRva(ULONG address) {
+     constexpr ULONG base = 0x80010000;
+     if (address < base || !MmIsAddressValid((PVOID)base) ||
+@@ -101,8 +101,8 @@
+                     MmIsAddressValid((PVOID)(bp + 4)) && MmIsAddressValid((PVOID)(bp + 7));
+     ULONG word = valid ? *(volatile ULONG *)(bp + 4) : 0;
+     ULONG rva = valid ? XbxPublicKernelRva(word) : 0;
+-    XK_SERIAL("xbxframe: valid=%u zero=%u kernel=%u kernel_rva=%08lx\n",
+-              (unsigned)valid, (unsigned)(valid && !word), (unsigned)(rva != 0), rva);
++    XK_SERIAL("xbxframe: valid=%u zero=%u kernel=%u kernel_rva=%08lx private_word=%08lx\n",
++              (unsigned)valid, (unsigned)(valid && !word), (unsigned)(rva != 0), rva, word);
+ }
+ 
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
