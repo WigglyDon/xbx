@@ -137,6 +137,14 @@ pub(super) fn build_guest_status(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-guest-status-package-v3",
     )
 }
+pub(super) fn build_frame_classification(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-frame-classification-package-v1",
+    )
+}
 pub(super) fn build_read_status(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -203,6 +211,7 @@ fn build_selected(
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
+    let frame = package_stage == "android-frame-classification-package-v1";
     let read_status = package_stage == "android-read-status-package-v1";
     let reporting = read_status
         || matches!(
@@ -218,8 +227,14 @@ fn build_selected(
     let fault_word = package_stage == "android-fault-word-package-v1";
     let serial_yield = package_stage == "android-fault-yield-package-v1" || fault_word;
     let fault_record = package_stage == "android-fault-package-v1" || serial_yield;
-    let handoff = package_stage == "android-handoff-package-v1" || fault_record;
-    let (handoff_stage, handoff_parent, handoff_patch) = if fault_word {
+    let handoff = package_stage == "android-handoff-package-v1" || fault_record || frame;
+    let (handoff_stage, handoff_parent, handoff_patch) = if frame {
+        (
+            "android-frame-classification-v1",
+            "../io-read-status-v1",
+            "patches/oxos-null-frame-classification.patch",
+        )
+    } else if fault_word {
         (
             "android-fault-word-v1",
             "android-fault-yield-v1",

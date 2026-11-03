@@ -331,6 +331,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-arithmetic-fixture" => {
             super::npx_port::android_arithmetic_fixture(repo, root)?
         }
+        "cartridge-android-frame-fixtures" => super::npx_port::android_frame_fixtures(repo, root)?,
         "cartridge-android-lifetime-fixtures" => {
             super::npx_port::android_lifetime_fixtures(repo, root)?
         }
@@ -379,6 +380,10 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-startup-handoff" => super::android_launch::handoff(repo, root)?,
         "cartridge-android-fault-record" => super::android_launch::fault(repo, root)?,
         "cartridge-android-serial-yield" => super::android_launch::serial_yield(repo, root)?,
+        "cartridge-android-frame-classification" => super::android_launch::frame(repo, root)?,
+        "cartridge-android-frame-classification-package" => {
+            super::android_package::build_frame_classification(repo, root)?
+        }
         "cartridge-android-fault-word" => super::android_launch::fault_word(repo, root)?,
         "cartridge-android-fault-word-package" => {
             super::android_package::build_fault_word(repo, root)?

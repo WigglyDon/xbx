@@ -12,6 +12,7 @@ enum Image {
     Fault,
     Yield,
     Word,
+    Frame,
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -29,6 +30,9 @@ pub(super) fn serial_yield(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn fault_word(repo: &Path, root: &Path) -> Result<(), Error> {
     build_selected(repo, root, Image::Word)
 }
+pub(super) fn frame(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(repo, root, Image::Frame)
+}
 fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
     let retained = root
         .parent()
@@ -45,6 +49,18 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
         _,
         &[&str],
     ) = match image {
+        Image::Frame => (
+            root.parent()
+                .ok_or("workspace")?
+                .join("io-read-status-v1/source"),
+            root.parent()
+                .ok_or("workspace")?
+                .join("io-read-status-v1/build"),
+            "android-frame-classification-v1",
+            "patches/oxos-null-frame-classification.patch",
+            "android-tcg-baseline-v1",
+            &["kernel/src/ke/except.cpp"],
+        ),
         Image::Launch => (
             retained.join("source"),
             retained.join("reporting"),
@@ -87,6 +103,11 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
         ),
     };
     let parent_image = c::file_digest(&parent_build.join("bios.bin"))?;
+    if matches!(image, Image::Frame)
+        && parent_image != "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563"
+    {
+        return Err("qualified current read-status image differs".into());
+    }
     let dir = root.join(stage);
     c::mkdir(&dir)?;
     let source = dir.join("source");
@@ -132,7 +153,8 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
             "bounded_public_thread_and_exception_fields":!matches!(image, Image::Launch),
             "private_single_exception_context":matches!(image, Image::Fault | Image::Yield | Image::Word),
             "serial_spin_pause_hint":matches!(image, Image::Yield | Image::Word),
-            "maximum_guarded_stack_words":if matches!(image, Image::Word) { 1 } else { 0 },
+            "public_kernel_return_classification_only":matches!(image, Image::Frame),
+            "maximum_guarded_stack_words":if matches!(image, Image::Word | Image::Frame) { 1 } else { 0 },
             "private_game_code_inspection":false,
             "prior_sources_and_objects_retained":true,"ordinary_default_changed":false,
             "original_or_Fable_qualified":false

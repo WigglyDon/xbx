@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "scope": "one guarded saved-frame return classification at the first null-instruction access violation per guest boot; no stack walk or instruction inspection",
+  "basis": "retained null transfer had a zero top stack word; retained frame metadata is aligned and near SP; need a public-kernel ownership distinction, not a presumed cause",
+  "limits": {
+    "stack_bytes_max_per_guest_boot": 4,
+    "non_public_addresses_emitted": false,
+    "game_instruction_or_payload_bytes_read": 0,
+    "broader_paused_campaigns_resumed": false,
+    "private_reference_firmware_used": false
+  },
+  "source": {
+    "patch": "patches/oxos-null-frame-classification.patch",
+    "patch_sha256": "96aa637c54317d0f603d7d6dded82d4d8497cae889e5e27a3735957928a2b2f9",
+    "parent_open": "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563",
+    "new_open": "6e41ef97adc7890b604950508abf68a66f5cda8541e52777d1f9368e36ac4afa",
+    "APK": "cecd77231ccafafb9d4980568c47ed4dfd584bae559fbb29c74a65f28980975e",
+    "native_core_changed": false,
+    "helper_and_seed_changed": false,
+    "kernel_objects_compared": 66,
+    "changed_kernel_objects": [
+      "ke/except.obj"
+    ]
+  },
+  "validation": {
+    "isolated_offline_build": true,
+    "warnings_denied_Clippy": true,
+    "same_signer": true,
+    "ZIP_and_ELF_alignment": "compressed libraries extracted by declared extractNativeLibs; zipalign -c -P16 4 passed; ELF LOAD segments satisfy 16KiB",
+    "changed_APK_components": [
+      "assets/open.bin",
+      "assets/runtime.json",
+      "lib/arm64-v8a/libxbx.so"
+    ],
+    "runtime_manifest_change": "open_system identity only",
+    "original_controls_prepared": {
+      "Android_execution": false,
+      "UART": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5",
+      "adaptation": "explicit frame prologue; positive caller is public loader, negative caller is original program",
+      "cases": [
+        {
+          "case": "kernel",
+          "fixture_iso": "2cbe569db254f226b665b70c42f543c94a0571f3b416510ae892e10ba4ccd152",
+          "generated_source": "02bba57cdf26ec469a91ab9c507edc98922f7a9219294653f28af9e9fd2c6066",
+          "kernel_return_expected": true
+        },
+        {
+          "case": "original",
+          "fixture_iso": "ddf2a12a86c342caca99883de7b558564171ea3a5fdc18503cc66b6924d79739",
+          "generated_source": "1d4f0218caa1afb0caf7fe621c651133a4a727b452eede4e87620baaaefc8db3",
+          "kernel_return_expected": false
+        }
+      ],
+      "game_bytes_used": false,
+      "original_handler_and_return_checks_preserved": true,
+      "source": "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0"
+    }
+  },
+  "device": "one finite request pending; no Android execution result",
+  "Fable_qualified": false,
+  "preservation": "temporary qualified collection; exact original inode/all file hashes and original APK restored before verified process and stock return; all fresh output retained"
+}

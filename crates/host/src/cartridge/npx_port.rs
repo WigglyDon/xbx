@@ -386,6 +386,72 @@ pub(super) fn android_arithmetic_fixture(repo: &Path, root: &Path) -> Result<(),
     Ok(())
 }
 
+/// Original positive/negative controls for public-kernel return classification.
+pub(super) fn android_frame_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/nullcall.S");
+    if c::file_digest(&source)?
+        != "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0"
+    {
+        return Err("original exception source differs".into());
+    }
+    let original = fs::read_to_string(&source)?;
+    let body = &original[original.find(".text\n").ok_or("original text")?..];
+    let result = "    movl $0x46584258, _XkTitleResults\n";
+    if body.matches(result).count() != 1 {
+        return Err("original result site differs".into());
+    }
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "FRAME ORIGINAL BOOT")
+        .replace("NPX RESULT=", "FRAME ORIGINAL RESULT=");
+    let dir = root.join("android-frame-original-v1");
+    c::mkdir(&dir)?;
+    let mut cases = Vec::new();
+    for (name, kernel_return) in [("kernel", true), ("original", false)] {
+        let entry = if kernel_return {
+            "_start"
+        } else {
+            "frame_body"
+        };
+        let body = body.replace(".safeseh _XbxExceptionHandler\n", "")
+            .replace("_XkTitleEntry", entry)
+            .replace(&format!("{entry}:\n"), &format!("{entry}:\n    pushl %ebp\n    movl %esp, %ebp\n    call npx_serial_init\n"))
+            .replace(result, &format!("{result}    pushfl\n    pushal\n    movl _XkTitleResults+4, %ecx\n    call npx_report\n    movl _XkTitleResults, %ecx\n    call npx_report\n    popal\n    popfl\n"))
+            .replace("_XkThunks", "thunks");
+        let prefix = if kernel_return {
+            ""
+        } else {
+            ".text\n.globl _start\n_start:\n    call frame_body\nframe_original_return:\n    hlt\n    jmp frame_original_return\n"
+        };
+        let generated = format!("{prefix}{body}\n{uart}");
+        let out = dir.join(name);
+        c::mkdir(&out)?;
+        let iso = super::cpu_performance::assemble_two_page(
+            &root.join("fixtures-v2/a.iso"),
+            &out,
+            &generated,
+            &format!("xbx original frame {name}"),
+            if kernel_return {
+                0x58424631
+            } else {
+                0x58424632
+            },
+        )?;
+        cases.push(json!({"case":name,"kernel_return_expected":kernel_return,
+            "fixture_iso":iso,"generated_source":c::file_digest(&out.join("original.S"))?}));
+    }
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "source":c::file_digest(&source)?,"UART":c::file_digest(&adapter)?,"cases":cases,
+            "original_handler_and_return_checks_preserved":true,
+            "adaptation":"explicit frame prologue; positive caller is public loader, negative caller is original program",
+            "game_bytes_used":false,"Android_execution":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_lifetime_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/startup-lifetime.S");
     if c::file_digest(&source)?

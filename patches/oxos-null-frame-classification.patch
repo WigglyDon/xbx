@@ -1,0 +1,70 @@
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -1,6 +1,8 @@
+ // Structured exception handling: trap translation, handler dispatch, raise, unwind, stack walks (spec/stock/14).
+ #include <xk/arch.h>
+ #include <xk/ke.h>
++#include <xk/mm.h>
++#include <xk/serial.h>
+ 
+ constexpr ULONG EXCEPTION_NONCONTINUABLE = 1, EXCEPTION_UNWINDING = 2, EXCEPTION_EXIT_UNWIND = 4,
+                 EXCEPTION_NESTED_CALL = 0x10;
+@@ -55,9 +57,58 @@
+ static volatile ULONG KiDispatchDepth;
+ volatile ULONG KiExceptionsDispatched; // diagnostics
+ 
++// Developer attribution only. Inspect our own mapped PE headers and classify
++// one saved return word; never emit a non-kernel address or read instructions.
++static ULONG XbxPublicKernelRva(ULONG address) {
++    constexpr ULONG base = 0x80010000;
++    if (address < base || !MmIsAddressValid((PVOID)base) ||
++        !MmIsAddressValid((PVOID)(base + 4095)))
++        return 0;
++    auto image = (const UCHAR *)base;
++    if (*(const USHORT *)image != 0x5A4D)
++        return 0;
++    ULONG nt = *(const ULONG *)(image + 0x3C);
++    if (nt > 4096 - 24 || *(const ULONG *)(image + nt) != 0x4550)
++        return 0;
++    ULONG count = *(const USHORT *)(image + nt + 6);
++    ULONG optional = *(const USHORT *)(image + nt + 20);
++    if (!count || count > 16 || optional > 4096 - nt - 24)
++        return 0;
++    ULONG section = nt + 24 + optional;
++    if (count > (4096 - section) / 40)
++        return 0;
++    ULONG rva = address - base;
++    for (ULONG i = 0; i < count; ++i, section += 40) {
++        ULONG size = *(const ULONG *)(image + section + 8);
++        ULONG start = *(const ULONG *)(image + section + 12);
++        ULONG flags = *(const ULONG *)(image + section + 36);
++        if ((flags & 0x20000000) && rva >= start && rva - start < size)
++            return rva;
++    }
++    return 0;
++}
++
++static void XbxClassifyNullFrame(PEXCEPTION_RECORD record, PCONTEXT context) {
++    static ULONG observations;
++    if (record->ExceptionCode != STATUS_ACCESS_VIOLATION_ || context->Eip != 0 ||
++        __atomic_add_fetch(&observations, 1u, __ATOMIC_RELAXED) != 1)
++        return;
++    auto thread = KeGetCurrentThread();
++    ULONG low = (ULONG)thread->StackLimit, high = (ULONG)thread->StackBase;
++    ULONG bp = context->Ebp, sp = context->Esp;
++    BOOLEAN valid = high >= 8 && !(bp & 3) && bp >= low && bp <= high - 8 &&
++                    sp >= low && sp < high && bp >= sp && bp - sp < 16384 &&
++                    MmIsAddressValid((PVOID)(bp + 4)) && MmIsAddressValid((PVOID)(bp + 7));
++    ULONG word = valid ? *(volatile ULONG *)(bp + 4) : 0;
++    ULONG rva = valid ? XbxPublicKernelRva(word) : 0;
++    XK_SERIAL("xbxframe: valid=%u zero=%u kernel=%u kernel_rva=%08lx\n",
++              (unsigned)valid, (unsigned)(valid && !word), (unsigned)(rva != 0), rva);
++}
++
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+ static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++    XbxClassifyNullFrame(Record, Context);
+     for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
+         if (((ULONG)r & 3) || (ULONG)r < 0x10000)
+             break; // corrupt chain
