@@ -1,0 +1,54 @@
+--- a/hw/xbox/nv2a/pgraph/vk/vertex.c
++++ b/hw/xbox/nv2a/pgraph/vk/vertex.c
+@@ -81,11 +81,17 @@
+     if (end > fs->vertex_ram_flush_max) {
+         fs->vertex_ram_flush_max = end;
+     }
+-    if (offset < fs->vertex_ram_propagate_min) {
+-        fs->vertex_ram_propagate_min = offset;
+-    }
+-    if (end > fs->vertex_ram_propagate_max) {
+-        fs->vertex_ram_propagate_max = end;
++    /* Each destination needs every write since it was last current. Do not
++     * write an in-flight buffer; refresh it only after its own fence retires. */
++    for (int i = 0; i < r->num_active_frames; i++) {
++        if (i == r->current_frame) {
++            continue;
++        }
++        FrameStagingState *pending = &r->frame_staging[i];
++        pending->vertex_ram_propagate_min =
++            MIN(pending->vertex_ram_propagate_min, offset);
++        pending->vertex_ram_propagate_max =
++            MAX(pending->vertex_ram_propagate_max, end);
+     }
+ 
+     bitmap_set(get_uploaded_bitmap(r), start_bit, nbits);
+--- a/hw/xbox/nv2a/pgraph/vk/draw.c
++++ b/hw/xbox/nv2a/pgraph/vk/draw.c
+@@ -2880,18 +2880,20 @@
+                     next_fs->vertex_ram_flush_min = 0;
+                     next_fs->vertex_ram_flush_max = total;
+                     next_fs->vertex_ram_initialized = true;
+-                } else if (cur_fs->vertex_ram_propagate_min <
+-                           cur_fs->vertex_ram_propagate_max) {
+-                    size_t off = cur_fs->vertex_ram_propagate_min;
+-                    size_t len = cur_fs->vertex_ram_propagate_max - off;
++                } else if (next_fs->vertex_ram_propagate_min <
++                           next_fs->vertex_ram_propagate_max) {
++                    /* The next slot can be several frames old. Its pending
++                     * range includes all writes since its last activation. */
++                    size_t off = next_fs->vertex_ram_propagate_min;
++                    size_t len = next_fs->vertex_ram_propagate_max - off;
+                     memcpy(next_fs->vertex_ram.mapped + off,
+                            cur_fs->vertex_ram.mapped + off, len);
+                     next_fs->vertex_ram_flush_min = off;
+                     next_fs->vertex_ram_flush_max = off + len;
+                 }
+ 
+-                cur_fs->vertex_ram_propagate_min = VK_WHOLE_SIZE;
+-                cur_fs->vertex_ram_propagate_max = 0;
++                next_fs->vertex_ram_propagate_min = VK_WHOLE_SIZE;
++                next_fs->vertex_ram_propagate_max = 0;
+             }
+ 
+             r->current_frame = next_frame;

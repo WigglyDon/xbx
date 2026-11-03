@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "decision": "Two independent public coherence repairs, retain three frame buffers and existing fence ownership rather than discard correctness for speed",
+  "parent": "docs/evidence/cartridge-vertex-cache-values-20261103.json",
+  "original_frame_contract": {
+    "Fable_cause_established": false,
+    "actual_Vulkan_submission": false,
+    "after_draw": "454b0e8641d62f1036885f197ca47e217d9613935e5dfdb0915565c3cd2526ad",
+    "after_vertex": "cfc34d6af3b420bc25383d955d66ab73a9fc8fd81293eb2b83e2dba6b80877a8",
+    "before_draw": "57561ed353d4b312b6fdcedc25de64c0998b47c7348931af7d85840a85598228",
+    "before_vertex": "765fd6fcc6f67ebb66b19476bbb1bb6f23ec4cc74bce28b277990c9ee5750993",
+    "controlled_separate_RAM_buffers": true,
+    "exact_public_update_function_and_frame_copy_block": true,
+    "fixture": "92e16928b78937cbcc23d64b3474d74f68dbdde54e7d6e28e88812fce99a7e1a",
+    "game_bytes_used": false,
+    "idle_does_not_copy_historical_updates_forever": true,
+    "other_inflight_buffers_not_written": true,
+    "passed": true,
+    "patch": "0feecf8e25214f1f5fc82d64de7e085c7755b04bb890834b297479ef431b43d2",
+    "results": [
+      {
+        "case": "one",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "two",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "three",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "idle",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "overlap",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "one",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "two",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "three",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "idle",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "overlap",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac"
+  },
+  "native": {
+    "library_sha256": "773cff5d5a8e1530c7adceb269a88807b596499be8ccf81794e491dc1ed1a1f7",
+    "prior_library_sha256": "3472db2f195df618aa2465f34d74937b8810641a416892eaa0116b685c769b30",
+    "recompiled_units": [
+      "hw/xbox/nv2a/pgraph/vk/vertex.c",
+      "hw/xbox/nv2a/pgraph/vk/draw.c"
+    ],
+    "all_other_archive_objects_unchanged": true,
+    "unchanged_core_object_count": 1224,
+    "whole_core_rebuild": false,
+    "state_layout_changed": false,
+    "old_checkpoints_retagged": false
+  },
+  "prior_vertex_value_correction_retained": true,
+  "prior_fast_memory_correction_retained": true,
+  "package": {
+    "apk_sha256": "f06d5829abd59de58a4fcfaa9cd1552db6b16a1e61b3a2f6191b06deaeb3b1df",
+    "core_sha256": "773cff5d5a8e1530c7adceb269a88807b596499be8ccf81794e491dc1ed1a1f7",
+    "open_system_sha256": "672e27b10bfc44bf770876c76b1a79b142fb739d17d08becc452375035e590f3",
+    "rust_library_sha256": "c8171ef5b13ac893d5db6a7d6c6f901ad8f639160e80946c68170a0821711d7f",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059"
+  },
+  "APK_signature_alignment_and_components_verified": true,
+  "isolated_Clippy_all_targets_warnings_denied": true,
+  "host_and_Android_builds_pass": true,
+  "existing_native_fence_wait_unchanged_source_review": true,
+  "actual_GPU_rendering_of_correction": false,
+  "Fable_cause_established": false,
+  "cache_only_device_attempt": "cancelled before acquisition; runs0; no game observation or compatibility failure; all artifacts retained",
+  "combined_device_attempt": "one prepared finite normal-custody request pending; no phone or host-storage ownership",
+  "unchanged_cpu_controls_not_replayed": true,
+  "private_game_code_memory_or_shader_inspection": false,
+  "protected_local_identities_unchanged": 21,
+  "prior_sources_builds_profiles_media_and_paused_work_preserved": true,
+  "public_binary_release": false
+}

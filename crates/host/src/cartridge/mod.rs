@@ -36,6 +36,8 @@ mod flush_io;
 #[cfg(not(target_os = "android"))]
 mod fp_state;
 #[cfg(not(target_os = "android"))]
+mod frame_vertex;
+#[cfg(not(target_os = "android"))]
 mod gdb_features;
 #[cfg(not(target_os = "android"))]
 mod host_accel;

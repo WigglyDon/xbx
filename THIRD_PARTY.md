@@ -508,3 +508,13 @@ retain those terms in private contract builds. The original synthetic RAM fixtur
 builder replaces one symbol-identified archive member and audits every other
 object unchanged, including the existing fast-memory repair. No state layout
 change or checkpoint retag is introduced.
+
+`patches/xemu-vk-frame-vertex-coherence.patch` modifies the same pinned
+LGPL-2.0-or-later Vulkan `vertex.c` and `draw.c`. It records pending RAM updates
+for each destination frame and copies them after that frame's existing fence,
+without writing an in-flight buffer. The original MIT separate-buffer fixture
+`native/fixtures/frame-vertex-coherence.c` exercises the exact retained update
+function and frame-copy block under their LGPL terms; the Rust owner
+`cartridge/frame_vertex.rs` is MIT. These host controls submit no GPU work and
+contain no game data. Native integration retains both this and the earlier
+attribute-value repair; existing checkpoints are retained without retagging.

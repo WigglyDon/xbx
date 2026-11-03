@@ -261,3 +261,8 @@ cartridge_android_vertex_cache_value_repair_built = true
 cartridge_android_vertex_cache_value_original_red_green_passed = true
 cartridge_android_vertex_cache_value_Fable_qualified = false
 cartridge_android_vertex_cache_value_receipt = "docs/evidence/cartridge-vertex-cache-values-20261103.json"
+
+cartridge_android_frame_vertex_coherence_original_red_green_passed = true
+cartridge_android_frame_vertex_coherence_candidate_built = true
+cartridge_android_frame_vertex_coherence_Fable_qualified = false
+cartridge_android_frame_vertex_coherence_receipt = "docs/evidence/cartridge-frame-vertex-coherence-20261103.json"

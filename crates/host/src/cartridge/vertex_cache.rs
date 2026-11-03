@@ -12,7 +12,7 @@ const UNIT: &str = "hw/xbox/nv2a/pgraph/vk/vertex.c";
 const VALUE_UNIT: &str = "hw/xbox/nv2a/pgraph/vertex.c";
 const PATCH: &str = "patches/xemu-vk-vertex-cache-values.patch";
 
-fn pinned(repo: &Path, unit: &str) -> Result<String, Error> {
+pub(super) fn pinned(repo: &Path, unit: &str) -> Result<String, Error> {
     output(
         Command::new("git")
             .arg("-C")
@@ -52,7 +52,7 @@ pub(super) fn formats(repo: &Path, root: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-fn function(source: &str, marker: &str) -> Result<String, Error> {
+pub(super) fn function(source: &str, marker: &str) -> Result<String, Error> {
     let start = source.find(marker).ok_or("exact public function missing")?;
     let open = start + source[start..].find('{').ok_or("function opening")?;
     let mut depth = 0;
