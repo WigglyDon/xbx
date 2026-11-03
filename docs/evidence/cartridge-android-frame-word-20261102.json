@@ -43,7 +43,26 @@
     "full_game_copy_or_private_firmware_acquisition": false,
     "paused_edits_and_broader_campaigns_preserved": true
   },
-  "device": "one finite request pending; no Android result claimed",
+  "device": "original private-word control PASS and return verified; later metadata transport/parse failed before Fable",
   "preservation": "whole original collection inode/file hashes and current installed APK restored before verified process and stock return; retain every fresh output",
-  "Fable_qualified": false
+  "Fable_qualified": false,
+  "actual_Android": {
+    "known_original_word_control_passed": true,
+    "original_exception_flow_passed": true,
+    "original_native_return": {
+      "records": 1,
+      "all_clean": true,
+      "OS_processes_absent": true
+    },
+    "metadata_tool_original_control": "executed and passed assertions before subsequent commercial metadata read; per-control receipt was not yet written",
+    "metadata_failure": "host JSONDecodeError on empty exec-out stdout; remote error/status was not retained by that route",
+    "work_seconds": 73.37932283396367,
+    "work_seconds_is_performance_measurement": false,
+    "Fable_run": false,
+    "exact_original_inode_all_file_hashes_and_APK_restored": true,
+    "fresh_output_retained": true,
+    "stock_return_verified": true,
+    "forced_retirement": false
+  },
+  "next": "Reuse completed original gate and unchanged binaries; diagnose metadata via shell protocol with remote exit status/stderr before APK update or emulation. No lowering of parser or resource bounds."
 }
