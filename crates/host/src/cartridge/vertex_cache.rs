@@ -22,6 +22,36 @@ fn pinned(repo: &Path, unit: &str) -> Result<String, Error> {
     )
 }
 
+pub(super) fn formats(repo: &Path, root: &Path) -> Result<(), Error> {
+    let out = root.join("android-vertex-formats-v1");
+    c::mkdir(&out)?;
+    let compiler = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
+        .join("toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang");
+    let source = repo.join("native/fixtures/vulkan-vertex-formats.c");
+    let binary = out.join("xbx-vertex-formats");
+    c::store::checked(
+        Command::new(&compiler)
+            .args(["-std=c11", "-Wall", "-Wextra", "-Werror", "-O2"])
+            .arg(&source)
+            .arg("-lvulkan")
+            .arg("-o")
+            .arg(&binary),
+    )?;
+    let elf = fs::read(&binary)?;
+    if elf.get(..6) != Some(b"\x7fELF\x02\x01") || elf.get(18..20) != Some(&[183, 0]) {
+        return Err("original format check ABI differs".into());
+    }
+    c::write_new(
+        &out.join("identity.json"),
+        &c::json(&json!({
+            "source":c::file_digest(&source)?,"binary":c::digest(&elf),"compiler":c::file_digest(&compiler)?,
+            "device_execution":false,"queries":"21 public vertex-buffer format support bits and two geometry feature booleans",
+            "device_identifiers_or_content_collected":false,"settings_changed":false,"Fable_cause_established":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 fn function(source: &str, marker: &str) -> Result<String, Error> {
     let start = source.find(marker).ok_or("exact public function missing")?;
     let open = start + source[start..].find('{').ok_or("function opening")?;

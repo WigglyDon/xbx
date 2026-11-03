@@ -38,10 +38,84 @@
     "no_cleanup_guard_reduction_or_retired_workspace": true,
     "no_storage_lease_while_device_request_pending": true
   },
-  "device": "running under normal custody; changed serial-off original readonly260 gate passed; Fable actual visible review ongoing",
+  "device": "COMPLETED with verified stock return",
   "changed_input_gate": "retained original readonly260 copy/dispatch control, then ordinary-save Fable cold comparison; incompatible checkpoints retained, explicit product Restart only",
   "Fable_playable": false,
   "default_installed_candidate_changed": false,
   "prior_sources_builds_profiles_media_and_paused_work_preserved": true,
-  "public_binary_release": false
+  "public_binary_release": false,
+  "original_readonly260": {
+    "case": "readonly",
+    "passed": true,
+    "original": {
+      "original_pass": true,
+      "original_markers": [
+        "COPY PROTECT BOOT",
+        "COPY PROTECT RESULT=00000000",
+        "COPY PROTECT RESULT=00000002",
+        "COPY PROTECT RESULT=00000104",
+        "COPY PROTECT RESULT=52455041"
+      ],
+      "guest_fatal": false,
+      "fatal21": false,
+      "title_handoff": false,
+      "title_return": false,
+      "cold_boots": 0,
+      "quick_boots": 0,
+      "truncated_at_raw_bound": false,
+      "io_failures": [],
+      "game_context_or_instructions_collected": false
+    },
+    "changed_input": "same functional source SERIAL=0"
+  },
+  "Fable": {
+    "ordinary_changed_runtime_restart_observed": true,
+    "actual_existing_Default_AutoSave_cold_reload_to_Oakvale": true,
+    "Start_Continue_profile_AutoSave_Y_skip_tutorial_A_responses_observed": true,
+    "one_forward_stick_hold_delivered": true,
+    "severe_white_and_black_world_bands_after_input": true,
+    "stretched_character_geometry": true,
+    "logger_off_did_not_remove_corruption": true,
+    "audio_and_pacing_qualified": false,
+    "gameplay_correctly_playable": false,
+    "actual_captures_reviewed": 14,
+    "reviewed_capture_numbers": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  "preservation": {
+    "namespace_restored": true,
+    "original_root_hashes_restored": true,
+    "fresh_namespace_retained": true,
+    "original_APK_restored": true,
+    "own_processes_absent": true,
+    "returned_under_lease": true
+  },
+  "prior_checkpoint_preserved": true,
+  "new_Fable_native_returns": [
+    {
+      "clean": true,
+      "machine_thread_joined": true,
+      "native_status": 0,
+      "process_reaped": false,
+      "qmp_acknowledged": true,
+      "storage_synced": true,
+      "writer_leases_retained_until_OS_process_exit": true
+    }
+  ],
+  "work_seconds": 800.7431142380228,
+  "protected_local_identities_unchanged": 21
 }

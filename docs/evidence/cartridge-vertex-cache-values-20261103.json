@@ -101,7 +101,17 @@
   "isolated_Clippy_all_targets_warnings_denied": true,
   "host_and_Android_builds_pass": true,
   "Fable_cause_established": false,
-  "device_comparison": "prepared candidate; preceding serial-off same-core control still running under normal custody; no additional request",
+  "device_comparison": "one prepared finite normal-custody request pending after actual serial-off predecessor return; no device ownership or graphics acceptance",
   "private_game_code_memory_or_shader_inspection": false,
-  "saved_namespaces_media_prior_builds_and_paused_source_preserved": true
+  "saved_namespaces_media_prior_builds_and_paused_source_preserved": true,
+  "format_capability_check_build": {
+    "Fable_cause_established": false,
+    "binary": "0360eddffcd56e8408c40b0e5e8fae430fb21cba9aac819ee962fd25ecea0a7f",
+    "compiler": "953fdbecacf318f6c27ac631c044646f32219f354fe3e9194378dc57a88c0541",
+    "device_execution": false,
+    "device_identifiers_or_content_collected": false,
+    "queries": "21 public vertex-buffer format support bits and two geometry feature booleans",
+    "settings_changed": false,
+    "source": "fefc1539c878677655010fe4052519a9f22e047fe8169c952babd39d9f0066c5"
+  }
 }

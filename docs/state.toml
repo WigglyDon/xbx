@@ -256,3 +256,8 @@ cartridge_android_fable_cold_world_receipt = "docs/evidence/cartridge-Fable-cold
 cartridge_android_fastmem_serial_off_candidate_built = true
 cartridge_android_fastmem_serial_off_candidate_qualified = false
 cartridge_android_fastmem_serial_off_receipt = "docs/evidence/cartridge-fastmem-serial-off-20261103.json"
+
+cartridge_android_vertex_cache_value_repair_built = true
+cartridge_android_vertex_cache_value_original_red_green_passed = true
+cartridge_android_vertex_cache_value_Fable_qualified = false
+cartridge_android_vertex_cache_value_receipt = "docs/evidence/cartridge-vertex-cache-values-20261103.json"
