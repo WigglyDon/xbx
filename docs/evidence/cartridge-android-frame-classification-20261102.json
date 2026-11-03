@@ -57,7 +57,156 @@
       "source": "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0"
     }
   },
-  "device": "one finite request pending; no Android execution result",
+  "device": "completed; two original controls PASS, Fable black/unqualified, exact original data/APK and stock return verified",
   "Fable_qualified": false,
-  "preservation": "temporary qualified collection; exact original inode/all file hashes and original APK restored before verified process and stock return; all fresh output retained"
+  "preservation": "temporary qualified collection; exact original inode/all file hashes and original APK restored before verified process and stock return; all fresh output retained",
+  "actual_Android": {
+    "original_controls": [
+      {
+        "case": "kernel",
+        "completed": true,
+        "passed": true,
+        "observation": {
+          "classifications": [
+            {
+              "valid": 1,
+              "zero": 0,
+              "kernel": 1,
+              "kernel_rva": "00029465"
+            }
+          ],
+          "kernel_pass": true,
+          "original_pass": false,
+          "original_exception_flow_pass": true,
+          "failed": false,
+          "guest_fatal": false,
+          "fatal21": false,
+          "title_handoff": true,
+          "title_return": false,
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "truncated_at_raw_bound": false,
+          "io_failures": [],
+          "successful_reads": [],
+          "non_public_addresses_collected": false,
+          "instruction_bytes_read": 0
+        },
+        "commercial_acceptance": false,
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      },
+      {
+        "case": "original",
+        "completed": true,
+        "passed": true,
+        "observation": {
+          "classifications": [
+            {
+              "valid": 1,
+              "zero": 0,
+              "kernel": 0,
+              "kernel_rva": "00000000"
+            }
+          ],
+          "kernel_pass": false,
+          "original_pass": true,
+          "original_exception_flow_pass": true,
+          "failed": false,
+          "guest_fatal": false,
+          "fatal21": false,
+          "title_handoff": true,
+          "title_return": false,
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "truncated_at_raw_bound": false,
+          "io_failures": [],
+          "successful_reads": [],
+          "non_public_addresses_collected": false,
+          "instruction_bytes_read": 0
+        },
+        "commercial_acceptance": false,
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      }
+    ],
+    "Fable": {
+      "outcome": "fresh_profile_finite_startup_requires_visible_review",
+      "public_log": [
+        {
+          "classifications": [
+            {
+              "valid": 1,
+              "zero": 0,
+              "kernel": 0,
+              "kernel_rva": "00000000"
+            }
+          ],
+          "kernel_pass": false,
+          "original_pass": false,
+          "original_exception_flow_pass": false,
+          "failed": false,
+          "guest_fatal": false,
+          "fatal21": false,
+          "title_handoff": true,
+          "title_return": true,
+          "cold_boots": 2,
+          "quick_boots": 1,
+          "truncated_at_raw_bound": false,
+          "io_failures": [
+            [
+              "0",
+              "c0000034",
+              "0",
+              "00000060"
+            ]
+          ],
+          "successful_reads": [],
+          "non_public_addresses_collected": false,
+          "instruction_bytes_read": 0
+        }
+      ],
+      "gameplay_claimed": false
+    },
+    "visible_review": {
+      "reviewed_captures": [
+        "screen-04.png",
+        "screen-06.png",
+        "screen-07.png"
+      ],
+      "visible": "black game region with XBX touch controls; no observed menu or play",
+      "ordinary_input": {
+        "Start": {
+          "helper_delivery": true,
+          "before_and_after_reviewed": true,
+          "visible_change": false
+        },
+        "A": {
+          "helper_delivery": true,
+          "after_capture_obtained": false,
+          "visible_response": "unqualified"
+        }
+      },
+      "final_capture_request": "after bounded review ended; not executed; no replay",
+      "Fable_qualified": false,
+      "kernel_cause_attributed": false
+    },
+    "same_media_new_entry_profile": true,
+    "old_saves_copied": false,
+    "normal_Leave_game_departure": true,
+    "actual_engine_process_absence": true,
+    "Fable_native_return_receipt": "retained in inactive fresh profile; not separately retrieved to host, no explicit per-field clean receipt claim",
+    "exact_original_collection_inode_all_file_hashes_and_APK_restored": true,
+    "all_fresh_output_retained_separately": true,
+    "stock_return_verified": true,
+    "forced_retirement": false,
+    "work_seconds": 434.1895386769902,
+    "work_seconds_is_game_performance_measurement": false
+  },
+  "conclusion": "The guarded candidate frame word was valid and nonzero but outside public kernel executable sections. Its address was intentionally not emitted, so no caller site or public failing contract is identified. An EBP-derived word alone is not proof of a true caller. No functional fix or Fable play/continuity acceptance follows."
 }
