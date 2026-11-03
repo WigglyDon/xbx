@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "parent": "docs/evidence/cartridge-Fable-cold-progress-20261103.json",
+  "decision": "Finish incomplete same-runtime ordinary-save cold-world comparison; no new game-code or memory inspection",
+  "unchanged_runtime_and_media": true,
+  "actual_product_Stop": {
+    "ordinary_Stop_process_absence": true,
+    "explicit_restart_intent": true,
+    "old_session_pointer_retained": true,
+    "complete_HUD_checkpoint_hashes_unchanged": true,
+    "no_metadata_rewrite_or_RAM_retag": true
+  },
+  "visible_review": {
+    "saved_profile_restored_first": true,
+    "fresh_cold_boot_after_Stop": true,
+    "menu_Continue_Game_selected": true,
+    "existing_profile_Default_present": true,
+    "Oakvale_AutoSave_listed_and_selected": true,
+    "initial_AutoSave_then_story_observed": true,
+    "story_and_scene_Y_skip_responded": true,
+    "tutorial_A_dismissal_responded": true,
+    "cold_Oakvale_world_and_HUD_reached": true,
+    "two_forward_stick_holds_delivered": true,
+    "camera_and_world_position_changed": true,
+    "corrupted_cinematic_character_geometry": true,
+    "large_white_world_geometry_after_movement": true,
+    "captures_reviewed": "saved profile; actual Stop; cold intro/menu; Continue/Profile/AutoSave; story; distorted 3D cinematic; tutorial; HUD before and after two stick holds",
+    "specific_wrong_geometry_cause_attributed": false,
+    "conclusion": "Severe rendering also occurs in a cold boot from current ordinary saves; no snapshot restored in this boot. Initial ordinary-save reload reaches the world, not sustained correct playable Fable."
+  },
+  "qualification": {
+    "initial_ordinary_save_cold_reload_to_world_observed": true,
+    "correct_gameplay": false,
+    "stable_graphics": false,
+    "audio": false,
+    "pacing": false,
+    "gameplay_Home_fresh_return": false
+  },
+  "preservation": {
+    "namespace_restored": true,
+    "original_root_hashes_restored": true,
+    "fresh_namespace_retained": true,
+    "original_APK_restored": true,
+    "own_processes_absent": true,
+    "returned_under_lease": true
+  },
+  "Menu_rollback_retained": true,
+  "pre_Stop_complete_checkpoint_preserved": true,
+  "new_native_returns": [
+    {
+      "clean": true,
+      "machine_thread_joined": true,
+      "native_status": 0,
+      "process_reaped": false,
+      "qmp_acknowledged": true,
+      "storage_synced": true,
+      "writer_leases_retained_until_OS_process_exit": true
+    },
+    {
+      "clean": true,
+      "machine_thread_joined": true,
+      "native_status": 0,
+      "process_reaped": false,
+      "qmp_acknowledged": true,
+      "storage_synced": true,
+      "writer_leases_retained_until_OS_process_exit": true
+    }
+  ],
+  "work_seconds": 925.3207888539764,
+  "custodian": "COMPLETED; actual return verified",
+  "protected_local_identity_count": 21,
+  "all_protected_local_identities_unchanged": true,
+  "next": "Prepare same-source serial-off candidate with retained corrected core; independently reproduce a public graphics boundary before a targeted repair. Preserve saved namespaces and paused work."
+}
