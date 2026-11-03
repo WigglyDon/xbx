@@ -39,9 +39,76 @@
     "failed_original_checkpoint_prohibited": true,
     "no_data_deletion": true
   },
-  "Android_result": "pending; no execution claimed",
+  "Android_result": "both_original_cases_pass_clean_native_and_verified_stock_return",
   "limits": [
     "Original synthetic program only; no Fable play or cause established.",
     "No private firmware or commercial code/context inspection."
-  ]
+  ],
+  "actual_Android": {
+    "cases": [
+      {
+        "case": "control",
+        "completed": true,
+        "passed": true,
+        "observation": {
+          "markers": [
+            "LIFETIME CONTROL BOOT",
+            "LIFETIME CONTROL CHILD PASS",
+            "LIFETIME CONTROL COMPLETE"
+          ],
+          "control_pass": true,
+          "exit_pass": false,
+          "failed": false,
+          "guest_fatal": false,
+          "title_handoff": true,
+          "title_return": false,
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "truncated_at_raw_bound": false,
+          "commercial_context_collected": false
+        },
+        "commercial_acceptance": false,
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      },
+      {
+        "case": "exit",
+        "completed": true,
+        "passed": true,
+        "observation": {
+          "markers": [
+            "LIFETIME EXIT BOOT",
+            "LIFETIME EXIT AFTER_PARENT_TERMINATION COMPLETE"
+          ],
+          "control_pass": false,
+          "exit_pass": true,
+          "failed": false,
+          "guest_fatal": false,
+          "title_handoff": true,
+          "title_return": true,
+          "cold_boots": 1,
+          "quick_boots": 0,
+          "truncated_at_raw_bound": false,
+          "commercial_context_collected": false
+        },
+        "commercial_acceptance": false,
+        "native_return": {
+          "records": 1,
+          "all_clean": true,
+          "OS_processes_absent": true
+        }
+      }
+    ],
+    "original_collection_inode_and_all_file_hashes_restored": true,
+    "fresh_collection_retained_separately": true,
+    "device_return_verified": true,
+    "OS_processes_absent": true,
+    "forced_retirement": false,
+    "work_seconds": 114.50738500099396,
+    "work_seconds_is_performance_measurement": false
+  },
+  "conclusion": "Initial title-thread exit does not by itself prevent its worker from completing on this Android runtime; no Fable cause or functional repair established."
 }
