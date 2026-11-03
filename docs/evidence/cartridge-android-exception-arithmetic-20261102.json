@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "prepared original precise-exception arithmetic state, actual Android boundary",
+  "reason": "completed original exception-return control tests dispatch and return but not arithmetic flags; retained repair only had controlled-IR proof",
+  "public_references": [
+    "https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-2a-manual.pdf",
+    "https://github.com/kooscode/oxos/blob/9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96/kernel/src/ke/except.cpp"
+  ],
+  "fixture": {
+    "Android_execution": false,
+    "Fable_cause_established": false,
+    "cases": [
+      "local fault before flag overwrite",
+      "branch-separated fault before flag overwrite"
+    ],
+    "commercial_code_inspected": false,
+    "context_and_return_flags_checked": true,
+    "defined_status_mask": "000008d5",
+    "expected_arithmetic_flags": [
+      "00000095",
+      "00000044"
+    ],
+    "expected_markers": [
+      "CC000001",
+      "CC000002",
+      "43435041"
+    ],
+    "faulting_load_destination_unchanged_checked": true,
+    "fixture_iso": "3160f7cfad0861fa33949d4730e98f6511b9fcc9aecb749e6165778cb2c88522",
+    "generated_source": "be9a54ecc4f4c252ecdc400d8a2bfc5c9129a69649745e56bf9988535d338da0",
+    "kernel_core_APK_rebuilt": false,
+    "original_source": "4a84bad9731e6f40fab545fabbdb3082094c6ccf7a75f98da8beb701c6aeafcf",
+    "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5"
+  },
+  "fixture_bytes": 131072,
+  "isolated_build_and_strict_Clippy": true,
+  "device_request_submitted": false,
+  "actual_Android_execution": false,
+  "Fable_result_changed": false,
+  "ordering": "fresh-storage Fable comparison and verified original namespace return first; use this check only if still relevant",
+  "paused_private_campaigns_resumed": false
+}

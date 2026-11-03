@@ -355,6 +355,37 @@ pub(super) fn android_exception_fixture(repo: &Path, root: &Path) -> Result<(), 
     Ok(())
 }
 
+pub(super) fn android_arithmetic_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/exception-arithmetic.S");
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "CC EXCEPTION BOOT")
+        .replace("NPX RESULT=", "CC EXCEPTION RESULT=");
+    let dir = root.join("android-exception-arithmetic-v1");
+    c::mkdir(&dir)?;
+    let iso = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &format!("{}\n{uart}", fs::read_to_string(&source)?),
+        "xbx original exception arithmetic",
+        0x58424343,
+    )?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":c::file_digest(&source)?,"uart_adapter":c::file_digest(&adapter)?,
+            "fixture_iso":iso,"generated_source":c::file_digest(&dir.join("original.S"))?,
+            "cases":["local fault before flag overwrite","branch-separated fault before flag overwrite"],
+            "defined_status_mask":"000008d5","expected_arithmetic_flags":["00000095","00000044"],
+            "expected_markers":["CC000001","CC000002","43435041"],
+            "context_and_return_flags_checked":true,"faulting_load_destination_unchanged_checked":true,
+            "kernel_core_APK_rebuilt":false,"Android_execution":false,
+            "commercial_code_inspected":false,"Fable_cause_established":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_thread_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/thread-startup.S");
     if c::file_digest(&source)?

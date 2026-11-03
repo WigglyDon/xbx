@@ -328,6 +328,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-exception-fixture" => {
             super::npx_port::android_exception_fixture(repo, root)?
         }
+        "cartridge-android-arithmetic-fixture" => {
+            super::npx_port::android_arithmetic_fixture(repo, root)?
+        }
         "cartridge-android-guest-failure-fixture" => {
             super::npx_port::android_guest_failure_fixture(repo, root)?
         }
