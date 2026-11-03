@@ -23,8 +23,8 @@
     "detach": "remove owned breakpoint, detach, resume normal exception handling; quit/join/sync and OS return still required",
     "ordinary_product_default_changed": false,
     "user_firmware_selector_added": false,
-    "original_Android_qualified": false,
-    "Fable_attempted": false,
+    "original_Android_qualified": true,
+    "Fable_attempted": true,
     "server_route": "native -gdb startup argument on private Unix socket; Android HMP does not expose gdbserver",
     "resume_owner": "RSP c alone during the private stop; no deferred Android vm_start or QMP cont; detach resumes normal handler",
     "progress_receipts": "prepared, continued, stop received, public PC/index matched; no raw register values",
@@ -84,7 +84,7 @@
     "v1_source_builds_recipes_retained": true,
     "sandbox_socketpair_refusal": "preserved; actual protocol tests passed with normal host Unix sockets"
   },
-  "device": "one corrected v6 request pending an existing prior-return recovery; no XBX phone/storage custody; original value gates and live4-byte comparison unexecuted",
+  "device": "v6 completed and returned; both original controls passed, followed by the one authorized live Fable word; no pending XBX request or held custody",
   "protected_identities_unchanged": true,
   "protected_identity_count": 21,
   "paused_paths_preserved": 16,
@@ -158,5 +158,134 @@
     "same_recipe_jobs_checked_absent": true,
     "single_explicitly_permitted_retry_succeeded": true,
     "safety_rejection_inferred": false
-  }
+  },
+  "original_Android_controls": [
+    {
+      "case": "match",
+      "passed": true,
+      "comparison": {
+        "PC_and_index_matched": true,
+        "bytes_requested": 4,
+        "completed": true,
+        "matches_file": true,
+        "raw_value_published": false,
+        "read_attempted": true,
+        "valid_word": true,
+        "zero": false,
+        "detach_verified": true
+      },
+      "original": {
+        "original_pass": true,
+        "guest_fatal": false,
+        "fatal21": false,
+        "title_handoff": true,
+        "title_return": false,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "io_failures": [],
+        "game_context_or_instructions_collected": false
+      },
+      "native_return": {
+        "records": 1,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    },
+    {
+      "case": "zero",
+      "passed": true,
+      "comparison": {
+        "PC_and_index_matched": true,
+        "bytes_requested": 4,
+        "completed": true,
+        "matches_file": false,
+        "raw_value_published": false,
+        "read_attempted": true,
+        "valid_word": true,
+        "zero": true,
+        "detach_verified": true
+      },
+      "original": {
+        "original_pass": true,
+        "guest_fatal": false,
+        "fatal21": false,
+        "title_handoff": true,
+        "title_return": false,
+        "cold_boots": 1,
+        "quick_boots": 0,
+        "truncated_at_raw_bound": false,
+        "io_failures": [],
+        "game_context_or_instructions_collected": false
+      },
+      "native_return": {
+        "records": 1,
+        "all_clean": true,
+        "OS_processes_absent": true
+      }
+    }
+  ],
+  "Fable_observation": {
+    "comparison": {
+      "PC_and_index_matched": true,
+      "bytes_requested": 4,
+      "completed": true,
+      "matches_file": true,
+      "raw_value_published": false,
+      "read_attempted": true,
+      "valid_word": true,
+      "zero": false,
+      "detach_verified": true
+    },
+    "public_log": [
+      {
+        "original_pass": false,
+        "guest_fatal": true,
+        "fatal21": true,
+        "title_handoff": true,
+        "title_return": true,
+        "cold_boots": 2,
+        "quick_boots": 1,
+        "truncated_at_raw_bound": false,
+        "io_failures": [
+          [
+            "0",
+            "c0000034",
+            "0",
+            "00000060"
+          ]
+        ],
+        "game_context_or_instructions_collected": false
+      }
+    ],
+    "visible_review": {
+      "captures_opened": 5,
+      "first_four": "black picture behind Xbox controls",
+      "last": "Game startup failed; saves and diagnostics retained",
+      "menu_or_gameplay": false
+    },
+    "meaning": "sampled dispatch entry was valid, nonzero and equal to file at this fault; no actual transfer/caller/root-cause attribution",
+    "successful_read_coverage": "not supplied by this minimum failure-status schema",
+    "no_further_title_memory_or_instructions_authorized_by_remaining_budget": true
+  },
+  "completed_return": {
+    "original_root_hashes_restored": true,
+    "namespace_restored": true,
+    "fresh_namespace_retained": true,
+    "original_APK_restored": true,
+    "returned_under_lease": true,
+    "own_processes_absent": true,
+    "stock_verified": true,
+    "original_native_quit_join_sync_verified": true,
+    "Fable_native_per_field_receipt_fetched": false,
+    "work_seconds": 183.9885211350047
+  },
+  "authorization_accounting": {
+    "file_bytes": 4,
+    "live_bytes": 4,
+    "total_authorized_bytes": 8,
+    "remaining_bytes": 0,
+    "no_pointer_follow": true
+  },
+  "next_original_only_boundary": "Verify effective protection before original REP-copy/image-table dispatch. Earlier one-page flags6 fixture declared readonly but loader head/tail rounding excluded its whole page. Compare query-confirmed flags6 writable control with flags0x36 protected-page variant; no additional game inspection, title run, kernel/core/APK rebuild or old control replay."
 }
