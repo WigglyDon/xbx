@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "parent": "docs/evidence/cartridge-Fable-menu-return-20261103.json",
+  "runtime_or_inputs_changed": false,
+  "restored_control": {
+    "actual_Oakvale_character_and_scenery_rendered": true,
+    "intermittent_large_white_bands_after_stick_input": true,
+    "sustained_correct_rendering_or_pacing_qualified": false,
+    "captures_reviewed": "restored-world and post-stick frames, actual Game/Stop warning, cold intro/Press START/menu/Continue selection/profile listing"
+  },
+  "actual_product_Stop": {
+    "ordinary_Stop_process_absence": true,
+    "explicit_restart_intent": true,
+    "old_session_pointer_retained": true,
+    "complete_HUD_checkpoint_hashes_unchanged": true,
+    "no_metadata_rewrite_or_RAM_retag": true
+  },
+  "cold_start": {
+    "ordinary_Stop_clean_native_records": 3,
+    "all_clean": true,
+    "explicit_restart_against_current_saves": true,
+    "public_cold_boots": 1,
+    "actual_Start_and_Dpad_response": true,
+    "Continue_Game_present": true,
+    "profile_listing": "Default",
+    "final_profile_select_A_executed": false,
+    "reason": "finite observation ended before the request was consumed",
+    "cold_world_observed": false,
+    "graphics_failure_claimed": false,
+    "ordinary_save_cold_reload_gameplay_qualified": false
+  },
+  "preservation": {
+    "HUD_checkpoint_record_preserved_after_comparison": true,
+    "prior_Menu_rollback_retained": true,
+    "original_APK_restored": true,
+    "original_root_hashes_restored": true,
+    "namespace_restored": true,
+    "fresh_namespace_retained": true,
+    "own_processes_absent": true,
+    "returned_under_lease": true
+  },
+  "next": "Complete this unfinished matched cold-world observation with a prepared finite budget and efficient mechanical actual-UI Stop sequence; no new binary/media/reference/configuration matrix. Keep intermittent rendering unqualified.",
+  "work_seconds": 998.8637265969883,
+  "final_native_return": {
+    "retained_and_new_records": 4,
+    "all_clean": true,
+    "forced": false
+  },
+  "continuation_budget": {
+    "work_seconds": 1800,
+    "cleanup_seconds": 300,
+    "interactive_seconds": 1500,
+    "bounded_files": 600,
+    "host_output_MiB": 128,
+    "same_focus_and_capture_guard": true,
+    "prepared_actual_UI_Stop_sequence": true,
+    "old_records_excluded_from_new_launch_return_receipts": true,
+    "no_new_build": true
+  }
+}

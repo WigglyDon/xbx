@@ -42,7 +42,7 @@
     "observed": [
       "saved main menu",
       "New Game profile keyboard",
-      "accepted Default1 and initial AutoSave progress",
+      "accepted the default profile name and initial AutoSave progress",
       "story and opening cinematic",
       "Y skip response",
       "A dismissed tutorial",
@@ -84,5 +84,6 @@
     "retained_floor_GiB": 1,
     "read_only_metadata_task_return_verified": true
   },
-  "next_scoped_decision": "One matched explicit cold boot using the same runtime and current ordinary save through product Stop confirmation/launch; preserve existing Menu rollback and HUD checkpoint. Distinguish restore-dependent graphics from general rendering/CPU behavior before correction. No firmware/core/APK rebuild, private reference, additional title inspection, configuration matrix or paused investigation."
+  "next_scoped_decision": "One matched explicit cold boot using the same runtime and current ordinary save through product Stop confirmation/launch; preserve existing Menu rollback and HUD checkpoint. Distinguish restore-dependent graphics from general rendering/CPU behavior before correction. No firmware/core/APK rebuild, private reference, additional title inspection, configuration matrix or paused investigation.",
+  "profile_name_correction": "Cold Continue profile listing confirms Default; the keyboard caret had previously been read as a final digit. No name was typed or altered."
 }
