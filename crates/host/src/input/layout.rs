@@ -17,7 +17,7 @@ impl Rect {
     }
 }
 
-pub(super) fn controls(w: f32, h: f32, density: f32) -> [Circle; COUNT] {
+pub(super) fn legacy_controls(w: f32, h: f32, density: f32) -> [Circle; COUNT] {
     // Keep PSX's side columns and analog / inner menu arrangement. Work in dp;
     // scale down transient small windows without clipping or overlapping hits.
     let d = density.max(0.5);
@@ -62,8 +62,8 @@ pub(super) fn controls(w: f32, h: f32, density: f32) -> [Circle; COUNT] {
     })
 }
 
-pub(super) fn picture(w: f32, h: f32, density: f32) -> [f32; 4] {
-    let obstacles = controls(w, h, density).map(|c| {
+pub(super) fn keep_clear_picture(w: f32, h: f32, density: f32) -> [f32; 4] {
+    let obstacles = legacy_controls(w, h, density).map(|c| {
         // Include the outline and a small clear gap, bounded by the safe area.
         let r = c.radius + 2.0 * density.min(w / 640.0).min(h / 360.0);
         Rect::new((c.x - r).max(0.0), (c.y - r).max(0.0), r * 2.0, r * 2.0)
@@ -122,4 +122,167 @@ fn clear_picture(w: f32, h: f32, obstacles: &[Rect]) -> Rect {
         }
     }
     best
+}
+
+/// Fit the whole native-aspect image before considering touch controls.
+pub(super) fn maximum_picture(w: f32, h: f32, aspect: f32) -> [f32; 4] {
+    if ![w, h, aspect].iter().all(|n| n.is_finite() && *n > 0.0) {
+        return [0.0; 4];
+    }
+    let width = w.min(h * aspect);
+    let height = width / aspect;
+    // A width-limited picture leaves one contiguous bottom area for controls.
+    [(w - width) * 0.5, 0.0, width, height]
+}
+fn left(index: usize) -> bool {
+    matches!(index, 0 | 6..=10 | 14 | 16)
+}
+
+/// Pack the accepted side-column template isotropically into actual spare space.
+fn fitted_column(w: f32, h: f32, d: f32, side: bool, minimum: f32) -> Option<[Circle; COUNT]> {
+    let template = legacy_controls(640.0, 360.0, 1.0);
+    let indices = || (0..COUNT).filter(|i| left(*i) == side);
+    let x0 = indices()
+        .map(|i| template[i].x - template[i].radius)
+        .fold(f32::INFINITY, f32::min);
+    let x1 = indices()
+        .map(|i| template[i].x + template[i].radius)
+        .fold(0.0, f32::max);
+    let y0 = indices()
+        .map(|i| template[i].y - template[i].radius)
+        .fold(f32::INFINITY, f32::min);
+    let y1 = indices()
+        .map(|i| template[i].y + template[i].radius)
+        .fold(0.0, f32::max);
+    let margin = 6.0 * d;
+    let scale = ((w - 2.0 * margin) / (x1 - x0)).min((h - 2.0 * margin) / (y1 - y0));
+    if scale <= 0.0 || indices().any(|i| template[i].radius * scale < minimum) {
+        return None;
+    }
+    let mut result = [Circle::default(); COUNT];
+    for i in indices() {
+        let c = template[i];
+        result[i] = Circle {
+            x: (w - (x1 - x0) * scale) * 0.5 + (c.x - x0) * scale,
+            y: (h - (y1 - y0) * scale) * 0.5 + (c.y - y0) * scale,
+            radius: c.radius * scale,
+        };
+    }
+    Some(result)
+}
+/// A narrow column stacks the menu/click pair below the stick rather than
+/// borrowing picture width. This retains every original-Xbox control.
+fn narrow_column(w: f32, h: f32, d: f32, side: bool, minimum: f32) -> Option<[Circle; COUNT]> {
+    let margin = 6.0 * d;
+    let gap = 4.0 * d;
+    let width = w - 2.0 * margin;
+    if width <= 0.0 {
+        return None;
+    }
+    let face = (width - std::f32::consts::SQRT_2 * gap) / (2.0 * (1.0 + std::f32::consts::SQRT_2));
+    let step = (2.0 * face + gap) / std::f32::consts::SQRT_2;
+    let small = (22.0 * d).min((width - gap) / 4.0);
+    let stick = (48.0 * d).min(width / 2.0);
+    let diamond = 2.0 * (face + step);
+    let used = 6.0 * small + diamond + 2.0 * stick + 4.0 * gap;
+    let scale = ((h - 2.0 * margin) / used).min(1.0);
+    if face.min(small).min(stick) * scale < minimum {
+        return None;
+    }
+    let mut out = [Circle::default(); COUNT];
+    let cx = w / 2.0;
+    let mut y = (h - used * scale) * 0.5;
+    let mut put = |i: usize, x: f32, y: f32, r: f32| {
+        out[i] = Circle {
+            x: cx + (x - cx) * scale,
+            y,
+            radius: r * scale,
+        };
+    };
+    put(if side { 16 } else { 17 }, cx, y + small * scale, small);
+    y += (2.0 * small + gap) * scale;
+    if !side {
+        put(12, cx - small - gap / 2.0, y + small * scale, small);
+        put(13, cx + small + gap / 2.0, y + small * scale, small);
+    }
+    y += (2.0 * small + gap) * scale;
+    let cy = y + (face + step) * scale;
+    if side {
+        for (i, x, y) in [
+            (6, cx, cy - step * scale),
+            (7, cx, cy + step * scale),
+            (8, cx - step, cy),
+            (9, cx + step, cy),
+        ] {
+            put(i, x, y, face);
+        }
+    } else {
+        for (i, x, y) in [
+            (2, cx, cy + step * scale),
+            (3, cx + step, cy),
+            (4, cx - step, cy),
+            (5, cx, cy - step * scale),
+        ] {
+            put(i, x, y, face);
+        }
+    }
+    y += (diamond + gap) * scale;
+    put(if side { 0 } else { 1 }, cx, y + stick * scale, stick);
+    y += (2.0 * stick + gap) * scale;
+    put(
+        if side { 10 } else { 11 },
+        cx - small - gap / 2.0,
+        y + small * scale,
+        small,
+    );
+    put(
+        if side { 14 } else { 15 },
+        cx + small + gap / 2.0,
+        y + small * scale,
+        small,
+    );
+    Some(out)
+}
+fn columns(column_width: f32, h: f32, d: f32, minimum: f32) -> [Circle; COUNT] {
+    let mut out = [Circle::default(); COUNT];
+    for side in [true, false] {
+        let Some(group) = fitted_column(column_width, h, d, side, minimum)
+            .or_else(|| narrow_column(column_width, h, d, side, minimum))
+        else {
+            return [Circle::default(); COUNT];
+        };
+        for (i, mut c) in group
+            .into_iter()
+            .enumerate()
+            .filter(|(i, _)| left(*i) == side)
+        {
+            if !side {
+                c.x += column_width;
+            }
+            out[i] = c;
+        }
+    }
+    out
+}
+pub(super) fn bottom_controls(w: f32, h: f32, density: f32) -> [Circle; COUNT] {
+    columns(w * 0.5, h, density.max(0.5), 0.0)
+}
+pub(super) fn spare_controls(w: f32, h: f32, density: f32) -> [Circle; COUNT] {
+    let d = density.max(0.5);
+    let picture = maximum_picture(w, h, 4.0 / 3.0);
+    if picture[0] > 0.0 {
+        let mut out = columns(picture[0], h, d, 12.0 * d);
+        for (i, c) in out.iter_mut().enumerate() {
+            if !left(i) {
+                c.x += picture[2];
+            }
+        }
+        out
+    } else {
+        let mut out = columns(w * 0.5, (h - picture[3]).max(0.0), d, 12.0 * d);
+        for c in &mut out {
+            c.y += picture[3];
+        }
+        out
+    }
 }

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "scope": "Owner cross-emulator display-default amendment, reconciled in existing XBX ownership; source only",
+  "contract": "Fit whole native-aspect picture in full safe drawable first; use spare side/bottom space for original-Xbox controls; no automatic picture shrink, stretch or crop. Explicit keep-clear and overlay alternatives when usable touch controls cannot fit.",
+  "current_configured_native_aspect": "4:3; renderer/other-aspect device qualification not newly claimed",
+  "implementation": {
+    "maximum_default": true,
+    "spare_space_control_packing": true,
+    "all_18_original_Xbox_controls_and_analog_mappings_preserved": true,
+    "insufficient_space_hides_touch_targets_and_explains_explicit_choices": true,
+    "alternatives": "Game menu Touch controls: full picture/spare space, smaller picture for clear controls, explicit overlay",
+    "explicit_choice_persisted": "enum-only app preference, existing app writer/atomic publication, interrupted pending files retained",
+    "mode_resize_neutralize_and_serialize_hit_geometry": true,
+    "existing_Java_surface_refresh_reused": true,
+    "new_Java_or_C_native_shim": false
+  },
+  "verification": {
+    "focused_geometry_input_mapping_checks_passed": 7,
+    "maximality_and_native_aspect": true,
+    "portrait_and_landscape_safe_insets": true,
+    "no_default_control_picture_or_hit_overlap_when_controls_fit": true,
+    "no_silent_shrink_when_space_insufficient": true,
+    "explicit_alternatives_and_preference_roundtrip": true,
+    "touch_capture_triggers_simultaneous_axes_cancel": true,
+    "isolated_host_all_target_Clippy_warnings_denied": true,
+    "Android_ARM64_library_Clippy_warnings_denied": true,
+    "owned_file_format_and_diff_checks": true,
+    "initial_check_findings": "Iterator type compile error corrected; new invariant caught inherited portrait dpad/stick overlap, corrected with packed columns; cross-target check caught and corrected pre-existing collapsible queue condition."
+  },
+  "source_files": [
+    "crates/host/src/input.rs",
+    "crates/host/src/input/layout.rs",
+    "crates/host/src/android.rs",
+    "crates/host/src/android_cartridge.rs",
+    "docs/PRODUCT.md"
+  ],
+  "phone_allocation_started_for_layout": false,
+  "APK_built_installed_or_changed_for_layout": false,
+  "actual_device_layout_qualified": false,
+  "Fable_qualified": false,
+  "existing_queued_candidate": "was frozen and unchanged during source reconciliation; its actual metadata/Fable result and verified return are separate",
+  "sibling_changes": false,
+  "prior_PSX_attribution_preserved": true
+}

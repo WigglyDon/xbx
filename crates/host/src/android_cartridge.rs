@@ -80,10 +80,10 @@ pub(super) extern "C" fn command(value: *const c_char) {
     if value.len() > 64 || !value.is_ascii() {
         return;
     }
-    if let Ok(mut q) = COMMANDS.lock() {
-        if q.len() < 32 {
-            q.push_back(value.into_owned());
-        }
+    if let Ok(mut q) = COMMANDS.lock()
+        && q.len() < 32
+    {
+        q.push_back(value.into_owned());
     }
     CHANGED.notify_all();
 }
@@ -439,6 +439,18 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             Err(e) => return Err(e.into()),
         }
     };
+    let touch_preference = app.join("touch-layout.json");
+    let (mode, explicit) = match c::read_json::<crate::input::PictureMode>(&touch_preference) {
+        Ok(mode) => (mode, true),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => {
+            (crate::input::PictureMode::Maximum, false)
+        }
+        Err(e) => {
+            eprintln!("XBX touch preference unreadable, retained: {e}");
+            (crate::input::PictureMode::Maximum, false)
+        }
+    };
+    set_touch_mode(mode, explicit);
     let requested = app.join("restart-request.json");
     let recovery = match c::read_json::<RestartRequest>(&requested) {
         Ok(v) => {
@@ -525,6 +537,7 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
         "Session ready"
     });
     let mut running = false;
+    let mut touch_warning = false;
     loop {
         if !STARTUP.ready() {
             return Err(if STARTUP.guest_boot_failed() {
@@ -541,8 +554,13 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             && !paused;
         if allow && !running {
             player.resume()?;
-            media::status("");
+            media::status(touch_space_status());
+            touch_warning = touch_needs_space();
             running = true;
+        }
+        if allow && running && touch_needs_space() != touch_warning {
+            touch_warning = touch_needs_space();
+            media::status(touch_space_status());
         }
         if !allow && running {
             available(&app)?;
@@ -558,6 +576,7 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
                         ("Pause".into(), "__pause__".into()),
                         ("Resume".into(), "__resume__".into()),
                         ("Choose game".into(), "__collection__".into()),
+                        ("Touch controls".into(), "__touch_layout__".into()),
                         ("Stop session".into(), "__stop__".into()),
                         ("Leave game".into(), "__leave__".into()),
                     ];
@@ -580,6 +599,51 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
                         items.push(("Verify original FP state".into(), "fixture-v".into()));
                     }
                     choices("Game", &items)?;
+                }
+                "__touch_layout__" => choices(
+                    "Touch controls",
+                    &[
+                        (
+                            "Full picture; controls in spare space".into(),
+                            "__touch_max__".into(),
+                        ),
+                        (
+                            "Smaller picture for touch controls".into(),
+                            "__touch_clear__".into(),
+                        ),
+                        (
+                            "Overlay touch controls on picture".into(),
+                            "__touch_overlay__".into(),
+                        ),
+                    ],
+                )?,
+                "__touch_max__" | "__touch_clear__" | "__touch_overlay__" => {
+                    let mode = match key.as_str() {
+                        "__touch_clear__" => crate::input::PictureMode::KeepClear,
+                        "__touch_overlay__" => crate::input::PictureMode::Overlay,
+                        _ => crate::input::PictureMode::Maximum,
+                    };
+                    let save = (|| -> io::Result<()> {
+                        c::retain_pending(&app, &["touch-layout.pending"])?;
+                        c::atomic(&touch_preference, &c::json(&mode)?)
+                    })();
+                    match save {
+                        Ok(()) => {
+                            set_touch_mode(mode, true);
+                            media::status(if paused {
+                                "Paused"
+                            } else {
+                                touch_space_status()
+                            });
+                            touch_warning = touch_needs_space();
+                        }
+                        Err(e) => {
+                            eprintln!("XBX touch preference not committed, retained: {e}");
+                            media::status(
+                                "Could not save touch settings. The previous layout is kept.",
+                            );
+                        }
+                    }
                 }
                 "__pause__" => {
                     available(&app)?;

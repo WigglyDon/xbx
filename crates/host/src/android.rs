@@ -4,7 +4,7 @@ use std::ffi::{CStr, CString, c_char, c_int};
 use std::fs;
 use std::os::fd::IntoRawFd;
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 #[path = "android_cartridge.rs"]
@@ -56,6 +56,8 @@ static FINISHED: AtomicBool = AtomicBool::new(false);
 static FOREGROUND: AtomicBool = AtomicBool::new(true);
 static AUDIO_FOCUS: AtomicBool = AtomicBool::new(false);
 static VIEWPORT: Mutex<Option<crate::input::Viewport>> = Mutex::new(None);
+static TOUCH_MODE: AtomicU8 = AtomicU8::new(0);
+static TOUCH_SPACE_ACK: AtomicBool = AtomicBool::new(false);
 static TOUCH: Mutex<crate::input::Touch> = Mutex::new(crate::input::Touch::new());
 #[repr(C)]
 struct Callbacks {
@@ -80,11 +82,40 @@ extern "C" fn neutral() {
     }
     unsafe { xbx_pad_apply(0, [0i16; 6].as_ptr()) };
 }
+fn set_touch_mode(mode: crate::input::PictureMode, explicit: bool) {
+    if let Ok(mut view) = VIEWPORT.lock() {
+        TOUCH_MODE.store(mode.byte(), Ordering::SeqCst);
+        TOUCH_SPACE_ACK.store(explicit, Ordering::SeqCst);
+        if let Some(v) = view.as_mut() {
+            v.mode = mode;
+        }
+        neutral();
+    }
+}
+fn touch_needs_space() -> bool {
+    VIEWPORT.lock().ok().and_then(|v| *v).is_some_and(|v| {
+        v.mode == crate::input::PictureMode::Maximum
+            && v.control_count() == 0
+            && !TOUCH_SPACE_ACK.load(Ordering::SeqCst)
+    })
+}
+fn touch_space_status() -> &'static str {
+    if touch_needs_space() {
+        "Touch controls need more room. Choose Touch controls in the game menu, or use a controller."
+    } else {
+        ""
+    }
+}
 extern "C" fn touch(id: i32, phase: i32, x: f32, y: f32, _w: f32, _h: f32, _d: f32) {
     if !STARTUP.may_resume() || (cartridge::active() && !cartridge::may_input()) {
         return;
     }
-    let Some(view) = VIEWPORT.lock().ok().and_then(|v| *v) else {
+    // Keep geometry ownership through hit testing so a mode/resize change
+    // cannot publish a capture using the previous control positions.
+    let Ok(current) = VIEWPORT.lock() else {
+        return;
+    };
+    let Some(view) = *current else {
         return;
     };
     if let Ok(mut touch) = TOUCH.lock() {
@@ -101,7 +132,7 @@ extern "C" fn layout(index: i32, _w: f32, _h: f32, _d: f32, out: *mut f32) {
     };
     let out = unsafe { std::slice::from_raw_parts_mut(out, 5) };
     if index == -2 {
-        out[0] = crate::input::COUNT as f32;
+        out[0] = view.control_count() as f32;
     } else if index == -1 {
         out[..4].copy_from_slice(&view.surface());
     } else if (0..crate::input::COUNT as i32).contains(&index) {
@@ -162,14 +193,17 @@ pub unsafe extern "system" fn Java_com_machinerhythm_xbx_XbxActivity_nativeGeome
     density: f32,
 ) {
     let next = crate::input::Viewport::new([left, top, width, height], density);
-    let changed = if let Ok(mut current) = VIEWPORT.lock() {
-        let changed = *current != next;
-        *current = next;
-        changed
+    if let Ok(mut current) = VIEWPORT.lock() {
+        let next = next.map(|v| {
+            v.with_mode(crate::input::PictureMode::from_byte(
+                TOUCH_MODE.load(Ordering::SeqCst),
+            ))
+        });
+        if *current != next {
+            *current = next;
+            neutral();
+        }
     } else {
-        true
-    };
-    if changed {
         neutral();
     }
 }

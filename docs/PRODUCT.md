@@ -48,10 +48,17 @@ locate moved content, explicit restart, and later safe progress export. Invalid
 launch targets lead to that entry's recovery, never a different game or arbitrary
 path execution. Removing a shortcut does not delete content or saves.
 
-The picture is aspect-correct and clear of controls by default. Touch layout
-adapts to actual usable window size, cutouts, inner/outer displays and rotations.
-Phone play defaults to sensor landscape, with controls in side columns and a
-clear 4:3 picture using the public PSX layout geometry. Face buttons retain
+The default fits the whole native-aspect picture into the full drawable safe
+area before placing touch controls. Height normally limits landscape; width
+normally limits portrait. Control rails never silently reduce the picture;
+there is no stretch or crop. The current configured Xbox route uses 4:3.
+Touch controls use remaining side/bottom space, adapting to actual window size,
+cutouts, inner/outer displays and rotation. When usable controls cannot fit,
+keep the full picture and offer explicit game-menu choices to make room for
+controls or overlay them; a physical controller also preserves the full picture.
+Those alternatives require the user's choice, never automatic image shrinkage.
+Phone play defaults to sensor landscape. The explicit keep-clear alternative
+retains the attributed public PSX layout geometry. Face buttons retain
 original Xbox A green, B red, X blue and Y yellow; Black and White have distinct
 caps and text, alongside Back, Start, both triggers and stick clicks.
 Retain multi-touch capture, cancellation, useful analog dead zones and editable
