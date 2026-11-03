@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "date": "2026-11-02",
-  "scope": "prepared ordinary fresh-storage Fable comparison; no device execution",
+  "scope": "completed ordinary fresh-storage Fable comparison and original collection return",
   "reason": "recent Android attempts reused current Fable storage; positive desktop qualification used fresh storage",
   "same_installed_APK_and_media": true,
   "old_storage_or_checkpoints_copied_to_new_profile": false,
@@ -28,7 +28,7 @@
     "exact_current_source_host_storage_tests": 4,
     "passed": true,
     "Android_target_compile_warnings_denied": true,
-    "actual_Android_execution": false
+    "actual_Android_execution": true
   },
   "prepared_recipe_submitted": true,
   "requires_prior_request_return": true,
@@ -37,5 +37,48 @@
     "all_prior_inputs_profiles_and_artifacts_retained": true,
     "protected_inputs_unchanged": 21
   },
-  "device_state": "single_fresh_comparison_requested_no_execution_claim"
+  "device_state": "completed_new_fresh_profile_guest_failure_original_collection_and_stock_return_verified",
+  "device": {
+    "same_installed_APK_core_open_image_media": true,
+    "reinstall_or_media_copy": false,
+    "new_game_and_profile": true,
+    "old_saves_or_checkpoints_copied": false,
+    "Fable": {
+      "outcome": "fresh_profile_guest_failure",
+      "public_log": [
+        {
+          "io_failures": [],
+          "successful_read_statuses": [],
+          "cold_boots": 2,
+          "quick_boots": 1,
+          "title_handoff": true,
+          "title_return": true,
+          "fatal21": true,
+          "uart_assert": false,
+          "read_pass": false,
+          "data_pass": false,
+          "expected_errors_pass": false,
+          "demand_header_pass": false,
+          "demand_pages_pass": false,
+          "fixture_failure": false,
+          "presentation_samples": [],
+          "truncated_at_bound": false
+        }
+      ],
+      "gameplay_claimed": false
+    },
+    "actual_visible": "Game startup failed. Your current saves and diagnostics were retained.",
+    "captures_opened_and_reviewed": 2,
+    "original_directory_inode_restored": true,
+    "every_original_file_hash_restored": true,
+    "all_fresh_output_retained_separately": true,
+    "actual_OS_process_absence": true,
+    "normal_OK_departure": true,
+    "forced_retirement": false,
+    "stock_return_verified": true,
+    "work_seconds": 91.01696279103635,
+    "work_seconds_is_performance_measurement": false
+  },
+  "conclusion": "same guest failure also occurs with newly generated storage and a new entry/profile; old profile history alone is insufficient to explain it; no broad storage or CPU cause established",
+  "runtime_fix_claimed": false
 }

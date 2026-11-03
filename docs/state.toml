@@ -201,3 +201,8 @@ cartridge_android_kernel_FP_ownership_original_qualified = true
 cartridge_android_kernel_FP_ownership_receipt = "docs/evidence/cartridge-android-npx-ownership-20261102.json"
 cartridge_android_thread_TLS_original_qualified = true
 cartridge_android_thread_TLS_receipt = "docs/evidence/cartridge-android-thread-abi-20261102.json"
+
+cartridge_android_original_exception_return_qualified = true
+cartridge_android_original_exception_return_receipt = "docs/evidence/cartridge-android-exception-return-20261102.json"
+cartridge_android_fresh_storage_Fable_result = "new_entry_profile_generated_storage_same_runtime_media_guest_failure_handoff_return_quick_then_cold_fatal21_two_error_frames_reviewed_original_inode_all_files_restored_stock_return_verified_not_playable"
+cartridge_android_fresh_storage_receipt = "docs/evidence/cartridge-android-fresh-storage-preparation-20261102.json"
