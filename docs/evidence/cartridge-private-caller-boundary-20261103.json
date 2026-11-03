@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "scope": "Owner resumed specific128-byte private caller inspection; broader campaigns remain paused",
+  "parent": "docs/evidence/cartridge-android-section-metadata-20261102.json",
+  "private_inspection": {
+    "game_bytes_read": 128,
+    "windows": 2,
+    "first_window": "around the retained candidate return",
+    "second_window": "one validated direct call target",
+    "ranges": "each wholly contained in one file-backed executable section",
+    "call_ends_at_captured_word": true,
+    "target_shape": "ordinary copy routine with REP and indirect dispatch",
+    "dispatch_table_structural_mapping": "one preloaded file-backed executable section; no shared page",
+    "table_payload_or_live_value_read": false,
+    "candidate_call_relationship": "direct static relationship validated; dynamic root cause unproved",
+    "public_runtime_defect_attributed": false,
+    "game_patch": false,
+    "firmware_acquisition": false,
+    "whole_media_copy": false,
+    "raw_code_addresses_offsets_published": false
+  },
+  "read_controls": {
+    "stock_host_dd_original_exact_seek_count": true,
+    "stock_Android_dd_original_exact_seek_count": true,
+    "original_bytes": 64,
+    "no_device_files_created": true
+  },
+  "return": {
+    "completed": true,
+    "work_seconds": 42.590752191026695,
+    "media_size_mtime_inode_preserved": true,
+    "original_APK_and_all_canonical_files_preserved": true,
+    "engine_processes_absent": true,
+    "stock_return_verified": true,
+    "screen_security_lock_claim": false
+  },
+  "next_original_control": {
+    "source": "native/fixtures/copy-dispatch.S",
+    "builder": "cartridge-android-copy-fixture",
+    "construction": "existing Rust two-page XBE assembler and original UART adapter",
+    "expected_cases": 260,
+    "counts": "0..=64",
+    "destination_alignments": 4,
+    "checks": "copied bytes and before/after canaries, readonly indirect dispatch after REP MOVSD",
+    "artifact": "eb4aeadfdf169f28f6f453d73923374bb6daec9a739716bf82aacff588065360",
+    "build": true,
+    "isolated_host_all_targets_Clippy_warnings_denied": true,
+    "core_firmware_APK_rebuilt": false,
+    "Android": "prepared and queued, awaiting normal custody; not executed or qualified yet"
+  },
+  "Fable_qualification_changed": false,
+  "protected_identity_count": 21,
+  "protected_identities_unchanged": true,
+  "sixteen_paused_paths_preserved": true
+}

@@ -452,6 +452,36 @@ pub(super) fn android_frame_fixtures(repo: &Path, root: &Path) -> Result<(), Err
     Ok(())
 }
 
+/// Original REP-copy and image-loaded readonly dispatch-table boundary.
+pub(super) fn android_copy_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/copy-dispatch.S");
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "COPY DISPATCH BOOT")
+        .replace("NPX RESULT=", "COPY DISPATCH RESULT=");
+    let dir = root.join("android-copy-dispatch-v1");
+    c::mkdir(&dir)?;
+    let iso = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &format!("{}\n{uart}", fs::read_to_string(&source)?),
+        "xbx original copy dispatch",
+        0x58424350,
+    )?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":c::file_digest(&source)?,"UART":c::file_digest(&adapter)?,
+            "fixture_iso":iso,"generated_source":c::file_digest(&dir.join("original.S"))?,
+            "counts":"0..=64","destination_alignments":4,"expected_cases":260,
+            "checks":"copied bytes and before/after canaries; readonly indirect dispatch after REP MOVSD",
+            "expected_markers":["00000104","52455041"],
+            "kernel_core_APK_rebuilt":false,"Android_execution":false,"game_bytes_used":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_lifetime_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/startup-lifetime.S");
     if c::file_digest(&source)?
