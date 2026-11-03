@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "owner-delegated XBX-local next qualification decision; actual Android exception return with original code",
+  "reason": "retained TCG repair receipt qualifies controlled host IR, explicitly not actual Android vCPU exception delivery",
+  "fixture": {
+    "APK_rebuilt": false,
+    "Android_execution": false,
+    "commercial_code_inspected": false,
+    "expected_flags": 7,
+    "expected_result": "46584258",
+    "fixture_iso": "27b51c15e0dc922b448960dde374f284fa72859e352d7deb8245d16d6d7526f5",
+    "generated_source": "c330cf530001350183006c5189168d070568d3611a52c1e8f60da43aca0af02a",
+    "kernel_or_core_build": false,
+    "original_handler_and_checks_reused": true,
+    "original_source": "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0",
+    "uart_adapter": "408444753c90effd27f3f20b987613064d862014d62fde5976920ebcae7673c5"
+  },
+  "fixture_bytes": 131072,
+  "installed_APK_reused": "992d017d77b8e8a26542aae3f137b75359a19e29ec0a9bc0aeda17b7220a5665",
+  "build": {
+    "isolated_Rust_builder": true,
+    "strict_Clippy": true,
+    "original_ASM_XBE_ISO": true,
+    "new_core_kernel_or_APK_build": false
+  },
+  "device": {
+    "state": "passed_actual_Android_exception_return_and_stock_return",
+    "Android_execution": true,
+    "observation": {
+      "boot": true,
+      "passed": true,
+      "original_result_markers": [
+        "EXCEPTION RESULT=00000007",
+        "EXCEPTION RESULT=46584258"
+      ],
+      "guest_fatal": false,
+      "fatal21": false,
+      "title_handoff": true,
+      "title_return": false,
+      "cold_boots": 1,
+      "quick_boots": 0,
+      "truncated_at_raw_bound": false,
+      "commercial_context_collected": false
+    },
+    "native_return": {
+      "records": 1,
+      "all_clean": true,
+      "OS_processes_absent": true
+    },
+    "unrelated_profiles_unchanged": true,
+    "actual_process_absence": true,
+    "stock_return_verified": true,
+    "forced_retirement": false,
+    "Fable_run": false,
+    "XBX_device_or_storage_lease": false
+  },
+  "game_inspection": "no commercial code/memory/stack campaign",
+  "Fable_result_changed": false,
+  "preservation": {
+    "protected_inputs_unchanged": 21,
+    "sixteen_paused_paths_retained": true
+  }
+}

@@ -325,6 +325,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-npx-build" => super::npx_port::build(repo, root)?,
         "cartridge-android-npx-fixture" => super::npx_port::android_fixture(repo, root)?,
         "cartridge-android-thread-fixture" => super::npx_port::android_thread_fixture(repo, root)?,
+        "cartridge-android-exception-fixture" => {
+            super::npx_port::android_exception_fixture(repo, root)?
+        }
         "cartridge-android-guest-failure-fixture" => {
             super::npx_port::android_guest_failure_fixture(repo, root)?
         }

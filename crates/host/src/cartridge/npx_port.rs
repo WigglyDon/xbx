@@ -307,6 +307,54 @@ pub(super) fn android_guest_failure_fixture(repo: &Path, root: &Path) -> Result<
     Ok(())
 }
 
+/// First actual Android vCPU exception-delivery check, using original code only.
+pub(super) fn android_exception_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/nullcall.S");
+    if c::file_digest(&source)?
+        != "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0"
+    {
+        return Err("retained original exception-return regression differs".into());
+    }
+    let original = fs::read_to_string(&source)?;
+    let body = &original[original.find(".text\n").ok_or("original text")?..];
+    let result = "    movl $0x46584258, _XkTitleResults\n";
+    if body.matches(result).count() != 1 {
+        return Err("original exception result site differs".into());
+    }
+    // Preserve the original handler/checks. Remove COFF-only metadata and add
+    // output after its final result; no new exception observer or game tracing.
+    let adapted = body
+        .replace(".safeseh _XbxExceptionHandler\n", "")
+        .replace("_XkTitleEntry", "_start")
+        .replace("_start:\n", "_start:\n    call npx_serial_init\n")
+        .replace(result, &format!("{result}    pushfl\n    pushal\n    movl _XkTitleResults+4, %ecx\n    call npx_report\n    movl _XkTitleResults, %ecx\n    call npx_report\n    popal\n    popfl\n"))
+        .replace("_XkThunks", "thunks");
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "EXCEPTION RETURN BOOT")
+        .replace("NPX RESULT=", "EXCEPTION RESULT=");
+    let dir = root.join("android-exception-original-v1");
+    c::mkdir(&dir)?;
+    let iso = super::cpu_performance::assemble_two_page(
+        &root.join("fixtures-v2/a.iso"),
+        &dir,
+        &format!("{adapted}\n{uart}"),
+        "xbx original exception return",
+        0x58424552,
+    )?;
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":c::file_digest(&source)?,"uart_adapter":c::file_digest(&adapter)?,
+            "fixture_iso":iso,"generated_source":c::file_digest(&dir.join("original.S"))?,
+            "original_handler_and_checks_reused":true,"expected_flags":7,
+            "expected_result":"46584258","kernel_or_core_build":false,
+            "APK_rebuilt":false,"Android_execution":false,"commercial_code_inspected":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_thread_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/thread-startup.S");
     if c::file_digest(&source)?

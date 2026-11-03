@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "prepared ordinary fresh-storage Fable comparison; no device execution",
+  "reason": "recent Android attempts reused current Fable storage; positive desktop qualification used fresh storage",
+  "same_installed_APK_and_media": true,
+  "old_storage_or_checkpoints_copied_to_new_profile": false,
+  "utility": {
+    "source": "d03131425fced62afafaf2a6d37634aaf4ffee19bbe8160088b05b9b14f526d0",
+    "existing_lease_source": "0b008c94d58f5501361a86c5777b4d67bf5b9c1c084a71cad44b566e5d62e603",
+    "tool": "bb3304b07a074ce11421b0d839417e0cd880c8de0c6bad49f9ddd2dee370e3b4",
+    "original_and_fresh_preserved": true,
+    "host_storage_safety_tests_passed": 4,
+    "Android_execution": false,
+    "no_APK_rebuild": true
+  },
+  "storage_contract": {
+    "original_directory_inode_journaled_before_rename": true,
+    "existing_ProfileLease_reused": true,
+    "actual_engine_process_absence_required_before_changes": true,
+    "ordinary_product_creates_new_storage": true,
+    "all_fresh_output_archived_on_return": true,
+    "original_inode_and_every_original_file_hash_required_on_return": true,
+    "no_directory_or_journal_deleted": true,
+    "execution_probe_required_before_mutation": true
+  },
+  "validation": {
+    "exact_current_source_host_storage_tests": 4,
+    "passed": true,
+    "Android_target_compile_warnings_denied": true,
+    "actual_Android_execution": false
+  },
+  "prepared_recipe_submitted": true,
+  "requires_prior_request_return": true,
+  "Fable_playability_or_resume_claimed": false,
+  "preservation": {
+    "all_prior_inputs_profiles_and_artifacts_retained": true,
+    "protected_inputs_unchanged": 21
+  },
+  "device_state": "single_fresh_comparison_requested_no_execution_claim"
+}

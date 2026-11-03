@@ -9,6 +9,11 @@ relevant decisions. `handoff/MASTER_SEED.md` is the complete initial context.
 Live issues own assignments; documents own durable contracts. Check actual
 local work and worker acknowledgments before creating another worker.
 
+The owner has delegated XBX-local Master responsibilities to this sole worker.
+Make and record scoped product/compatibility decisions and continue implementation
+without separate planning approval. Shared facilities retain their existing
+custodians, admission requirements and recovery ownership.
+
 ## Product and authority
 
 The owner requests a public, free-source Xbox sister to PSX named `xbx`, with
