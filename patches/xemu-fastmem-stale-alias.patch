@@ -1,0 +1,35 @@
+--- a/accel/tcg/xbox-fastmem.c
++++ b/accel/tcg/xbox-fastmem.c
+@@ -205,8 +205,8 @@
+         return;
+     }
+     /*
+-     * rw_alias may keep naming these pages; demoting a page that is no
+-     * longer writable later only costs a spurious fault, never a miss.
++     * rw_alias may keep naming these pages. reset_dirty checks mapped_bits
++     * before changing permissions, then forgets each stale alias.
+      */
+     mmap((void *)(window_base + start), end - start, PROT_NONE,
+          MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE | MAP_FIXED, -1, 0);
+@@ -233,12 +233,16 @@
+         for (int k = 0; k < 2; k++) {
+             uint32_t va = rw_alias[pg][k];
+             if (va) {
+-                mprotect((void *)(window_base + (uint64_t)(va - 1) * PAGE_SZ),
+-                         PAGE_SZ, PROT_READ);
++                /* A page flush leaves an anonymous PROT_NONE replacement.
++                 * A stale alias must never make that zero page readable. */
++                if (test_bit(va - 1, mapped_bits)) {
++                    mprotect((void *)(window_base + (uint64_t)(va - 1) * PAGE_SZ),
++                             PAGE_SZ, PROT_READ);
++                    if (demote_count[pg] < UINT8_MAX) {
++                        demote_count[pg]++;
++                    }
++                }
+                 rw_alias[pg][k] = 0;
+-                if (demote_count[pg] < UINT8_MAX) {
+-                    demote_count[pg]++;
+-                }
+                 stat_demotes++;
+             }
+         }

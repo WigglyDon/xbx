@@ -8,7 +8,7 @@ use serde_json::json;
 use std::{collections::BTreeMap, fs, path::Path, process::Command};
 type Error = Box<dyn std::error::Error>;
 const PIN: &str = "4967efd3ee594cc236869a45ee4cb396e25af1ac";
-fn objects(bytes: &[u8]) -> Result<Vec<(String, String)>, Error> {
+pub(super) fn objects(bytes: &[u8]) -> Result<Vec<(String, String)>, Error> {
     if !bytes.starts_with(b"!<arch>\n") {
         return Err("archive signature".into());
     }

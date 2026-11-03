@@ -486,3 +486,14 @@ no new CPU implementation or game code is included.
 exception record with an origin tag and one mapped-address-validated stack word.
 It performs no stack walk and includes no game bytes. All resulting values remain
 private; the Rust owner retains separate source/image/native bindings.
+
+`patches/xemu-fastmem-stale-alias.patch` modifies retained X1 BOX/xemu
+`4967efd3ee594cc236869a45ee4cb396e25af1ac`,
+`accel/tcg/xbox-fastmem.c`, under its GPL-2.0-or-later terms. It prevents
+stale dirty-tracking aliases from changing an invalidated anonymous window
+page's protection. The actual public unmap/reset function bodies are reused
+unchanged in a private native before/after contract; their SPDX notice remains.
+The original owned-memory fixture `native/fixtures/fastmem-stale-alias.c` and
+Rust build/audit owner `cartridge/fastmem_alias.rs` are MIT. No game data or
+proprietary firmware is included. The correction preserves the native state
+layout; prior checkpoints are retained without retagging.

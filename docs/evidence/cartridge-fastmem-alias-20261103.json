@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "parent": "docs/evidence/cartridge-copy-protection-20261103.json",
+  "decision": "Scoped public-platform correction after independent original readonly-page failure; no further title inspection",
+  "contract": {
+    "Fable_cause_established": false,
+    "actual_Android_core_execution": false,
+    "after": "a0d97ac4b4d9e5378772cb57e19f9c2a9a42adb563f52585d9c0e527f0f66a59",
+    "before": "3a067e9c9678751663b1ebb821b2f35bf4967dd9cfe9409b2133a3390c91153f",
+    "controlled_environment": "owned memfd and host window; actual mmap/mprotect; child read/write permission observations; no core dumps",
+    "fixture": "dac03fd87930900a07106f43082401ecaf3e2973735529795dcea2f0b72139d0",
+    "game_bytes_used": false,
+    "passed": true,
+    "patch": "19e8e7e815912d7a7a552e024731ed6de0dabd52e385e3aa001e5e5950abdda5",
+    "results": [
+      {
+        "case": "live",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "stale",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "live",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "stale",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "unchanged_function_bodies": true,
+    "unit": "accel/tcg/xbox-fastmem.c"
+  },
+  "native": {
+    "library_sha256": "5042323792e178072d2351e5d4043540706c7bcbd8ec2f321a787cbe117d9a15",
+    "prior_library_sha256": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+    "patch": "19e8e7e815912d7a7a552e024731ed6de0dabd52e385e3aa001e5e5950abdda5",
+    "recompiled_units": [
+      "accel/tcg/xbox-fastmem.c"
+    ],
+    "all_other_archive_objects_unchanged": true,
+    "unchanged_core_object_count": 1225,
+    "whole_core_rebuild": false,
+    "state_layout_changed": false,
+    "old_checkpoints_retagged": false
+  },
+  "package": {
+    "apk_sha256": "84b1b416cde301e4ac41b0d0f6a199a4322f96923d59f656a293085aaf2d15eb",
+    "core_sha256": "5042323792e178072d2351e5d4043540706c7bcbd8ec2f321a787cbe117d9a15",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059"
+  },
+  "APK_signature_and_alignment_pass": true,
+  "open_system_rebuilt": false,
+  "device": "prepared; original red/green Android and Fable observation unexecuted",
+  "Fable_cause_established": false
+}

@@ -169,6 +169,14 @@ pub(super) fn build_read_status(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-read-status-package-v1",
     )
 }
+pub(super) fn build_fastmem_alias(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-fastmem-alias-v1",
+        "android-fastmem-alias-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -225,6 +233,7 @@ fn build_selected(
             | "android-tcg-fault-v1"
             | "android-tcg-baseline-v1"
             | "android-gdb-features-v1"
+            | "android-fastmem-alias-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
@@ -232,7 +241,10 @@ fn build_selected(
     let dispatch = package_stage == "android-dispatch-package-v5";
     let frame =
         package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
-    let read_status = package_stage == "android-read-status-package-v1";
+    let read_status = matches!(
+        package_stage,
+        "android-read-status-package-v1" | "android-fastmem-alias-package-v1"
+    );
     let reporting = read_status
         || matches!(
             package_stage,

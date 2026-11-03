@@ -26,6 +26,8 @@ pub mod desktop;
 #[cfg_attr(not(target_os = "android"), allow(dead_code))]
 pub(crate) mod dispatch_probe;
 #[cfg(not(target_os = "android"))]
+mod fastmem_alias;
+#[cfg(not(target_os = "android"))]
 mod fault_context;
 #[cfg(not(target_os = "android"))]
 mod file_read;

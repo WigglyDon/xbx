@@ -340,6 +340,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-dispatch-package" => super::android_package::build_dispatch(repo, root)?,
         "cartridge-android-copy-fixture" => super::npx_port::android_copy_fixture(repo, root)?,
         "cartridge-android-copy-protection" => super::npx_port::copy_protection(repo, root)?,
+        "cartridge-fastmem-alias-contract" => super::fastmem_alias::contract(repo, root)?,
+        "cartridge-fastmem-alias-native" => super::fastmem_alias::build(repo, root)?,
+        "cartridge-fastmem-alias-package" => {
+            super::android_package::build_fastmem_alias(repo, root)?
+        }
         "cartridge-copy-host-control" => super::npx_port::copy_host_control(repo, root)?,
         "cartridge-android-lifetime-fixtures" => {
             super::npx_port::android_lifetime_fixtures(repo, root)?
