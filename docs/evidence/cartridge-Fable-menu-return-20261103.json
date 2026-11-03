@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "parent": "docs/evidence/cartridge-fastmem-alias-20261103.json",
+  "runtime_rebuilt": false,
+  "reimport_or_cold_fallback": false,
+  "protected_namespace": {
+    "directory_inode_preserved": true,
+    "every_file_hash_preserved": true,
+    "checkpoint_not_rewritten": true,
+    "original_save_namespace_preserved": true,
+    "prior_files_relocated_without_deletion": true
+  },
+  "rollback": {
+    "accepted_complete_checkpoint_retained": true,
+    "size_bytes": 572916718,
+    "full_file_hashes_match": true,
+    "ordinary_sync_completed": true,
+    "whole_profile_not_duplicated": true
+  },
+  "fresh_process": {
+    "prior_engines_absent": true,
+    "saved_menu_returned_without_repeating_intros": true,
+    "new_A_action_opened_profile_keyboard": true,
+    "scope": "unsaved Menu execution, not gameplay-state/Home return acceptance"
+  },
+  "visible_review": {
+    "captures_opened": [
+      1,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "observed": [
+      "saved main menu",
+      "New Game profile keyboard",
+      "accepted Default1 and initial AutoSave progress",
+      "story and opening cinematic",
+      "Y skip response",
+      "A dismissed tutorial",
+      "opening HUD/minimap over severely incorrect world rendering"
+    ],
+    "stale_coordinate_attempts": "three refused before input; no logical input credit; paired fresh capture/view retained the same45s guard",
+    "world_movement_qualified": false,
+    "correctly_playable": false,
+    "sound_or_ordinary_cold_save_reload_qualified": false
+  },
+  "native_return": {
+    "records": 2,
+    "all_clean": true,
+    "forced": false
+  },
+  "return": {
+    "returned_under_lease": true,
+    "original_APK_restored": true,
+    "original_root_hashes_restored": true,
+    "namespace_restored": true,
+    "fresh_namespace_retained": true,
+    "own_processes_absent": true
+  },
+  "work_seconds": 869.9873508429737,
+  "first_envelope_refusal": {
+    "whole_profile_exceeded_512MiB_cap": true,
+    "before_namespace_or_game": true,
+    "exact_data_APK_and_stock_return_verified": true,
+    "old_recipe_and_guard_preserved": true
+  },
+  "capacity_measurement": {
+    "whole_profile_logical_MiB": 1092.96,
+    "accepted_checkpoint_logical_MiB": 546.38,
+    "accepted_checkpoint_allocated_MiB": 541.67,
+    "available_MiB": 7862.26,
+    "checkpoint_only_new_cap_MiB": 640,
+    "fresh_required_available_GiB": 4,
+    "phase_estimate_GiB": 3,
+    "retained_floor_GiB": 1,
+    "read_only_metadata_task_return_verified": true
+  },
+  "next_scoped_decision": "One matched explicit cold boot using the same runtime and current ordinary save through product Stop confirmation/launch; preserve existing Menu rollback and HUD checkpoint. Distinguish restore-dependent graphics from general rendering/CPU behavior before correction. No firmware/core/APK rebuild, private reference, additional title inspection, configuration matrix or paused investigation."
+}
