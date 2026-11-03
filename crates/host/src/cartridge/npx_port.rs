@@ -482,6 +482,65 @@ pub(super) fn android_copy_fixture(repo: &Path, root: &Path) -> Result<(), Error
     Ok(())
 }
 
+/// Run the same original checks directly on the host's x86 CPU. Only the UART
+/// transport is replaced; Rust checks both emitted words before acceptance.
+pub(super) fn copy_host_control(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/copy-dispatch.S");
+    let fixture = root.join("android-copy-dispatch-v1");
+    let identity: Value = c::read_json(&fixture.join("build.identity.json"))?;
+    if identity["original_source"] != c::file_digest(&source)?
+        || identity["fixture_iso"] != c::file_digest(&fixture.join("original.iso"))?
+    {
+        return Err("original copy fixture changed".into());
+    }
+    let out = fixture.join("host-control-v2");
+    c::mkdir(&out)?;
+    // Linux i386 syscall shim; two output words, then exit. No emulated result,
+    // alternate copy routine or change to the original checks.
+    let adapter = "\n.text\nnpx_serial_init: ret\nnpx_report:\n\
+        pushal\npushl %ecx\nmovl $4, %eax\nmovl $1, %ebx\n\
+        movl %esp, %ecx\nmovl $4, %edx\nint $0x80\naddl $4, %esp\n\
+        incl reports\ncmpl $2, reports\nje host_exit\npopal\nret\n\
+        host_exit:\nmovl $1, %eax\nxorl %ebx, %ebx\nint $0x80\n\
+        .data\nreports: .long 0\n.section .note.GNU-stack,\"\",@progbits\n";
+    c::write_new(
+        &out.join("original.S"),
+        format!("{}{adapter}", fs::read_to_string(&source)?).as_bytes(),
+    )?;
+    c::store::checked(
+        Command::new("/usr/bin/clang")
+            .args(["--target=i386-none-elf", "-march=pentium3", "-c"])
+            .arg(out.join("original.S"))
+            .arg("-o")
+            .arg(out.join("original.o")),
+    )?;
+    c::store::checked(
+        Command::new("/usr/bin/ld")
+            .args(["-m", "elf_i386", "--entry=_start"])
+            .arg(out.join("original.o"))
+            .arg("-o")
+            .arg(out.join("original")),
+    )?;
+    let result = Command::new(out.join("original")).output()?;
+    let expected = [260u32.to_le_bytes(), 0x52455041u32.to_le_bytes()].concat();
+    let passed = result.status.success() && result.stdout == expected && result.stderr.is_empty();
+    c::write_new(
+        &out.join("result.json"),
+        &c::json(&json!({
+            "passed":passed,"cases":260,"original_source":identity["original_source"],
+            "fixture":identity["fixture_iso"],"generated_source":c::file_digest(&out.join("original.S"))?,
+            "executable":c::file_digest(&out.join("original"))?,
+            "native_x86_host_only":true,"Android_qualified":false,
+            "output_bytes":result.stdout.len(),"exit_code":result.status.code(),
+            "exit_status":result.status.to_string()
+        }))?,
+    )?;
+    if !passed {
+        return Err("original copy checks failed on native host".into());
+    }
+    Ok(())
+}
+
 pub(super) fn android_lifetime_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/startup-lifetime.S");
     if c::file_digest(&source)?

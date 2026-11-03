@@ -47,10 +47,40 @@
     "build": true,
     "isolated_host_all_targets_Clippy_warnings_denied": true,
     "core_firmware_APK_rebuilt": false,
-    "Android": "prepared and queued, awaiting normal custody; not executed or qualified yet"
+    "Android": "completed;260 cases passed, normal Leave and verified native/data/stock return",
+    "actual_Android": {
+      "passed": true,
+      "markers": [
+        "COPY DISPATCH BOOT",
+        "COPY DISPATCH RESULT=00000104",
+        "COPY DISPATCH RESULT=52455041"
+      ],
+      "covered_IO_or_guest_failure": false,
+      "native_quit_join_sync_clean": true,
+      "OS_processes_absent": true,
+      "exact_original_namespace_restored": true,
+      "fresh_outputs_retained": true,
+      "APK_unchanged": true,
+      "custodian_completed_and_returned": true,
+      "work_seconds": 67.36439766600961,
+      "duration_is_pacing_measurement": false,
+      "section_declared_readonly": true,
+      "runtime_readonly_protection_not_independently_tested": true
+    },
+    "native_x86_host": {
+      "passed": true,
+      "exit_code": 0,
+      "output_bytes": 8,
+      "cases": 260,
+      "same_original_checks": true,
+      "only_UART_transport_replaced": true,
+      "sandbox_attempt": "no output, unsuccessful exit; retained separately; qualified with ordinary native execution outside sandbox",
+      "ELF": "40481429186d73ca9c5865ad4354cbc1d65a8e37d51d69db7eb1c255ecc55f40"
+    }
   },
   "Fable_qualification_changed": false,
   "protected_identity_count": 21,
   "protected_identities_unchanged": true,
-  "sixteen_paused_paths_preserved": true
+  "sixteen_paused_paths_preserved": true,
+  "conclusion": "No independently reproduced copy/dispatch defect. No functional runtime correction or unchanged Fable replay. Missing fact is the live indirect dispatch value and its agreement with the unchanged image; live table payload has not been collected."
 }
