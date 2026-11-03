@@ -149,8 +149,8 @@ pub(super) fn build_dispatch(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
         root,
-        "android-tcg-baseline-v1",
-        "android-dispatch-package-v2",
+        "android-gdb-features-v1",
+        "android-dispatch-package-v4",
     )
 }
 pub(super) fn build_frame_classification(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -224,11 +224,12 @@ fn build_selected(
             | "android-serial-v1"
             | "android-tcg-fault-v1"
             | "android-tcg-baseline-v1"
+            | "android-gdb-features-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let dispatch = package_stage == "android-dispatch-package-v2";
+    let dispatch = package_stage == "android-dispatch-package-v4";
     let frame =
         package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
     let read_status = package_stage == "android-read-status-package-v1";
@@ -324,7 +325,21 @@ fn build_selected(
             .as_str()
             .ok_or("read status open binding")?
     } else if handoff {
-        if handoff_identity["native_core"] != core_hash
+        let image_core = if dispatch {
+            if native_identity["all_other_archive_objects_unchanged"] != true
+                || native_identity["guest_execution_code_changed"] != false
+                || native_identity["prior_library_sha256"]
+                    != "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832"
+            {
+                return Err("metadata-only native lineage differs".into());
+            }
+            native_identity["prior_library_sha256"]
+                .as_str()
+                .ok_or("metadata parent")?
+        } else {
+            &core_hash
+        };
+        if handoff_identity["native_core"] != image_core
             || handoff_identity["parent_open_system"]
                 != c::file_digest(&root.join(handoff_parent).join("build/bios.bin"))?
             || handoff_identity["patch"] != c::file_digest(&repo.join(handoff_patch))?

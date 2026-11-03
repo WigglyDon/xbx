@@ -24,11 +24,12 @@
     "ordinary_product_default_changed": false,
     "user_firmware_selector_added": false,
     "original_Android_qualified": false,
-    "Fable_attempted": false
+    "Fable_attempted": false,
+    "server_route": "native -gdb startup argument on private Unix socket; Android HMP does not expose gdbserver"
   },
   "build": {
-    "core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
-    "core_rebuilt": false,
+    "core": "103b0c476d38611e8b0a2e7cdeae32fd5c3c7327e0c27e83b7ac0c0207c3c9ad",
+    "core_rebuilt": true,
     "open_system": "378fa348a64df38456bc2a44fe00b5ed99aa2edc2c57812ba3bfaf8cb21c2bf2",
     "kernel": "4d9005641eb262daf0e0b80a541dcc11c1325c55e430e304fe523cbff899cacb",
     "patch": "49e4bf388932a1aa24e18c0f34ccebbbeb27c9f207bb95e3641520ddfcfe3588",
@@ -37,18 +38,42 @@
     ],
     "jobs": 1,
     "prior_source_objects_artifacts_preserved": true,
-    "APK": "409fd059d954f8923459cb67e20b900b0d64eae18d6dc218ab4840f345512569",
+    "APK": "ff8be9635e1c9bc064c4a0a6f9ef3611b8693c9cc39e7177076c75629585d870",
     "existing_signer_preserved": true,
     "generated_seed_and_image_helper_unchanged": true,
     "no_title_data_compiled_into_kernel_or_APK": true,
-    "picture_first_source_included_device_layout_unqualified": true
+    "picture_first_source_included_device_layout_unqualified": true,
+    "prior_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+    "whole_core_rebuilt": false,
+    "core_recompiled_units": [
+      "stubs/gdbstub.c"
+    ],
+    "all_other_core_objects_unchanged": true,
+    "unchanged_core_object_count": 1225,
+    "new_metadata_object_text_bytes": 0,
+    "kernel_rebuilt_for_metadata_correction": false
   },
   "validation": {
     "host_protocol_tests": 3,
     "exact_word_decode_binding_refusal_fragment_checksum": true,
     "host_all_target_Clippy_warnings_denied": true,
     "Android_ARM64_Clippy_warnings_denied": true,
-    "release_package_signature_and_alignment_passed": true
+    "release_package_signature_and_alignment_passed": true,
+    "register_metadata_original_contract": [
+      {
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "i386_EDX_EIP_metadata_mapping_checked": true
   },
   "prior_attempt": {
     "INT3_design": "rejected by retained public core source review; it would deliver a guest exception",
@@ -56,9 +81,50 @@
     "v1_source_builds_recipes_retained": true,
     "sandbox_socketpair_refusal": "preserved; actual protocol tests passed with normal host Unix sockets"
   },
-  "device": "one replacement request pending normal custody; no allocation or runtime qualification claimed",
+  "device": "one metadata-corrected v4 request pending normal custody; two original comparison/exception/clean-return gates required before remaining4-byte live Fable read",
   "protected_identities_unchanged": true,
   "protected_identity_count": 21,
   "paused_paths_preserved": 16,
-  "Fable_qualified": false
+  "Fable_qualified": false,
+  "metadata_provenance": {
+    "pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "inputs": {
+      "gdb-xml/i386-32bit.xml": "79cc5899bf4232344dec4efaca01c06d2283ffb7ae1cb4e9005ebcd0a63b7e9a",
+      "scripts/feature_to_c.py": "daad3bd2b9ec6bb70a355b3f2d7fedf1fb4e80bcdba2dfe6ad36fe097f46688e",
+      "stubs/gdbstub.c": "7da59a9adfaa9cd75b5dc3ee65c27fb4a9eb32767db14c20df31f2c84397d8ae"
+    },
+    "generated_metadata": "97c6fc695f71bca3b2b909e93dc0d49349f7765e9c85539960313a9c93f4ca6b",
+    "terms": "GPL-2.0-or-later generator; FSF XML permission/copyright retained; existing core per-file terms; original build/audit and fixture MIT",
+    "source": "crates/host/src/cartridge/gdb_features.rs",
+    "fixture": "native/fixtures/gdb-feature-table.c"
+  },
+  "original_only_attempts": [
+    {
+      "version": "v2",
+      "value_gate": false,
+      "guest_boot_or_commercial_run": false,
+      "cause": "retained current-launch server receipt reports unknown command gdbserver; private diagnostic socket absent",
+      "title_memory_requested": 0,
+      "Fable_attempted": false,
+      "return": "original APK, exact collection hashes and namespace, engine absence, stock return verified; failed original retired without checkpoint"
+    },
+    {
+      "version": "v3",
+      "native_startup_route_and_execution_breakpoint": true,
+      "original_exception_return_marker": true,
+      "register_gate": false,
+      "reason": "diagnostic word unavailable before any memory request; pinned fork has an empty gdb_static_features registry",
+      "owned_breakpoint_removal_and_detach_acknowledged": true,
+      "title_memory_requested": 0,
+      "Fable_attempted": false,
+      "return": "original APK, exact collection hashes and namespace, engine absence, stock return verified; failed qualification retired without checkpoint"
+    }
+  ],
+  "retained_launch_diagnostics": {
+    "retrieved_new_launch_only": true,
+    "reinstall_reimport_rebuild_or_emulator_run": false,
+    "preserved_APK_and_canonical_files": true,
+    "stock_return_verified": true,
+    "work_seconds": 14.782769835030194
+  }
 }

@@ -42,6 +42,16 @@ contract fixtures and build/admission policy are MIT. The public Nouveau driver
 is a cited behavioral reference, not an imported runtime dependency. See
 [the bounded contract and qualification](docs/RAMHT.md).
 
+The Android debugger metadata restoration reuses `scripts/feature_to_c.py`
+(GPL-2.0-or-later) and `gdb-xml/i386-32bit.xml` from the retained public
+xemu Android pin `4967efd3ee594cc236869a45ee4cb396e25af1ac`. The XML retains
+the Free Software Foundation's 2010–2017 copyright and its stated permission
+to redistribute with its notices preserved. The generated table replaces only
+the fork's empty `gdb_static_features` object; all other archive objects remain
+byte-identical. Original Rust build/audit policy and the metadata contract in
+`native/fixtures/gdb-feature-table.c` are MIT. No guest execution code or game
+data is copied by this correction.
+
 ## Seed inventory
 
 The initial foundation at `59fbcfa` contained documentation/bootstrap only.

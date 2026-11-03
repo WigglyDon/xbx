@@ -150,7 +150,7 @@ impl Probe {
         media: &str,
         core: &str,
         open: &str,
-        monitor: &mut Monitor,
+        socket_path: &Path,
     ) -> io::Result<Self> {
         let input = base.join("dispatch-probe.json");
         let metadata = fs::symlink_metadata(&input)?;
@@ -167,16 +167,20 @@ impl Probe {
         }
         fs::rename(input, retained)?;
         File::open(base)?.sync_all()?;
-        let socket_path = base.join(format!("d-{}.sock", &plan.id[..16]));
-        if socket_path.as_os_str().len() > 100 || socket_path.try_exists()? {
+        use std::os::unix::fs::FileTypeExt;
+        if socket_path.parent() != Some(base)
+            || socket_path.as_os_str().len() > 100
+            || !fs::symlink_metadata(socket_path)?.file_type().is_socket()
+        {
             return Err(io::Error::other("private diagnostic socket refused"));
         }
-        let response = monitor.call("human-monitor-command", json!({"command-line":format!("gdbserver unix:{},server=on,wait=off",socket_path.display())}))?;
         c::write_new(
             &base.join(format!("dispatch-{}.server.json", plan.id)),
-            &c::json(&response)?,
+            &c::json(
+                &json!({"route":"native startup -gdb private Unix socket","no_HMP_gdbserver_dependency":true}),
+            )?,
         )?;
-        let socket = UnixStream::connect(&socket_path)?;
+        let socket = UnixStream::connect(socket_path)?;
         socket.set_read_timeout(Some(Duration::from_millis(10)))?;
         socket.set_write_timeout(Some(Duration::from_secs(2)))?;
         let mut wire = Wire {
@@ -195,7 +199,7 @@ impl Probe {
             plan,
             wire,
             base: base.into(),
-            socket_path,
+            socket_path: socket_path.into(),
             result,
             began: false,
             complete: false,

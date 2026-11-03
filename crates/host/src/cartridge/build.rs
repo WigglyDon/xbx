@@ -333,6 +333,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         }
         "cartridge-android-frame-fixtures" => super::npx_port::android_frame_fixtures(repo, root)?,
         "cartridge-android-dispatch-stop" => super::android_launch::dispatch(repo, root)?,
+        "cartridge-android-gdb-features" => super::gdb_features::build(repo, root)?,
         "cartridge-android-dispatch-fixtures" => {
             super::npx_port::android_dispatch_fixtures(repo, root)?
         }

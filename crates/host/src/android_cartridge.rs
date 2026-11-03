@@ -44,6 +44,7 @@ struct Launch {
     fd: File,
     qmp: PathBuf,
     serial: PathBuf,
+    debug: Option<PathBuf>,
     create_eeprom: bool,
     answer: mpsc::SyncSender<Result<(), String>>,
 }
@@ -254,6 +255,11 @@ impl Engine for Native {
             .ok_or_else(|| io::Error::other("platform base missing"))?;
         let qmp = base.join(format!("q-{}.sock", &c::new_id()?[..16]));
         let serial_path = base.join(format!("s-{}.sock", &c::new_id()?[..16]));
+        let debug_path = if option_env!("XBX_ANDROID_DISPATCH_PROBE") == Some("1") {
+            Some(base.join(format!("d-{}.sock", &c::new_id()?[..16])))
+        } else {
+            None
+        };
         if qmp.as_os_str().len() > 100 || serial_path.as_os_str().len() > 100 {
             return Err(io::Error::other("private control socket path too long"));
         }
@@ -266,6 +272,7 @@ impl Engine for Native {
                 fd: crate::disc::qemu_media_fd(media)?.into(),
                 qmp: qmp.clone(),
                 serial: serial_path.clone(),
+                debug: debug_path.clone(),
                 create_eeprom: !dir.join("eeprom.bin").exists(),
                 answer: tx,
             }))
@@ -332,7 +339,9 @@ impl Engine for Native {
                 &entries[0].media_sha256,
                 &r.manifest.core,
                 &r.manifest.open_system,
-                &mut monitor,
+                debug_path
+                    .as_deref()
+                    .ok_or_else(|| io::Error::other("private debug socket missing"))?,
             )?)
         } else {
             None
@@ -837,8 +846,9 @@ pub(super) fn run() -> Result<i32, Box<dyn std::error::Error>> {
                     let fd = request.fd.into_raw_fd();
                     let qmp = request.qmp.clone();
                     let serial = request.serial.clone();
+                    let debug = request.debug.clone();
                     let engine = std::thread::spawn(move || {
-                        let args = vec![
+                        let mut args = vec![
                             "xbx".into(),
                             "-S".into(),
                             "-accel".into(),
@@ -861,6 +871,12 @@ pub(super) fn run() -> Result<i32, Box<dyn std::error::Error>> {
                             "-monitor".into(),
                             "none".into(),
                         ];
+                        if let Some(debug) = debug {
+                            args.extend([
+                                "-gdb".into(),
+                                format!("unix:{},server=on,wait=off", debug.display()),
+                            ]);
+                        }
                         let args: Vec<_> = args
                             .into_iter()
                             .map(|s: String| CString::new(s).unwrap())
