@@ -150,6 +150,7 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-package" => package(repo, &w)?,
         "cartridge-fixture" => fixture(repo, &w)?,
         "cartridge-rebuild-io-images" => super::rebuild::io_images(repo, root)?,
+        "cartridge-read-status-build" => super::rebuild::read_status(repo, root)?,
         "cartridge-rebuild-native" => super::rebuild::native(repo, root)?,
         "cartridge-recover-media" => super::rebuild::media(repo, root)?,
         "cartridge-local-io-baseline" => super::local_io::control(repo, root, false, false)?,
@@ -351,6 +352,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         }
         "cartridge-android-guest-status-package" => {
             super::android_package::build_guest_status(repo, root)?
+        }
+        "cartridge-android-read-status-package" => {
+            super::android_package::build_read_status(repo, root)?
         }
         "cartridge-fp-state-sse1-build" => super::fp_state::build_sse1(repo, root)?,
         "cartridge-android-original-fp-package" => {

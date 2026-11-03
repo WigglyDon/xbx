@@ -1,0 +1,28 @@
+{
+  "source": "https://github.com/kooscode/oxos",
+  "commit": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "parent_open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+  "parent_reconstructed_source_manifest_sha256": "f9e42e2412cf14450e42bbd1850b7d3e3f0628032f363e5544ea37720f0e88b1",
+  "parent_reconstruction": "docs/evidence/cartridge-local-recovery-20261029.json",
+  "patch": "patches/oxos-read-status.patch",
+  "patch_sha256": "028a8688390dc944819334c8dcb1e1fcf24a6240d7e7bd7e1d4a855529df8c34",
+  "changed": {
+    "kernel/src/io/file.cpp": {
+      "before": "dc205da63c6833d712099cbb26f17e61282507fac517398255e1fc5d15e3af15",
+      "after": "21414a909432e68df195c6da820283ebaaf5cb76b1708605339ea8b4d1ca32ea"
+    },
+    "kernel/src/xe/loader.cpp": {
+      "before": "00611b703e9e1717b799ee65c98893a34e33e182cdd361323a188080b3e1cc15",
+      "after": "4ed17c3828ffa76657429bf8248d8d54b348d449b8aebeba1db5e269f16790fc"
+    }
+  },
+  "reporting": "additional successful read returns and completions only after first public title handoff; at most32 records plus one limit line per kind per guest boot; existing failure reporter unchanged",
+  "units": {
+    "kind1": "requested Length and immediate return status, including STATUS_PENDING",
+    "kind2": "final completion status and IoStatus.Information; no assumption that record order pairs requests"
+  },
+  "diagnostic_only": true,
+  "public_default_changed": false,
+  "functional_repair_claimed": false,
+  "license": "OXOS GPL-2.0 and applicable per-file terms; original Rust build policy MIT"
+}

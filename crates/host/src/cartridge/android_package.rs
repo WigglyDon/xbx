@@ -137,6 +137,14 @@ pub(super) fn build_guest_status(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-guest-status-package-v3",
     )
 }
+pub(super) fn build_read_status(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-read-status-package-v1",
+    )
+}
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
@@ -195,14 +203,16 @@ fn build_selected(
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
-    let reporting = matches!(
-        package_stage,
-        "android-serial-io-package-v1"
-            | "android-corrected-io-package-v1"
-            | "android-guest-status-package-v1"
-            | "android-guest-status-package-v2"
-            | "android-guest-status-package-v3"
-    );
+    let read_status = package_stage == "android-read-status-package-v1";
+    let reporting = read_status
+        || matches!(
+            package_stage,
+            "android-serial-io-package-v1"
+                | "android-corrected-io-package-v1"
+                | "android-guest-status-package-v1"
+                | "android-guest-status-package-v2"
+                | "android-guest-status-package-v3"
+        );
     let fault = package_stage == "android-tcg-fault-package-v1";
     let baseline = package_stage == "android-tcg-baseline-package-v1";
     let fault_word = package_stage == "android-fault-word-package-v1";
@@ -246,7 +256,28 @@ fn build_selected(
     } else {
         json!(null)
     };
-    let open_hash = if handoff {
+    let read_status_identity = if read_status {
+        c::read_json(
+            &root
+                .parent()
+                .ok_or("workspace")?
+                .join("io-read-status-v1/identity.json"),
+        )?
+    } else {
+        json!(null)
+    };
+    let open_hash = if read_status {
+        if read_status_identity["parent_open_system"] != super::resources::LOCAL_IO_OPEN
+            || read_status_identity["patch"]
+                != c::file_digest(&repo.join("patches/oxos-read-status.patch"))?
+            || read_status_identity["diagnostic_only"] != true
+        {
+            return Err("public read status reporter bindings differ".into());
+        }
+        read_status_identity["open_system"]
+            .as_str()
+            .ok_or("read status open binding")?
+    } else if handoff {
         if handoff_identity["native_core"] != core_hash
             || handoff_identity["parent_open_system"]
                 != c::file_digest(&root.join(handoff_parent).join("build/bios.bin"))?
@@ -347,6 +378,10 @@ fn build_selected(
         root.join(handoff_stage).join("build/bios.bin")
     } else if launch {
         root.join("android-launch-v2/build/bios.bin")
+    } else if read_status {
+        root.parent()
+            .ok_or("workspace")?
+            .join("io-read-status-v1/build/bios.bin")
     } else if reporting {
         root.parent()
             .ok_or("current workspace")?

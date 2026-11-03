@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "date": "2026-11-02",
+  "scope": "same assigned bounded public I/O reporting, successful read return/completion samples",
+  "reason": "existing reporter suppresses NT_SUCCESS results; absence of failure records does not establish completed transfer amounts",
+  "source": "9d8cd58ca19f49f5ecb4b7b55bfa194f4e4a5a96",
+  "parent_open_system": "2dd76fa9ead83b10826950b137302b8268c36208776477e0c15c812becd3a53e",
+  "open_system": "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563",
+  "kernel": "5787fb1e4091a6e8dd3b0841a37db4e0e5dea2112e1f60633cb5fe380d3cf9fd",
+  "patch": "028a8688390dc944819334c8dcb1e1fcf24a6240d7e7bd7e1d4a855529df8c34",
+  "changed_public_kernel_files": [
+    "kernel/src/io/file.cpp",
+    "kernel/src/xe/loader.cpp"
+  ],
+  "native_core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+  "native_core_rebuilt": false,
+  "diagnostic_only": true,
+  "ordinary_default_changed": false,
+  "bounds": {
+    "additional_records_per_guest_boot": 64,
+    "additional_limit_markers_per_guest_boot": 2,
+    "enabled": "first public title handoff; counters not reset for later handoffs in the same guest boot",
+    "existing_failure_reporter": "unchanged independent limits",
+    "kind1_bytes": "requested Length; immediate return status may be STATUS_PENDING",
+    "kind2_bytes": "IoStatus.Information at final read completion",
+    "pairing": "record order does not correlate concurrent requests"
+  },
+  "validation": {
+    "isolated_Rust_builder_build": true,
+    "strict_isolated_Clippy": true,
+    "single_job_open_image_build": true,
+    "Android_release_build": true,
+    "signature_and_16KiB_alignment": true,
+    "same_native_helper_seed_DEX_manifest_licenses": true,
+    "source_inputs_unchanged_during_build": 60
+  },
+  "device": {
+    "state": "prepared_and_requested_no_execution_claim",
+    "existing_original_IO_gate_required_before_Fable": true,
+    "visible_review_required": true
+  },
+  "functional_repair_claimed": false,
+  "Fable_cause_established": false,
+  "Fable_playable": false,
+  "preservation": {
+    "all_prior_artifacts_retained": true,
+    "paused_source_inputs_unchanged": true,
+    "no_retired_storage_recreated": true
+  }
+}

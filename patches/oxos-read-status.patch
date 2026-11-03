@@ -1,0 +1,44 @@
+diff --git a/kernel/src/io/file.cpp b/kernel/src/io/file.cpp
+--- a/kernel/src/io/file.cpp
++++ b/kernel/src/io/file.cpp
+@@ -9,9 +9,28 @@
+ void IopCompleteRequestInline(PIRP Irp, PFILE_OBJECT FileObject);
+ void IopDereferenceDevice(PDEVICE_OBJECT DeviceObject);
+ 
++// Success records are a separate bounded view, armed only at public title handoff.
++// The existing failure limits remain independent. No paths or payloads are read.
++static ULONG XkReadStatusEnabled;
++void XkBeginReadStatusReport() {
++    __atomic_store_n(&XkReadStatusEnabled, 1u, __ATOMIC_RELAXED);
++}
++static void XkLogReadSuccess(ULONG Kind, NTSTATUS Status, ULONG Bytes, ULONG Flags) {
++    if (Kind < 1 || Kind > 2 || !NT_SUCCESS(Status) ||
++        !__atomic_load_n(&XkReadStatusEnabled, __ATOMIC_RELAXED))
++        return;
++    static ULONG counts[2];
++    ULONG line = __atomic_add_fetch(&counts[Kind - 1], 1u, __ATOMIC_RELAXED);
++    if (line <= 32)
++        XK_SERIAL("xbxio-ok: kind=%lu status=%08lx bytes=%lu flags=%08lx\n", Kind, (ULONG)Status, Bytes, Flags);
++    else if (line == 33)
++        XK_SERIAL("xbxio-ok: kind=%lu success reporting limit reached\n", Kind);
++}
++
+ // Bounded public I/O failure reporting only: no paths, payloads, caller PCs or stacks.
+ // Separate limits keep optional open probes from hiding a later read error.
+ void XkLogIoFailure(ULONG Kind, NTSTATUS Status, ULONG Bytes, ULONG Flags) {
++    XkLogReadSuccess(Kind, Status, Bytes, Flags);
+     if (NT_SUCCESS(Status))
+         return;
+     static ULONG counts[3];
+diff --git a/kernel/src/xe/loader.cpp b/kernel/src/xe/loader.cpp
+--- a/kernel/src/xe/loader.cpp
++++ b/kernel/src/xe/loader.cpp
+@@ -608,6 +608,8 @@
+     XepChooseTitle();
+     XK_SERIAL("startup: selection complete\n");
+     XepPrepareToEnterTitle();
++    extern void XkBeginReadStatusReport();
++    XkBeginReadStatusReport();
+     XK_SERIAL("startup: handoff begin\n");
+     ((void(__cdecl *)())XbeField(0x128))();
+     XK_SERIAL("startup: title returned\n");

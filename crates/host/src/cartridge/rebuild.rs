@@ -281,6 +281,100 @@ pub(super) fn io_images(repo: &Path, root: &Path) -> Result<(), Error> {
     Ok(())
 }
 
+/// Extend only the retained public I/O reporter; never rebuild unchanged controls.
+pub(super) fn read_status(repo: &Path, root: &Path) -> Result<(), Error> {
+    fn files(dir: &Path, paths: &mut Vec<std::path::PathBuf>) -> Result<(), Error> {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let kind = entry.file_type()?;
+            if kind.is_dir() {
+                files(&entry.path(), paths)?;
+            } else if kind.is_file() {
+                paths.push(entry.path());
+            } else {
+                return Err("unexpected retained source entry; preserve it".into());
+            }
+        }
+        Ok(())
+    }
+    let parent = root.join("rebuilt-io-images-v3");
+    let old = parent.join("source");
+    let lock: Value = c::read_json(&repo.join("cartridge-read-status.lock.json"))?;
+    if c::file_digest(&parent.join("reporting/bios.bin"))? != lock["parent_open_system"] {
+        return Err("retained public I/O parent differs".into());
+    }
+    let mut paths = Vec::new();
+    files(&old, &mut paths)?;
+    paths.sort();
+    let mut manifest = String::new();
+    for path in &paths {
+        manifest.push_str(&format!(
+            "{}\t{}\n",
+            path.strip_prefix(&old)?.display(),
+            c::file_digest(path)?
+        ));
+    }
+    if c::digest(manifest.as_bytes()) != lock["parent_reconstructed_source_manifest_sha256"] {
+        return Err("retained reporting source manifest differs".into());
+    }
+    let dir = root.join("io-read-status-v1");
+    c::mkdir(&dir)?;
+    let source = dir.join("source");
+    c::mkdir(&source)?;
+    for path in &paths {
+        let dest = source.join(path.strip_prefix(&old)?);
+        fs::create_dir_all(dest.parent().ok_or("source parent")?)?;
+        c::write_new(&dest, &fs::read(path)?)?;
+    }
+    patch(
+        repo,
+        &source,
+        lock["patch"].as_str().ok_or("read status patch")?,
+        lock["patch_sha256"]
+            .as_str()
+            .ok_or("read status patch hash")?,
+    )?;
+    let mut changed = Vec::new();
+    for path in &paths {
+        let name = path.strip_prefix(&old)?.to_str().ok_or("source path")?;
+        let before = c::file_digest(path)?;
+        let after = c::file_digest(&source.join(name))?;
+        if before != after {
+            if before != lock["changed"][name]["before"] || after != lock["changed"][name]["after"]
+            {
+                return Err("read status patch extent differs".into());
+            }
+            changed.push(name);
+        }
+    }
+    if changed.len() != lock["changed"].as_object().ok_or("changed files")?.len() {
+        return Err("read status changed source count differs".into());
+    }
+    let parent_result: Value = c::read_json(&parent.join("result.json"))?;
+    let epoch = parent_result["source_date_epoch"]
+        .as_str()
+        .ok_or("source date")?;
+    let _: u64 = epoch.parse()?;
+    let out = dir.join("build");
+    c::mkdir(&out)?;
+    let llvm = super::buffer_probe::compile_image(&source, &out, Some(epoch))?;
+    c::write_new(
+        &dir.join("identity.json"),
+        &c::json(&json!({
+            "source":lock["commit"],"parent_open_system":lock["parent_open_system"],
+            "parent_source_manifest":lock["parent_reconstructed_source_manifest_sha256"],
+            "patch":lock["patch_sha256"],"changed":changed,
+            "open_system":c::file_digest(&out.join("bios.bin"))?,
+            "kernel":c::file_digest(&out.join("xboxkrnl.exe"))?,"map":c::file_digest(&out.join("xboxkrnl.map"))?,
+            "compiler":c::file_digest(&llvm.join("clang"))?,"linker":c::file_digest(&llvm.join("lld-link"))?,
+            "source_date_epoch":epoch,"compiler_jobs":1,"serial":true,"trace_imports":false,
+            "diagnostic_only":true,"ordinary_default_changed":false,"native_execution":false,
+            "functional_repair_claimed":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 fn full_native(repo: &Path, root: &Path, old: &Path, retained: &Path) -> Result<(), Error> {
     let dir = root.join("rebuilt-runtime-v1");
     c::mkdir(&dir)?;
