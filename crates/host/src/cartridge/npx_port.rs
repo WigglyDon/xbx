@@ -386,6 +386,51 @@ pub(super) fn android_arithmetic_fixture(repo: &Path, root: &Path) -> Result<(),
     Ok(())
 }
 
+pub(super) fn android_lifetime_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/startup-lifetime.S");
+    if c::file_digest(&source)?
+        != "219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60"
+    {
+        return Err("retained original startup lifetime source differs".into());
+    }
+    let original = fs::read_to_string(&source)?;
+    let data = ".balign 4\n.globl thunks\n";
+    if original.matches(data).count() != 1 {
+        return Err("original lifetime writable layout differs".into());
+    }
+    let dir = root.join("android-lifetime-original-v1");
+    c::mkdir(&dir)?;
+    let mut cases = Vec::new();
+    for (case, exit) in [("control", 0), ("exit", 1)] {
+        let out = dir.join(case);
+        c::mkdir(&out)?;
+        let generated = format!(
+            "#define LIFETIME_EXIT {exit}\n{}",
+            original.replace(data, &format!(".data\n{data}"))
+        );
+        let iso = super::cpu_performance::assemble_two_page(
+            &root.join("fixtures-v2/a.iso"),
+            &out,
+            &generated,
+            &format!("xbx original lifetime {case}"),
+            0x58424c30 + exit,
+        )?;
+        cases.push(json!({"case":case,"fixture_iso":iso,
+            "generated_source":c::file_digest(&out.join("original.S"))?,
+            "expected":if exit==0 {"LIFETIME CONTROL COMPLETE"} else {"LIFETIME EXIT AFTER_PARENT_TERMINATION COMPLETE"}}));
+    }
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(&json!({
+            "original_source":c::file_digest(&source)?,"cases":cases,
+            "original_checks_and_UART_reused":true,"layout_change":"separate writable data page",
+            "kernel_core_APK_rebuilt":false,"Android_execution":false,
+            "commercial_code_inspected":false,"Fable_cause_established":false
+        }))?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_thread_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/thread-startup.S");
     if c::file_digest(&source)?

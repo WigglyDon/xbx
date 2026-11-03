@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "scope": "First actual Android qualification of retained original child lifetime after initial title thread returns; desktop campaign remains closed.",
+  "basis": "Android thread/TLS original kept parent alive; Fable returns from title entry before reboot/failure. This qualifies a missing public contract, not a presumed cause.",
+  "source": "native/fixtures/startup-lifetime.S",
+  "provenance": {
+    "Android_execution": false,
+    "Fable_cause_established": false,
+    "cases": [
+      {
+        "case": "control",
+        "expected": "LIFETIME CONTROL COMPLETE",
+        "fixture_iso": "8f56d6d776f1884e8bf0a6df0ebad1f011a1d157e20f874f9e2e4728b0dffae9",
+        "generated_source": "4a1d6cdb6fe648ff26e3edfad604193f35f5305642e4f4fc3118d093c15cf1bd"
+      },
+      {
+        "case": "exit",
+        "expected": "LIFETIME EXIT AFTER_PARENT_TERMINATION COMPLETE",
+        "fixture_iso": "d236ed5ff7423a7fffc1ac94c244af09f453fdcbc2f32faa75e308c16ede4ecd",
+        "generated_source": "d4f53d76c0d00e463a7404ccfeaf5a4e9fdc622b9ac346196ddaa6f9537a87ba"
+      }
+    ],
+    "commercial_code_inspected": false,
+    "kernel_core_APK_rebuilt": false,
+    "layout_change": "separate writable data page",
+    "original_checks_and_UART_reused": true,
+    "original_source": "219e084656e1ea648b89ed0c197780a1a9b69fa40b28d094768292fb60351b60"
+  },
+  "build_checks": {
+    "isolated_offline_build": "PASS",
+    "warnings_denied_Clippy": "PASS",
+    "APK_core_open_runtime_rebuilt": false
+  },
+  "preservation": {
+    "temporary_collection": true,
+    "existing_OS_writer_lease_reused": true,
+    "full_original_file_hashes_and_directory_inode_restored_before_return_required": true,
+    "failed_original_checkpoint_prohibited": true,
+    "no_data_deletion": true
+  },
+  "Android_result": "pending; no execution claimed",
+  "limits": [
+    "Original synthetic program only; no Fable play or cause established.",
+    "No private firmware or commercial code/context inspection."
+  ]
+}

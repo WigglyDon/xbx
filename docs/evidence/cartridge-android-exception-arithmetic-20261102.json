@@ -35,9 +35,40 @@
   },
   "fixture_bytes": 131072,
   "isolated_build_and_strict_Clippy": true,
-  "device_request_submitted": false,
-  "actual_Android_execution": false,
+  "device_request_submitted": true,
+  "actual_Android_execution": true,
   "Fable_result_changed": false,
-  "ordering": "fresh-storage Fable comparison and verified original namespace return first; use this check only if still relevant",
-  "paused_private_campaigns_resumed": false
+  "ordering": "completed after the fresh-storage Fable failure and verified original collection return",
+  "paused_private_campaigns_resumed": false,
+  "device": {
+    "state": "both_original_cases_passed_clean_native_and_stock_return",
+    "observation": {
+      "boot": true,
+      "passed": true,
+      "original_result_markers": [
+        "CC EXCEPTION RESULT=CC000001",
+        "CC EXCEPTION RESULT=CC000002",
+        "CC EXCEPTION RESULT=43435041"
+      ],
+      "guest_fatal": false,
+      "fatal21": false,
+      "title_handoff": true,
+      "title_return": false,
+      "cold_boots": 1,
+      "quick_boots": 0,
+      "truncated_at_raw_bound": false,
+      "commercial_context_collected": false
+    },
+    "native_return": {
+      "records": 1,
+      "all_clean": true,
+      "OS_processes_absent": true
+    },
+    "unrelated_profiles_unchanged": true,
+    "OS_processes_absent": true,
+    "stock_return_verified": true,
+    "work_seconds": 69.4923448440386,
+    "forced_retirement": false
+  },
+  "Fable_cause_established": false
 }
