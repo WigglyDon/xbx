@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 //! Private, single-word diagnostic over the retained native RSP transport.
 //! No general debugger CLI, target writes, instruction reads or retry of a read.
-use super::{self as c, monitor::Monitor};
+use super::{self as c};
 use serde::Deserialize;
 use serde_json::json;
 use std::{
@@ -194,6 +194,10 @@ impl Probe {
         if wire.command(&format!("Z1,{:x},1", plan.stop_pc))? != "OK" {
             return Err(io::Error::other("native execution breakpoint refused"));
         }
+        c::write_new(
+            &base.join(format!("dispatch-{}.prepared.json", plan.id)),
+            b"{\"connected\":true,\"owned_breakpoint_accepted\":true}\n",
+        )?;
         let result = base.join(format!("dispatch-{}.result.json", plan.id));
         Ok(Self {
             plan,
@@ -208,17 +212,26 @@ impl Probe {
         })
     }
     pub(crate) fn begin(&mut self) -> io::Result<()> {
-        if !self.began {
-            self.wire.send("c")?;
-            self.began = true;
-            self.started = Instant::now();
+        if self.began {
+            return Err(io::Error::other(
+                "private observation interrupted; no automatic continue",
+            ));
         }
+        self.wire.send("c")?;
+        self.began = true;
+        self.started = Instant::now();
+        c::write_new(
+            &self
+                .base
+                .join(format!("dispatch-{}.continued.json", self.plan.id)),
+            b"{\"RSP_is_only_resume_owner\":true}\n",
+        )?;
         Ok(())
     }
     pub(crate) fn pending(&self) -> bool {
         !self.complete || self.attached
     }
-    pub(crate) fn poll(&mut self, monitor: &mut Monitor) -> io::Result<()> {
+    pub(crate) fn poll(&mut self) -> io::Result<()> {
         if !self.began || self.complete {
             return Ok(());
         }
@@ -229,6 +242,12 @@ impl Probe {
         let mut attempted = false;
         let compared = (|| -> io::Result<(bool, bool)> {
             let stop = packet?.ok_or_else(|| io::Error::other("diagnostic stop deadline"))?;
+            c::write_new(
+                &self
+                    .base
+                    .join(format!("dispatch-{}.stopped.json", self.plan.id)),
+                &c::json(&json!({"trap_reply":stop.starts_with("T05")||stop.starts_with("S05")}))?,
+            )?;
             if !stop.starts_with("T05") && !stop.starts_with("S05") {
                 return Err(io::Error::other("unexpected diagnostic stop"));
             }
@@ -239,6 +258,12 @@ impl Probe {
                     "diagnostic PC or index differs; no title read",
                 ));
             }
+            c::write_new(
+                &self
+                    .base
+                    .join(format!("dispatch-{}.registers.json", self.plan.id)),
+                b"{\"PC_and_index_matched\":true}\n",
+            )?;
             // Durable refusal of a repeat precedes the one m packet, including
             // a disconnect after submission. Never follow the resulting word.
             c::write_new(
@@ -270,7 +295,11 @@ impl Probe {
                 &json!({"acknowledged":!self.attached,"owned_breakpoint_removed":matches!(removed.as_deref(),Ok("OK"))}),
             )?,
         )?;
-        monitor.resume()?;
+        if self.attached {
+            return Err(io::Error::other(
+                "diagnostic detach not acknowledged; failed state retained",
+            ));
+        }
         Ok(())
     }
     pub(crate) fn close(&mut self) {

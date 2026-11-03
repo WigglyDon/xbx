@@ -150,7 +150,7 @@ pub(super) fn build_dispatch(repo: &Path, root: &Path) -> Result<(), Error> {
         repo,
         root,
         "android-gdb-features-v1",
-        "android-dispatch-package-v4",
+        "android-dispatch-package-v5",
     )
 }
 pub(super) fn build_frame_classification(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -229,7 +229,7 @@ fn build_selected(
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let dispatch = package_stage == "android-dispatch-package-v4";
+    let dispatch = package_stage == "android-dispatch-package-v5";
     let frame =
         package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
     let read_status = package_stage == "android-read-status-package-v1";

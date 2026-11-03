@@ -25,7 +25,10 @@
     "user_firmware_selector_added": false,
     "original_Android_qualified": false,
     "Fable_attempted": false,
-    "server_route": "native -gdb startup argument on private Unix socket; Android HMP does not expose gdbserver"
+    "server_route": "native -gdb startup argument on private Unix socket; Android HMP does not expose gdbserver",
+    "resume_owner": "RSP c alone during the private stop; no deferred Android vm_start or QMP cont; detach resumes normal handler",
+    "progress_receipts": "prepared, continued, stop received, public PC/index matched; no raw register values",
+    "original_failure_diagnostics": "retrieved in same held transaction before cleanup; assigned current original log only"
   },
   "build": {
     "core": "103b0c476d38611e8b0a2e7cdeae32fd5c3c7327e0c27e83b7ac0c0207c3c9ad",
@@ -38,7 +41,7 @@
     ],
     "jobs": 1,
     "prior_source_objects_artifacts_preserved": true,
-    "APK": "ff8be9635e1c9bc064c4a0a6f9ef3611b8693c9cc39e7177076c75629585d870",
+    "APK": "3e50b9cb389b36fb6dd2253ce673afc014c297dc4e53ad3e95d2afad92d58c69",
     "existing_signer_preserved": true,
     "generated_seed_and_image_helper_unchanged": true,
     "no_title_data_compiled_into_kernel_or_APK": true,
@@ -81,7 +84,7 @@
     "v1_source_builds_recipes_retained": true,
     "sandbox_socketpair_refusal": "preserved; actual protocol tests passed with normal host Unix sockets"
   },
-  "device": "one metadata-corrected v4 request pending normal custody; two original comparison/exception/clean-return gates required before remaining4-byte live Fable read",
+  "device": "one corrected v6 request pending an existing prior-return recovery; no XBX phone/storage custody; original value gates and live4-byte comparison unexecuted",
   "protected_identities_unchanged": true,
   "protected_identity_count": 21,
   "paused_paths_preserved": 16,
@@ -118,6 +121,21 @@
       "title_memory_requested": 0,
       "Fable_attempted": false,
       "return": "original APK, exact collection hashes and namespace, engine absence, stock return verified; failed qualification retired without checkpoint"
+    },
+    {
+      "version": "v4",
+      "guest_or_probe_started": false,
+      "cause": "storage window ID copied from completed task; preservation guard refused replay",
+      "return": "original APK/data/namespace and stock return verified; corrected only the fresh transaction nonce, no binary rebuild"
+    },
+    {
+      "version": "v5",
+      "guest_boot_and_original_boot_marker": true,
+      "comparison": null,
+      "read_request_ledger_present": false,
+      "Fable_attempted": false,
+      "outcome": "original control stalled before comparison and before its exception-return marker",
+      "return": "original APK/namespace/all canonical files, engine absence and stock return verified; failed original retired without checkpoint"
     }
   ],
   "retained_launch_diagnostics": {
@@ -126,5 +144,19 @@
     "preserved_APK_and_canonical_files": true,
     "stock_return_verified": true,
     "work_seconds": 14.782769835030194
+  },
+  "retained_launch_diagnostics_v5": {
+    "only_new_original_log_retrieved": true,
+    "log_boundary": "title handoff and DISPATCH ORIGINAL BOOT, then stopped progression; no comparison/read request",
+    "no_emulator_replay_install_or_game_read": true,
+    "original_APK_data_and_stock_return_verified": true,
+    "work_seconds": 15.941146116994787
+  },
+  "resume_correction_basis": "retained Android vm_start request is deferred in render loop, while earlier prototype also issued QMP cont and RSP c; retained qualified stop-control pattern uses RSP alone. Competing resume requests can advance or block a diagnostic stop. Correction requires fresh original end-to-end qualification, not a Fable cause claim.",
+  "approval_review": {
+    "request_process_creation_timed_out_before_execution": true,
+    "same_recipe_jobs_checked_absent": true,
+    "single_explicitly_permitted_retry_succeeded": true,
+    "safety_rejection_inferred": false
   }
 }

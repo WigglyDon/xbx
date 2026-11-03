@@ -371,13 +371,22 @@ impl Engine for Native {
             INPUT.store(false, Ordering::SeqCst);
             return Ok(());
         }
-        unsafe { xbx_engine_resume() };
-        if let Some(probe) = self.dispatch_probe.as_mut() {
+        let private_resume = if let Some(probe) = self.dispatch_probe.as_mut()
+            && probe.pending()
+        {
             probe.begin()?;
-        }
-        if let Err(e) = self.monitor.resume() {
-            INPUT.store(false, Ordering::SeqCst);
-            return Err(e);
+            true
+        } else {
+            false
+        };
+        // The deferred Android vm_start flag and QMP cont must not advance
+        // a machine frozen by this private RSP observer. One resume owner.
+        if !private_resume {
+            unsafe { xbx_engine_resume() };
+            if let Err(e) = self.monitor.resume() {
+                INPUT.store(false, Ordering::SeqCst);
+                return Err(e);
+            }
         }
         if !may_input() {
             self.pause()?;
@@ -757,7 +766,7 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
         }
         if let Some(l) = player.live.as_mut() {
             if let Some(probe) = l.native.dispatch_probe.as_mut() {
-                probe.poll(&mut l.native.monitor)?;
+                probe.poll()?;
             }
             let mut data = [0; 4096];
             match l.native.serial.read(&mut data) {
