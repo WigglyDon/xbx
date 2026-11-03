@@ -35,9 +35,62 @@
     "source_inputs_unchanged_during_build": 60
   },
   "device": {
-    "state": "prepared_and_requested_no_execution_claim",
-    "existing_original_IO_gate_required_before_Fable": true,
-    "visible_review_required": true
+    "state": "original_IO_pass_and_focused_Fable_guest_boot_failure_completed_return_verified",
+    "candidate_installed": true,
+    "existing_profiles_and_library_unchanged_by_update": true,
+    "original_program_data_expected_errors_and_read_passed": true,
+    "new_successful_request_and_completion_sizes": [
+      16384,
+      12
+    ],
+    "original_native_return": {
+      "new_records": 1,
+      "quit_acknowledged": true,
+      "machine_thread_joined": true,
+      "storage_synced": true,
+      "OS_processes_absent": true
+    },
+    "execution_reconciliation": {
+      "first_task": "original passed; host assertion incorrectly required2048 successful bytes; failed before Fable; ordinary cleanup and stock return verified",
+      "continuation": "consumed prior original output and verified new native-return receipt; no original replay, reinstall or reimport",
+      "continuation_work_seconds": 88.23045134800486,
+      "work_seconds_is_performance_measurement": false
+    },
+    "Fable": {
+      "outcome": "guest_boot_failure_dialog",
+      "public_startup_summary": [
+        {
+          "io_failures": [
+            "xbxio: kind=0 status=c0000034 bytes=0 flags=00000060"
+          ],
+          "successful_read_statuses": [],
+          "cold_boots": 2,
+          "quick_boots": 1,
+          "title_handoff": true,
+          "title_return": true,
+          "fatal21": true,
+          "uart_assert": false,
+          "read_pass": false,
+          "data_pass": false,
+          "expected_errors_pass": false,
+          "demand_header_pass": false,
+          "demand_pages_pass": false,
+          "fixture_failure": false,
+          "truncated_at_bound": false
+        }
+      ],
+      "captures_opened_and_reviewed": 1,
+      "actual_visible": "Game startup failed. Your current saves and diagnostics were retained.",
+      "menu_or_gameplay_observed": false,
+      "normal_OK_retired_process": true,
+      "native_clean_return_claimed": false
+    },
+    "unrelated_profiles_unchanged": true,
+    "library_entries_unchanged": true,
+    "actual_process_absence": true,
+    "stock_return_verified": true,
+    "forced_retirement": false,
+    "new_copy_or_media_reimport": false
   },
   "functional_repair_claimed": false,
   "Fable_cause_established": false,
@@ -45,6 +98,23 @@
   "preservation": {
     "all_prior_artifacts_retained": true,
     "paused_source_inputs_unchanged": true,
-    "no_retired_storage_recreated": true
+    "no_retired_storage_recreated": true,
+    "protected_hashes_unchanged": 21
+  },
+  "remaining_boundary": {
+    "observed": "title handoff/return, quick reboot then cold boot/fatal21; correct guest-failure UI",
+    "covered_read_status": "no successful returns or completions observed at the armed public hooks; no successful reporting limit or raw64KiB truncation flag",
+    "coverage_limit": "absence is limited to covered public hooks and retained bounded serial observation; it does not prove absence of every form of I/O",
+    "missing_fact": "an independently reproducible public platform contract violation connecting the guest failure to a repair",
+    "repair_decision": "no I/O behavior change or error suppression supported by this observation",
+    "ordinary_nonreporting_game_recheck": "no new functional game repair to recheck",
+    "Fable_gates_unearned": [
+      "menu/control",
+      "gameplay",
+      "audible sound",
+      "ordinary save/cold reload",
+      "unsaved fresh-process return",
+      "mobile pacing"
+    ]
   }
 }
