@@ -188,6 +188,14 @@ pub(super) fn build_fastmem_release(repo: &Path, root: &Path) -> Result<(), Erro
 pub(super) fn build_socket(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(repo, root, "android-native-socket-v1", "android-package-v3")
 }
+pub(super) fn build_vertex_values(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-vertex-cache-values-v1",
+        "android-vertex-cache-values-package-v1",
+    )
+}
 pub(super) fn build_monitor(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -242,11 +250,13 @@ fn build_selected(
             | "android-tcg-baseline-v1"
             | "android-gdb-features-v1"
             | "android-fastmem-alias-v1"
+            | "android-vertex-cache-values-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let serial_off = package_stage == "android-fastmem-release-package-v1";
+    let vertex_values = package_stage == "android-vertex-cache-values-package-v1";
+    let serial_off = package_stage == "android-fastmem-release-package-v1" || vertex_values;
     let dispatch = package_stage == "android-dispatch-package-v5";
     let frame =
         package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
@@ -340,10 +350,20 @@ fn build_selected(
         json!(null)
     };
     let open_hash = if serial_off {
+        let core_bound = if vertex_values {
+            native_identity["prior_library_sha256"] == release_identity["native_core"]
+                && native_identity["original_contract"]["passed"] == true
+                && native_identity["all_other_archive_objects_unchanged"] == true
+                && native_identity["state_layout_changed"] == false
+                && native_identity["original_contract"]["patch"]
+                    == c::file_digest(&repo.join("patches/xemu-vk-vertex-cache-values.patch"))?
+        } else {
+            release_identity["native_core"] == core_hash
+        };
         if release_identity["serial"] != false
             || release_identity["trace_imports"] != false
             || release_identity["selftest"] != false
-            || release_identity["native_core"] != core_hash
+            || !core_bound
             || release_identity["source_bytes_changed"] != false
             || release_identity["parent_open_system"]
                 != "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563"

@@ -1,0 +1,49 @@
+--- a/hw/xbox/nv2a/pgraph/vk/vertex.c
++++ b/hw/xbox/nv2a/pgraph/vk/vertex.c
+@@ -219,12 +219,21 @@
+         memcpy(r->vertex_attribute_offsets, r->cached_attr_offsets,
+                sizeof(r->cached_attr_offsets));
+         for (int i = 0; i < NV2A_VERTEXSHADER_ATTRIBUTES; i++) {
++            VertexAttribute *attr = &pg->vertex_attributes[i];
++            if (!attr->count) {
++                continue;
++            }
+             if (r->cached_attr_layout[i].stride) {
+                 hwaddr start = r->cached_attr_layout[i].base_addr +
+                                min_element * r->cached_attr_layout[i].stride;
+                 update_memory_buffer(d, start,
+                                      num_elements * r->cached_attr_layout[i].stride);
+             }
++            /* Cache layout, never values: RAM can change without a format or
++             * offset write. Match the uncached path's constant/provoking value. */
++            hwaddr last = r->cached_attr_layout[i].base_addr +
++                          provoking_element * r->cached_attr_layout[i].stride;
++            pgraph_update_inline_value(attr, d->vram_ptr + last);
+         }
+         return;
+     }
+@@ -326,6 +335,12 @@
+             update_memory_buffer(d, start, num_elements * stride);
+         }
+ 
++        if (!inline_data) {
++            /* Stride-zero arrays still have a live RAM address. */
++            r->cached_attr_layout[i].base_addr = attrib_data_addr;
++            r->cached_attr_layout[i].stride = stride;
++        }
++
+         uint32_t provoking_element_index = provoking_element - min_element;
+         size_t element_size = attr->size * attr->count;
+         assert(element_size <= sizeof(attr->inline_value));
+@@ -373,11 +388,6 @@
+             };
+ 
+         r->vertex_attribute_offsets[i] = attrib_data_addr;
+-
+-        if (!inline_data) {
+-            r->cached_attr_layout[i].base_addr = attrib_data_addr;
+-            r->cached_attr_layout[i].stride = stride;
+-        }
+ 
+         if (needs_conversion) {
+             pg->compressed_attrs |= (1 << i);

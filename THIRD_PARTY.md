@@ -497,3 +497,14 @@ The original owned-memory fixture `native/fixtures/fastmem-stale-alias.c` and
 Rust build/audit owner `cartridge/fastmem_alias.rs` are MIT. No game data or
 proprietary firmware is included. The correction preserves the native state
 layout; prior checkpoints are retained without retagging.
+
+`patches/xemu-vk-vertex-cache-values.patch` modifies the same pinned lineage's
+`hw/xbox/nv2a/pgraph/vk/vertex.c` under LGPL-2.0-or-later. The binding cache
+retains layout while refreshing live constant/provoking-vertex values, matching
+the uncached path. Exact public binding/conversion bodies and register definitions
+retain those terms in private contract builds. The original synthetic RAM fixture
+`native/fixtures/vertex-cache-values.c` and Rust build/audit owner
+`cartridge/vertex_cache.rs` are MIT. No game input or shader is copied. The native
+builder replaces one symbol-identified archive member and audits every other
+object unchanged, including the existing fast-memory repair. No state layout
+change or checkpoint retag is introduced.

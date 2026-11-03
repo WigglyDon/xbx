@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "decision": "Repair independently reproduced Vulkan attribute-cache value incoherence; match uncached behavior without deleting layout caching",
+  "public_source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+  "original_contract": {
+    "Fable_cause_established": false,
+    "actual_Vulkan_submission": false,
+    "after": "d3b5caf3a5e8bc14b7f160774b2eb3a338935391a097e0bca217c039143273e8",
+    "before": "765fd6fcc6f67ebb66b19476bbb1bb6f23ec4cc74bce28b277990c9ee5750993",
+    "controlled_original_RAM": true,
+    "exact_function_bodies": true,
+    "fixture": "f30cb1f4a006d83de10ecfdf3bb62989347259247b854498fee045eee9281c7d",
+    "game_bytes_used": false,
+    "passed": true,
+    "patch": "75a60c951f533a33c1ab8a4bbe938ea5ef62d1626cae479fefcdf38f772b6339",
+    "register_definitions": "18318d0caaafe8c6cd19e437786410e1a1533282031535e4da45ca7c3d14b374",
+    "results": [
+      {
+        "case": "control",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "uniform",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "provoking",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "disabled",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "control",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "uniform",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "provoking",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "disabled",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "unit": "hw/xbox/nv2a/pgraph/vk/vertex.c",
+    "value_function": "ee6eabb367040e388708d676db13a0a2a9a8cf9912bb8a9046e615f57915e9ba"
+  },
+  "native": {
+    "library_sha256": "3472db2f195df618aa2465f34d74937b8810641a416892eaa0116b685c769b30",
+    "prior_library_sha256": "5042323792e178072d2351e5d4043540706c7bcbd8ec2f321a787cbe117d9a15",
+    "recompiled_units": [
+      "hw/xbox/nv2a/pgraph/vk/vertex.c"
+    ],
+    "all_other_archive_objects_unchanged": true,
+    "unchanged_core_object_count": 1225,
+    "whole_core_rebuild": false,
+    "state_layout_changed": false,
+    "old_checkpoints_retagged": false
+  },
+  "package": {
+    "apk_sha256": "79cffa606e3febef57b80ec7a7b00b2f5a036ea63bbc936e2be3200d00910903",
+    "core_sha256": "3472db2f195df618aa2465f34d74937b8810641a416892eaa0116b685c769b30",
+    "open_system_sha256": "672e27b10bfc44bf770876c76b1a79b142fb739d17d08becc452375035e590f3",
+    "rust_library_sha256": "83fc367a7c651168d339eca56b6a250df40a522cc6896493cc06efab953c1fb3",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059"
+  },
+  "APK_signature_alignment_and_components_verified": true,
+  "isolated_Clippy_all_targets_warnings_denied": true,
+  "host_and_Android_builds_pass": true,
+  "Fable_cause_established": false,
+  "device_comparison": "prepared candidate; preceding serial-off same-core control still running under normal custody; no additional request",
+  "private_game_code_memory_or_shader_inspection": false,
+  "saved_namespaces_media_prior_builds_and_paused_source_preserved": true
+}

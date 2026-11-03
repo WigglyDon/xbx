@@ -29,7 +29,7 @@
   "isolated_source_matches_four_owned_files": true,
   "host_and_Android_Rust_builds_passed": true,
   "owned_formatting_and_diff_check_passed": true,
-  "Clippy": "not run; current guard refused before Cargo because one-GiB check envelope plus twelve-GiB floor unavailable",
+  "Clippy": "passed all targets with warnings denied after fresh guarded admission; earlier refusal preserved as history",
   "capacity": {
     "initial_two_GiB_guard_refused_before_packaging": true,
     "packaging_estimate": "retained complete145MiB stage plus entire220MiB Android target plus659MiB temporary envelope rounded to oneGiB",
@@ -38,7 +38,7 @@
     "no_cleanup_guard_reduction_or_retired_workspace": true,
     "no_storage_lease_while_device_request_pending": true
   },
-  "device": "one prepared finite normal-custody request pending; no device operation, original-gate result or Fable acceptance for this candidate",
+  "device": "running under normal custody; changed serial-off original readonly260 gate passed; Fable actual visible review ongoing",
   "changed_input_gate": "retained original readonly260 copy/dispatch control, then ordinary-save Fable cold comparison; incompatible checkpoints retained, explicit product Restart only",
   "Fable_playable": false,
   "default_installed_candidate_changed": false,
