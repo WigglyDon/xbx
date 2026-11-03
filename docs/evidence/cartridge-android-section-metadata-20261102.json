@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "scope": "bounded original structural metadata reader correction, not Fable runtime repair",
+  "preceding_read_only_task": {
+    "error": "invalid bounded section table",
+    "APK_or_namespace_mutated": false,
+    "Fable_run": false,
+    "media_size_mtime_unchanged": true,
+    "OS_absence_and_original_APK_and_stock_return_verified": true,
+    "work_seconds": 5.498908817011397
+  },
+  "finding": "The diagnostic tool imposed64 sections. Retained public loader validates table containment without that arbitrary count cap. An original65-section metadata image reproduces the old refusal; corrected reader succeeds. Actual commercial count is not yet observed, so its precise mismatch remains an inference.",
+  "public_source_reference": "retained OXOS kernel/src/xe/loader.cpp XepLoadImage; table extent checked against sizeOfHeaders",
+  "source": {
+    "file": "tools/xbx-section-metadata.rs",
+    "identity": {
+      "source_sha256": "9548d62eefc1f7eed673402ded29831657f1faad1a253684706baedb5393801e",
+      "disc_parser_sha256": "95dcce8684ffc16e3113e4534294d3567351333f77e76b23d53e34f0a2775648",
+      "Android_binary_sha256": "49a59fb3b46b5c543a8dc2045455a2567d027390c22342d92741eba7551c2e65",
+      "Android_binary_bytes": 334536,
+      "original_65_section_fixture_sha256": "d77a1e3f36bd5dc50204ea4d5774f80c0318e6ae47bcedfdb78d7fb07dc715dd",
+      "source_tests_passed": 3,
+      "legacy_64_cap_red_current_green": true,
+      "max_descriptor_records": 512,
+      "max_descriptor_table_span_bytes": 28672,
+      "max_structural_field_read_bytes": 10240,
+      "max_host_JSON_bytes": 131072,
+      "header_and_file_containment_preserved": true,
+      "no_instruction_or_payload_reads": true,
+      "core_kernel_APK_rebuilt": false,
+      "Android_execution": false
+    }
+  },
+  "validation": {
+    "original_tests_passed": 3,
+    "legacy_red_current_green": true,
+    "outside_header_refused": true,
+    "over_budget_refused": true,
+    "host_and_Android_warnings_denied_compile": true,
+    "APK_core_kernel_rebuilt": false
+  },
+  "device": "prepared; new metadata control and commercial metadata/Fable path not yet run",
+  "privacy": "structural numeric fields only; no instructions, section payloads, names, keys or full media copy",
+  "preservation": "prior tools, recipes, data and raw evidence retained; original emulator gates reused; current APK/collection restored before stock return if conditional update occurs",
+  "Fable_qualified": false
+}
