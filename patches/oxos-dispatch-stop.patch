@@ -1,0 +1,23 @@
+--- a/kernel/src/ke/except.cpp
++++ b/kernel/src/ke/except.cpp
+@@ -55,9 +55,20 @@
+ static volatile ULONG KiDispatchDepth;
+ volatile ULONG KiExceptionsDispatched; // diagnostics
+ 
++// Private developer image: stop before dispatching the first null-PC fault.
++// This hook reads no title memory. The attached, bounded Rust observer may
++// compare one separately admitted word; all normal exception handling follows.
++extern "C" __attribute__((noinline)) void XbxDispatchStop(ULONG index) {
++    asm volatile("nop" : : "d"(index) : "memory");
++}
++
+ // Walk the registration chain; TRUE when a handler asked to continue execution.
+ static BOOLEAN RtlpDispatchException(PEXCEPTION_RECORD Record, PCONTEXT Context) {
+     KiExceptionsDispatched = KiExceptionsDispatched + 1;
++    static ULONG stops;
++    if (Record->ExceptionCode == STATUS_ACCESS_VIOLATION_ && Context->Eip == 0 &&
++        __atomic_add_fetch(&stops, 1u, __ATOMIC_RELAXED) == 1)
++        XbxDispatchStop(Context->Edx);
+     for (EXCEPTION_REGISTRATION *r = KiExceptionList(); r && r != EXCEPTION_CHAIN_END; r = r->Next) {
+         if (((ULONG)r & 3) || (ULONG)r < 0x10000)
+             break; // corrupt chain

@@ -22,6 +22,9 @@ mod cpu_performance;
 mod debug_stop;
 #[cfg(not(target_os = "android"))]
 pub mod desktop;
+#[cfg(any(target_os = "android", test))]
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
+pub(crate) mod dispatch_probe;
 #[cfg(not(target_os = "android"))]
 mod fault_context;
 #[cfg(not(target_os = "android"))]

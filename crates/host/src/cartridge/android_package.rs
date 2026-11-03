@@ -145,6 +145,14 @@ pub(super) fn build_frame_word(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-frame-word-package-v1",
     )
 }
+pub(super) fn build_dispatch(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-tcg-baseline-v1",
+        "android-dispatch-package-v2",
+    )
+}
 pub(super) fn build_frame_classification(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -220,7 +228,9 @@ fn build_selected(
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let frame = package_stage == "android-frame-classification-package-v1" || frame_word;
+    let dispatch = package_stage == "android-dispatch-package-v2";
+    let frame =
+        package_stage == "android-frame-classification-package-v1" || frame_word || dispatch;
     let read_status = package_stage == "android-read-status-package-v1";
     let reporting = read_status
         || matches!(
@@ -237,7 +247,13 @@ fn build_selected(
     let serial_yield = package_stage == "android-fault-yield-package-v1" || fault_word;
     let fault_record = package_stage == "android-fault-package-v1" || serial_yield;
     let handoff = package_stage == "android-handoff-package-v1" || fault_record || frame;
-    let (handoff_stage, handoff_parent, handoff_patch) = if frame_word {
+    let (handoff_stage, handoff_parent, handoff_patch) = if dispatch {
+        (
+            "android-dispatch-stop-v2",
+            "../io-read-status-v1",
+            "patches/oxos-dispatch-stop.patch",
+        )
+    } else if frame_word {
         (
             "android-frame-word-v1",
             "android-frame-classification-v1",
@@ -394,6 +410,7 @@ fn build_selected(
         .env("CARGO_TARGET_DIR",root.join("android-app-target")).env("XBX_NATIVE_LIB_DIR",&native)
         .env("CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER",ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"))
         .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash).env("XBX_ANDROID_OPEN_SHA256",open_hash)
+        .env("XBX_ANDROID_DISPATCH_PROBE",if dispatch { "1" } else { "0" })
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
         root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
     };

@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "scope": "Owner approved8 additional bytes: one4-byte file dispatch entry and same4-byte live entry, one fault only",
+  "parent": "docs/evidence/cartridge-private-caller-boundary-20261103.json",
+  "file_entry": {
+    "bytes_read": 4,
+    "zero": false,
+    "points_into_file_backed_executable_image": true,
+    "media_size_mtime_inode_preserved": true,
+    "original_APK_and_all_canonical_files_preserved": true,
+    "custodian_completed_and_return_verified": true,
+    "work_seconds": 11.98428634996526,
+    "no_device_files_created": true
+  },
+  "runtime_probe": {
+    "source": "crates/host/src/cartridge/dispatch_probe.rs",
+    "private_plan": "strict media/core/open-system binding; fresh storage only",
+    "stop": "retained native execution breakpoint at a mapped public-kernel NOP; saved dispatch index in register; exact PC/index required before read",
+    "maximum_title_memory_requested": 4,
+    "read_budget": "durable per-plan claim and consumed-before-command ledger, no read replay or pointer following",
+    "output": "only validity/zero/file-agreement booleans; no raw word/address or instruction bytes",
+    "detach": "remove owned breakpoint, detach, resume normal exception handling; quit/join/sync and OS return still required",
+    "ordinary_product_default_changed": false,
+    "user_firmware_selector_added": false,
+    "original_Android_qualified": false,
+    "Fable_attempted": false
+  },
+  "build": {
+    "core": "c2386913418acbb3d318ee266d6d618c533dd166b96a6e813a9a4bec63854832",
+    "core_rebuilt": false,
+    "open_system": "378fa348a64df38456bc2a44fe00b5ed99aa2edc2c57812ba3bfaf8cb21c2bf2",
+    "kernel": "4d9005641eb262daf0e0b80a541dcc11c1325c55e430e304fe523cbff899cacb",
+    "patch": "49e4bf388932a1aa24e18c0f34ccebbbeb27c9f207bb95e3641520ddfcfe3588",
+    "changed_units": [
+      "kernel/src/ke/except.cpp"
+    ],
+    "jobs": 1,
+    "prior_source_objects_artifacts_preserved": true,
+    "APK": "409fd059d954f8923459cb67e20b900b0d64eae18d6dc218ab4840f345512569",
+    "existing_signer_preserved": true,
+    "generated_seed_and_image_helper_unchanged": true,
+    "no_title_data_compiled_into_kernel_or_APK": true,
+    "picture_first_source_included_device_layout_unqualified": true
+  },
+  "validation": {
+    "host_protocol_tests": 3,
+    "exact_word_decode_binding_refusal_fragment_checksum": true,
+    "host_all_target_Clippy_warnings_denied": true,
+    "Android_ARM64_Clippy_warnings_denied": true,
+    "release_package_signature_and_alignment_passed": true
+  },
+  "prior_attempt": {
+    "INT3_design": "rejected by retained public core source review; it would deliver a guest exception",
+    "prior_request": "cancelled while waiting; no acquisition, no test or commercial read",
+    "v1_source_builds_recipes_retained": true,
+    "sandbox_socketpair_refusal": "preserved; actual protocol tests passed with normal host Unix sockets"
+  },
+  "device": "one replacement request pending normal custody; no allocation or runtime qualification claimed",
+  "protected_identities_unchanged": true,
+  "protected_identity_count": 21,
+  "paused_paths_preserved": 16,
+  "Fable_qualified": false
+}

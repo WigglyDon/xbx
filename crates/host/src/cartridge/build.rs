@@ -332,6 +332,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
             super::npx_port::android_arithmetic_fixture(repo, root)?
         }
         "cartridge-android-frame-fixtures" => super::npx_port::android_frame_fixtures(repo, root)?,
+        "cartridge-android-dispatch-stop" => super::android_launch::dispatch(repo, root)?,
+        "cartridge-android-dispatch-fixtures" => {
+            super::npx_port::android_dispatch_fixtures(repo, root)?
+        }
+        "cartridge-android-dispatch-package" => super::android_package::build_dispatch(repo, root)?,
         "cartridge-android-copy-fixture" => super::npx_port::android_copy_fixture(repo, root)?,
         "cartridge-copy-host-control" => super::npx_port::copy_host_control(repo, root)?,
         "cartridge-android-lifetime-fixtures" => {

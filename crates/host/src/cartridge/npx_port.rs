@@ -453,6 +453,69 @@ pub(super) fn android_frame_fixtures(repo: &Path, root: &Path) -> Result<(), Err
 }
 
 /// Original REP-copy and image-loaded readonly dispatch-table boundary.
+pub(super) fn android_dispatch_fixtures(repo: &Path, root: &Path) -> Result<(), Error> {
+    let source = repo.join("native/fixtures/nullcall.S");
+    if c::file_digest(&source)?
+        != "5dd1045338cf77c23513a1aab6511fbdac06aa7e75bba6d7a8e85de116c000d0"
+    {
+        return Err("original exception fixture differs".into());
+    }
+    let original = fs::read_to_string(&source)?;
+    let body = &original[original.find(".text\n").ok_or("original text")?..];
+    let result = "    movl $0x46584258, _XkTitleResults\n";
+    if body.matches(result).count() != 1 || body.matches("    call *%eax\n").count() != 1 {
+        return Err("original fixture adaptation sites differ".into());
+    }
+    let adapter = repo.join("native/fixtures/npx-uart.S");
+    let uart = fs::read_to_string(&adapter)?
+        .replace("NPX OWNERSHIP BOOT", "DISPATCH ORIGINAL BOOT")
+        .replace("NPX RESULT=", "DISPATCH ORIGINAL RESULT=");
+    let dir = root.join("android-dispatch-original-v1");
+    c::mkdir(&dir)?;
+    let mut cases = Vec::new();
+    for (name, word) in [("match", 0x1357_2468u32), ("zero", 0)] {
+        let adapted=body.replace(".safeseh _XbxExceptionHandler\n","")
+            .replace("_XkTitleEntry","_start")
+            .replace("_start:\n","_start:\n    call npx_serial_init\n")
+            .replace("    call *%eax\n","    xorl %edx, %edx\n    call *%eax\n")
+            .replace(result,&format!("{result}    movl _XkTitleResults+4, %ecx\n    call npx_report\n    movl _XkTitleResults, %ecx\n    call npx_report\n"))
+            .replace("_XkThunks","thunks");
+        let out = dir.join(name);
+        c::mkdir(&out)?;
+        let generated = format!(
+            "{adapted}\n.data\n.balign 4\n.globl probe_word\nprobe_word: .long {word}\n{uart}"
+        );
+        let iso = super::cpu_performance::assemble_two_page(
+            &root.join("fixtures-v2/a.iso"),
+            &out,
+            &generated,
+            &format!("xbx original dispatch {name}"),
+            if word == 0 { 0x58424430 } else { 0x58424431 },
+        )?;
+        let symbols = Command::new("/usr/bin/nm")
+            .args(["-n", "--defined-only"])
+            .arg(out.join("original.elf"))
+            .output()?;
+        if !symbols.status.success() {
+            return Err("original symbols unavailable".into());
+        }
+        let symbols = String::from_utf8(symbols.stdout)?;
+        let address = symbols
+            .lines()
+            .find(|l| l.ends_with(" D probe_word"))
+            .and_then(|l| l.split_whitespace().next())
+            .ok_or("original probe word symbol")?;
+        cases.push(json!({"case":name,"fixture_iso":iso,"probe_word":u32::from_str_radix(address,16)?,"expected_file_word":0x13572468u32,"expected_zero":word==0,"expected_match":word!=0,"original_exception_marker":"46584258"}));
+    }
+    c::write_new(
+        &dir.join("build.identity.json"),
+        &c::json(
+            &json!({"source":c::file_digest(&source)?,"UART":c::file_digest(&adapter)?,"cases":cases,"original_handler_and_checks_preserved":true,"game_bytes_used":false}),
+        )?,
+    )?;
+    Ok(())
+}
+
 pub(super) fn android_copy_fixture(repo: &Path, root: &Path) -> Result<(), Error> {
     let source = repo.join("native/fixtures/copy-dispatch.S");
     let adapter = repo.join("native/fixtures/npx-uart.S");

@@ -192,6 +192,7 @@ fn available(app: &Path) -> io::Result<()> {
 }
 struct Native {
     monitor: c::monitor::Monitor,
+    dispatch_probe: Option<c::dispatch_probe::Probe>,
     serial: UnixStream,
     boot_failure: crate::startup::GuestBootFailureDetector,
     directory: PathBuf,
@@ -305,9 +306,41 @@ impl Engine for Native {
         }
         let serial = UnixStream::connect(&serial_path)?;
         serial.set_read_timeout(Some(Duration::from_millis(10)))?;
+        let dispatch_probe = if option_env!("XBX_ANDROID_DISPATCH_PROBE") == Some("1") {
+            let app = p
+                .root
+                .parent()
+                .and_then(Path::parent)
+                .ok_or_else(|| io::Error::other("private profile parent"))?;
+            let library = Library::read(app)?;
+            let entries: Vec<_> = library
+                .entries
+                .iter()
+                .filter(|e| {
+                    p.root
+                        .file_name()
+                        .is_some_and(|name| name == e.profile.as_str())
+                })
+                .collect();
+            if entries.len() != 1 {
+                return Err(io::Error::other(
+                    "private diagnostic media binding ambiguous",
+                ));
+            }
+            Some(c::dispatch_probe::Probe::prepare(
+                base,
+                &entries[0].media_sha256,
+                &r.manifest.core,
+                &r.manifest.open_system,
+                &mut monitor,
+            )?)
+        } else {
+            None
+        };
         starting.0 = false;
         Ok(Self {
             monitor,
+            dispatch_probe,
             serial,
             boot_failure: Default::default(),
             directory: dir.into(),
@@ -330,6 +363,9 @@ impl Engine for Native {
             return Ok(());
         }
         unsafe { xbx_engine_resume() };
+        if let Some(probe) = self.dispatch_probe.as_mut() {
+            probe.begin()?;
+        }
         if let Err(e) = self.monitor.resume() {
             INPUT.store(false, Ordering::SeqCst);
             return Err(e);
@@ -340,14 +376,27 @@ impl Engine for Native {
         Ok(())
     }
     fn capture(&mut self) -> io::Result<()> {
+        if self.dispatch_probe.as_ref().is_some_and(|p| p.pending()) {
+            return Err(io::Error::other(
+                "diagnostic observation unfinished; current storage retained",
+            ));
+        }
         self.pause()?;
         self.monitor.capture()
     }
     fn load(&mut self) -> io::Result<()> {
+        if self.dispatch_probe.is_some() {
+            return Err(io::Error::other(
+                "private diagnostic requires fresh storage; checkpoint retained",
+            ));
+        }
         self.pause()?;
         self.monitor.load()
     }
     fn retire(&mut self) -> io::Result<bool> {
+        if let Some(probe) = self.dispatch_probe.as_mut() {
+            probe.close();
+        }
         self.pause()?;
         STOPPING.store(true, Ordering::SeqCst);
         let ack = self.monitor.call("quit", serde_json::json!({})).is_ok();
@@ -377,6 +426,9 @@ impl Engine for Native {
         )?;
         let _ = fs::remove_file(&self.qmp);
         let _ = fs::remove_file(&self.serial_path);
+        if let Some(probe) = self.dispatch_probe.as_ref() {
+            probe.remove_socket_after_native_exit();
+        }
         Ok(ack && status == 0)
     }
 }
@@ -695,6 +747,9 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             return Err("native machine ended before normal departure; data retained".into());
         }
         if let Some(l) = player.live.as_mut() {
+            if let Some(probe) = l.native.dispatch_probe.as_mut() {
+                probe.poll(&mut l.native.monitor)?;
+            }
             let mut data = [0; 4096];
             match l.native.serial.read(&mut data) {
                 Ok(n) if n > 0 => {

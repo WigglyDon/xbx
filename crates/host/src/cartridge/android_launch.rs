@@ -14,6 +14,7 @@ enum Image {
     Word,
     Frame,
     FrameWord,
+    Dispatch,
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
@@ -37,6 +38,9 @@ pub(super) fn frame(repo: &Path, root: &Path) -> Result<(), Error> {
 pub(super) fn frame_word(repo: &Path, root: &Path) -> Result<(), Error> {
     build_selected(repo, root, Image::FrameWord)
 }
+pub(super) fn dispatch(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_selected(repo, root, Image::Dispatch)
+}
 fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
     let retained = root
         .parent()
@@ -53,6 +57,18 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
         _,
         &[&str],
     ) = match image {
+        Image::Dispatch => (
+            root.parent()
+                .ok_or("workspace")?
+                .join("io-read-status-v1/source"),
+            root.parent()
+                .ok_or("workspace")?
+                .join("io-read-status-v1/build"),
+            "android-dispatch-stop-v2",
+            "patches/oxos-dispatch-stop.patch",
+            "android-tcg-baseline-v1",
+            &["kernel/src/ke/except.cpp"],
+        ),
         Image::FrameWord => (
             root.join("android-frame-classification-v1/source"),
             root.join("android-frame-classification-v1/build"),
@@ -115,7 +131,7 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
         ),
     };
     let parent_image = c::file_digest(&parent_build.join("bios.bin"))?;
-    if matches!(image, Image::Frame)
+    if matches!(image, Image::Frame | Image::Dispatch)
         && parent_image != "7ce5164c85a31e2e6a037bfb5690a3b1c710392e6da64f109d9d6ab8d4ee8563"
     {
         return Err("qualified current read-status image differs".into());
@@ -172,6 +188,7 @@ fn build_selected(repo: &Path, root: &Path, image: Image) -> Result<(), Error> {
             "serial_spin_pause_hint":matches!(image, Image::Yield | Image::Word),
             "public_kernel_return_classification_only":matches!(image, Image::Frame),
             "private_guarded_frame_word":matches!(image, Image::FrameWord),
+            "private_dispatch_stop_without_title_memory_reads":matches!(image, Image::Dispatch),
             "maximum_guarded_stack_words":if matches!(image, Image::Word | Image::Frame | Image::FrameWord) { 1 } else { 0 },
             "private_game_code_inspection":false,
             "prior_sources_and_objects_retained":true,"ordinary_default_changed":false,

@@ -1,5 +1,6 @@
 fn main() {
     println!("cargo:rerun-if-env-changed=XBX_NATIVE_LIB_DIR");
+    println!("cargo:rerun-if-env-changed=XBX_ANDROID_DISPATCH_PROBE");
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("android") {
         let directory = std::env::var("XBX_NATIVE_LIB_DIR")
             .expect("set XBX_NATIVE_LIB_DIR to the source-built xemu/SDL3 library directory");
