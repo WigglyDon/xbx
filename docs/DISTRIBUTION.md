@@ -39,6 +39,9 @@ implementation copying, BIOS patching or disassembly is assigned.
 
 Complete and qualify the distributable public boot/kernel environment rather
 than making proprietary firmware acquisition an ordinary user prerequisite.
+For the owner's November 2 continuation, Pixel 4 qualification proceeds with the
+open runtime and original fixtures. An unavailable historical private reference
+is not a prerequisite, and reacquiring it is not part of this continuation.
 Existing public-source corrections and bounded original Rust replacements remain
 available under the architecture/scope rules. Do not remove safety checks or
 counterfeit a known firmware identity to make an unqualified replacement load.
