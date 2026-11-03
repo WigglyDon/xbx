@@ -21,10 +21,46 @@
     "purpose": "deliberate original fatal signal, not a game compatibility result"
   },
   "device": {
-    "state": "prepared_pending_normal_custody",
-    "execution_completed": false,
-    "installation_claimed": false,
-    "required_proof": "new label, no accepted failed checkpoint, unrelated profiles unchanged, actual process absence and verified stock return"
+    "state": "original_guest_failure_classification_visual_storage_and_return_pass",
+    "execution_completed": true,
+    "installation_claimed": true,
+    "required_proof": "new label, no accepted failed checkpoint, unrelated profiles unchanged, actual process absence and verified stock return",
+    "source_classification_observed": true,
+    "old_native_label_absent": true,
+    "failed_checkpoint_absent": true,
+    "other_profiles_unchanged": true,
+    "stock_return_verified": true,
+    "OS_processes_absent": true,
+    "accepted_current_profile_files_unchanged_by_update": true,
+    "captures": 3,
+    "visual_review_complete": true,
+    "remaining": "No Fable compatibility result follows from this deliberate original signal; the failed public contract remains unattributed.",
+    "normal_OK_closed_process": true,
+    "attempts": [
+      {
+        "stage": "initial updated-candidate original signal",
+        "message_storage_and_return_pass": true,
+        "captures": 0,
+        "capture_limit": "window-title package check rejected owned dialog"
+      },
+      {
+        "stage": "visual helper retry",
+        "runtime_launched": false,
+        "failed_before_launch": "unique existing entry was offscreen; strict duplicate-row selection rejected it",
+        "return_verified": true
+      },
+      {
+        "stage": "bounded list navigation and active hierarchy ownership",
+        "existing_entry_and_installed_candidate_reused": true,
+        "reinstall_or_reimport": false,
+        "captures_reviewed": 3,
+        "actual_visible": "Game startup failed. Your current saves and diagnostics were retained.",
+        "normal_OK_process_exit": true,
+        "failed_checkpoint_absent": true,
+        "unrelated_profiles_unchanged": true,
+        "stock_return_verified": true
+      }
+    ]
   },
   "preservation": {
     "protected_hashes_unchanged": 21,
