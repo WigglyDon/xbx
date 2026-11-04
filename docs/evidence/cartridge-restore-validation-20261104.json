@@ -87,7 +87,16 @@
       "util/qemu-thread-posix.c qemu_thread_start"
     ],
     "scope": "Native pthread role labels only; no guest or app process name supplied. Pinned-version diagnostic labels are not a stable product API.",
-    "device_role_attribution_qualified": false
+    "device_role_attribution_qualified": false,
+    "long_role_label_limit": {
+      "public_reference": "https://android.googlesource.com/platform/bionic/+/140e4d35c/libc/bionic/pthread_setname_np.cpp",
+      "retained_QEMU_ignores_setname_return": true,
+      "Android_Bionic_rejects_labels_at_least16bytes": true,
+      "four_public_overlong_labels_rejected_by_host_libc_fixture": true,
+      "15byte_variants_accepted_by_host_fixture": true,
+      "actual_Android_role_sample_collected": false,
+      "limits": "The existing option cannot guarantee all renderer/PFIFO role labels. Attribute only actual recognized roles; no cause or hardware-cap conclusion."
+    }
   },
   "preservation": {
     "sixteen_paused_paths_and_all21_protected_identities_unchanged": true,
@@ -99,7 +108,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "Read actual retained checkpoint/current-storage generations on the same built candidate. Only a confirmed public generation-mismatch refusal permits explicit current-saves restart, preserving the full rejected checkpoint; no generic fallback or RAM retag. Review actual game progression before native-worker cost sampling. Fresh normal custody follows installed maintenance adoption; no current XBX job or reservation.",
+  "next": "Fresh bounded continuation on the same built candidate is queued normally on explicit owner-authorized USB after verified cleanup-only recovery. Resume the retained state, independently verify the unique rejected checkpoint bytes, and review actual game progression before native-worker sampling. No new build/import/core/firmware/media or closed campaign.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,
@@ -130,5 +139,27 @@
     "candidate_namespace_retained": true,
     "OS_native_absence_and_physical_OFF_verified": true,
     "storage_generation_mismatch_not_yet_attributed": true
+  },
+  "confirmed_generation_recovery": {
+    "retained_checkpoint_generation": 21,
+    "current_storage_generation": 22,
+    "public_generation_mismatch_contract_observed": true,
+    "actual_owned_recovery_dialog_reviewed": true,
+    "explicit_worker_selected_restart_using_current_ordinary_saves": true,
+    "no_new_owner_approval_claimed": true,
+    "no_RAM_retag_or_old_disk_rollback": true,
+    "old_checkpoint_independent_post_recovery_hash_proof": "pending",
+    "actual_visible_result": "opening video then main menu; normal D-pad moved selection to Continue Game",
+    "continued_game_selection_outcome": "uncertain after wireless loss; not replayed",
+    "world_or_new_performance_sample": false,
+    "initial_touches_used_scaled_preview_coordinates": "corrected to actual2280x1080 before observed D-pad response",
+    "original_attempt_work_seconds": 547.7471305970103,
+    "original_attempt_state": "RECOVERED",
+    "original_attempt_returned_field": false,
+    "separate_cleanup_only_USB_recovery_completed_returned": true,
+    "original_APK_canonical_data_namespace_restored": true,
+    "candidate_namespace_retained": true,
+    "OS_native_absence_physical_OFF_verified": true,
+    "forced_task_app_retirement_recorded": false
   }
 }
