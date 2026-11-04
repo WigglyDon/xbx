@@ -71,6 +71,8 @@ mod tcg_fault;
 #[cfg(all(test, not(target_os = "android")))]
 mod tests;
 #[cfg(not(target_os = "android"))]
+mod thread_names;
+#[cfg(not(target_os = "android"))]
 mod vblank;
 #[cfg(not(target_os = "android"))]
 mod vertex_cache;

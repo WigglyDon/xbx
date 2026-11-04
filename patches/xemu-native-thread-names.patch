@@ -1,0 +1,15 @@
+--- a/util/qemu-thread-posix.c
++++ b/util/qemu-thread-posix.c
+@@ -370,7 +370,11 @@
+      */
+     if (name_threads && qemu_thread_args->name) {
+ # if defined(CONFIG_PTHREAD_SETNAME_NP_W_TID)
+-        pthread_setname_np(pthread_self(), qemu_thread_args->name);
++        /* Linux/Bionic reject labels longer than 15 bytes, including several
++         * native renderer roles. Names are diagnostics, never saved identity. */
++        char native_name[16];
++        g_strlcpy(native_name, qemu_thread_args->name, sizeof(native_name));
++        pthread_setname_np(pthread_self(), native_name);
+ # elif defined(CONFIG_PTHREAD_SETNAME_NP_WO_TID)
+         pthread_setname_np(qemu_thread_args->name);
+ # elif defined(CONFIG_PTHREAD_SET_NAME_NP)

@@ -96,6 +96,25 @@
       "15byte_variants_accepted_by_host_fixture": true,
       "actual_Android_role_sample_collected": false,
       "limits": "The existing option cannot guarantee all renderer/PFIFO role labels. Attribute only actual recognized roles; no cause or hardware-cap conclusion."
+    },
+    "bounded_label_source_correction": {
+      "patch": "patches/xemu-native-thread-names.patch",
+      "patch_sha256": "1cd1dc605d5e50c8042fa52c08241f517beabda09f2bed70d3a3b5d2852e254a",
+      "original_fixture": "native/fixtures/thread-names.c",
+      "fixture_sha256": "25d60cc921c8a4a8d19775febd322eff9387c3afcae232c1111261076116d2cb",
+      "Rust_owner": "crates/host/src/cartridge/thread_names.rs",
+      "contract_route": "cartridge-thread-names-contract",
+      "exact_retained_function": "qemu_thread_start",
+      "retained_function_license": "GPL-2.0-or-later",
+      "original_host_cases": 16,
+      "four_overlong_roles_failed_before": true,
+      "all8_after_passed": true,
+      "real_pthread_name_argument_return_cleanup_join_checked": true,
+      "disabled_naming_and_null_name_preserved": true,
+      "host_build_and_all_target_Clippy_warnings_denied": true,
+      "core_or_APK_rebuilt": false,
+      "queued_candidate_unchanged": true,
+      "Android_qualification_and_performance_cause": false
     }
   },
   "preservation": {

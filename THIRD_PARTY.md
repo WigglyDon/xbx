@@ -531,3 +531,14 @@ The original mock-handle fixture `native/fixtures/present-surface.c` and Rust
 build/audit owner `cartridge/present_surface.rs` are MIT. Extracted retained
 creation/error branches keep their LGPL terms. These controls do not submit GPU
 work or establish the cause of a game's Home-return result.
+
+`patches/xemu-native-thread-names.patch` modifies `util/qemu-thread-posix.c`
+at the same X1 BOX/xemu `4967efd3` pin under its GPL-2.0-or-later terms.
+The enabled pthread diagnostic label is bounded to 15 bytes for the Linux/Bionic
+API; role labels are not guest or permanent session identity. The exact retained
+thread-entry function extracted by the original MIT Rust owner
+`cartridge/thread_names.rs` keeps its GPL terms. The independent MIT fixture
+`native/fixtures/thread-names.c` uses real host pthread naming and joining; it
+checks disabled/null naming as well as the overlong public role names. These
+source controls do not qualify Android execution, game performance or a new
+native candidate.
