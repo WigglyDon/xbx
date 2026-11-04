@@ -494,5 +494,60 @@
     "original_APK_data_namespace_OFF_return_verified": true,
     "completed_returned": true,
     "work_seconds": 270.94322070199996
+  },
+  "aggregate_CPU_phase_preparation": {
+    "scoped_decision": "Stock sampling refused; use developer-only native aggregate thread CPU-time boundaries, no security changes or guest inspection. No speed correction selected without attribution.",
+    "patch": "patches/xemu-cpu-phase-cost.patch",
+    "header": "native/xbx_cpu_cost.h",
+    "fixture": "native/fixtures/cpu-cost.c",
+    "Rust_owner": "crates/host/src/cartridge/cpu_cost.rs",
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "parent_core_sha256": "6ec2ac7c4fc60de09d46b445a41349ddf40a13ad1d47b9aaceea2b995408ebe2",
+    "original_controls": [
+      "1024 ordinary iterations preserve exact work; four selected samples and24 clock reads",
+      "abandoned stack-local sample cannot contaminate later sample",
+      "backwards clock contributes no partial durations",
+      "exact named aggregate serialization"
+    ],
+    "all_preexisting_unit_bytes_and_statement_order_preserved_after_removing_marked_hooks": true,
+    "sampler_stride": 256,
+    "fields": "selected attempts, completed, invalid clocks and cumulative lookup/translation/prepare/execute/tail threadCPU nanoseconds",
+    "limits": [
+      "Selected fully completed iterations only, includes native helper cost within execution",
+      "Abandoned/exception samples not timed to completion; coverage must be examined",
+      "Independent atomic counter reads, not a coherent whole-worker CPU snapshot",
+      "No unbiased whole-worker CPU share or speedup claim; instrumentation overhead unqualified"
+    ],
+    "new_Rust_parser_and_scheduler_tests_passed": 4,
+    "all_target_host_Clippy_warnings_denied": true,
+    "initial_Rust_builder_compile_type_errors_fixed_before_any_native_gate": true,
+    "native_fixture_passed": true,
+    "recompiled_units": [
+      "accel/tcg/cpu-exec.c",
+      "accel/tcg/tcg-stats.c"
+    ],
+    "other_archive_objects_verified_unchanged": 1224,
+    "new_core_sha256": "d756eba43032ac8b5ab8649a5f0bce7d534726bb0a827a24ad9d202bf153775a",
+    "whole_core_or_firmware_rebuild": false,
+    "new_APK_sha256": "f97d7fd35d86437a1475d40563cd475dcca5e032a1ec602e3d6d3abe80cd1827",
+    "Rust_library_sha256": "28065e9b7d993d4d3bf4669fd19bdd1b99ea754dbe906514495dae133cd65cf7",
+    "same_open_helper_seed_state_ABI_signer": true,
+    "native_binding_changes_require_explicit_current_saves_restart_never_RAM_retag": true,
+    "signature_v3_16KiB_alignment_verified": true,
+    "changed_payloads": [
+      "assets/THIRD_PARTY.md",
+      "assets/runtime.json",
+      "lib/arm64-v8a/libxemu.so",
+      "lib/arm64-v8a/libxbx.so",
+      "META-INF/XBX-QUAL.SF",
+      "META-INF/XBX-QUAL.RSA",
+      "META-INF/MANIFEST.MF"
+    ],
+    "private_tmpfs_Android_target_reused": true,
+    "durably_retained_final_APK_and_provenance_bytes": 23423873,
+    "guards_unchanged_and_native_build1GiB_local_phase_passed": true,
+    "all_prior_builds_profiles_media_and_evidence_preserved": true,
+    "Android_execution_qualified": false,
+    "default_or_rollback_candidate_changed": false
   }
 }

@@ -17,6 +17,8 @@ mod buffer_probe;
 pub mod build;
 pub mod checkpoint;
 #[cfg(not(target_os = "android"))]
+mod cpu_cost;
+#[cfg(not(target_os = "android"))]
 mod cpu_performance;
 #[cfg(not(target_os = "android"))]
 mod debug_stop;

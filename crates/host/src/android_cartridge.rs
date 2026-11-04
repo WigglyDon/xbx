@@ -350,8 +350,15 @@ impl Engine for Native {
         starting.0 = false;
         Ok(Self {
             monitor,
-            jit_observation: (option_env!("XBX_ANDROID_JIT_COUNTERS") == Some("1"))
-                .then(c::jit_stats::Observation::new),
+            jit_observation: (option_env!("XBX_ANDROID_JIT_COUNTERS") == Some("1")
+                || option_env!("XBX_ANDROID_CPU_PHASE_COST") == Some("1"))
+            .then(|| {
+                if option_env!("XBX_ANDROID_CPU_PHASE_COST") == Some("1") {
+                    c::jit_stats::Observation::cpu_cost()
+                } else {
+                    c::jit_stats::Observation::new()
+                }
+            }),
             dispatch_probe,
             serial,
             boot_failure: Default::default(),

@@ -18,6 +18,20 @@ pub(crate) struct Counters {
     tlb_full_flushes: u64,
     tlb_partial_flushes: u64,
     tlb_elided_flushes: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cpu_cost: Option<CpuCost>,
+}
+#[derive(Debug, Serialize, PartialEq)]
+struct CpuCost {
+    stride: u64,
+    attempts: u64,
+    completed: u64,
+    invalid_clock: u64,
+    lookup_ns: u64,
+    translation_ns: u64,
+    prepare_ns: u64,
+    execute_ns: u64,
+    tail_ns: u64,
 }
 pub(crate) fn parse(text: &str) -> io::Result<Counters> {
     if text.len() > 65536 {
@@ -70,28 +84,60 @@ pub(crate) fn parse(text: &str) -> io::Result<Counters> {
         tlb_full_flushes: number("TLB full flushes    ")?,
         tlb_partial_flushes: number("TLB partial flushes ")?,
         tlb_elided_flushes: number("TLB elided flushes  ")?,
+        cpu_cost: if text.lines().any(|l| l.starts_with("XBX CPU ")) {
+            let stride = number("XBX CPU sample stride ")?;
+            if stride != 256 {
+                return Err(io::Error::other("unexpected CPU sample stride"));
+            }
+            Some(CpuCost {
+                stride,
+                attempts: number("XBX CPU attempts ")?,
+                completed: number("XBX CPU completed ")?,
+                invalid_clock: number("XBX CPU invalid clock ")?,
+                lookup_ns: number("XBX CPU lookup ns ")?,
+                translation_ns: number("XBX CPU translation ns ")?,
+                prepare_ns: number("XBX CPU prepare ns ")?,
+                execute_ns: number("XBX CPU execute ns ")?,
+                tail_ns: number("XBX CPU tail ns ")?,
+            })
+        } else {
+            None
+        },
     })
 }
 
-/// Three attempts only, owned by the existing session/control thread. A failed
-/// optional query consumes its attempt and cannot fail the player's session.
+/// Finite attempts owned by the existing session/control thread: three normal
+/// reports, or32 in the separate CPU-cost developer build. A failed optional
+/// query consumes its attempt and cannot fail the player's session.
 pub(crate) struct Observation {
     next: Option<Instant>,
     attempted: u8,
+    maximum: u8,
+    interval: Duration,
 }
 impl Observation {
     pub(crate) fn new() -> Self {
         Self {
             next: None,
             attempted: 0,
+            maximum: 3,
+            interval: Duration::from_secs(15),
+        }
+    }
+    pub(crate) fn cpu_cost() -> Self {
+        Self {
+            next: None,
+            attempted: 0,
+            maximum: 32,
+            interval: Duration::from_secs(30),
         }
     }
     pub(crate) fn due(&mut self, now: Instant) -> Option<u8> {
-        if self.attempted >= 3 || self.next.is_some_and(|next| now < next) {
+        if self.attempted >= self.maximum || self.next.is_some_and(|next| now < next) {
             return None;
         }
         self.attempted += 1;
-        self.next = Some(now + Duration::from_secs(15));
+        self.next = Some(now + self.interval);
         Some(self.attempted)
     }
 }
@@ -114,7 +160,8 @@ mod tests {
                 block_invalidations: 2,
                 tlb_full_flushes: 3,
                 tlb_partial_flushes: 4,
-                tlb_elided_flushes: 5
+                tlb_elided_flushes: 5,
+                cpu_cost: None
             }
         );
         assert!(!serde_json::to_string(&c).unwrap().contains("private"));
@@ -142,5 +189,19 @@ mod tests {
         assert_eq!(o.due(t + Duration::from_secs(15)), Some(2));
         assert_eq!(o.due(t + Duration::from_secs(30)), Some(3));
         assert_eq!(o.due(t + Duration::from_secs(300)), None);
+    }
+    #[test]
+    fn developer_cpu_cost_reports_are_complete_and_bounded() {
+        let extra = "XBX CPU sample stride 256\nXBX CPU attempts 7\nXBX CPU completed 5\nXBX CPU invalid clock 1\nXBX CPU lookup ns 500\nXBX CPU translation ns 500\nXBX CPU prepare ns 500\nXBX CPU execute ns 500\nXBX CPU tail ns 500\n";
+        let response = format!("{RESPONSE}{extra}");
+        assert_eq!(parse(&response).unwrap().cpu_cost.unwrap().execute_ns, 500);
+        assert!(parse(&response.replace("XBX CPU completed 5\n", "")).is_err());
+        assert!(parse(&response.replace("stride 256", "stride 1")).is_err());
+        let mut o = Observation::cpu_cost();
+        let t = Instant::now();
+        for i in 0..32 {
+            assert_eq!(o.due(t + Duration::from_secs(i * 30)), Some(i as u8 + 1));
+        }
+        assert_eq!(o.due(t + Duration::from_secs(960)), None);
     }
 }

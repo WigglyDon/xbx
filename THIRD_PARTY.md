@@ -548,3 +548,14 @@ in the retained Android `config-host.h`. This mechanical configuration and the
 thread wrapper keep their upstream terms. The expanded original control uses
 the exact before/after Android header as well as the POSIX API branch; it does
 not change radio/debugging settings, emulated state or permanent identities.
+
+The separate developer-only `patches/xemu-cpu-phase-cost.patch` inserts host
+CPU-time observations into this pin's `accel/tcg/cpu-exec.c` and `tcg-stats.c`
+(LGPL-2.1-or-later). All preexisting source bytes and statement order survive
+after removing the marked insertions. The original MIT mechanical counter
+header `native/xbx_cpu_cost.h`, fixture `native/fixtures/cpu-cost.c` and Rust
+owner `cartridge/cpu_cost.rs` retain only aggregate timing/count fields, never
+guest PCs, instruction bytes, stacks or register contents. The selected completed
+iterations are a sample, not unbiased whole-worker profiling; abandoned samples
+and invalid clocks remain visible. This optional developer candidate does not
+change the default core or relax Android profiling/security settings.
