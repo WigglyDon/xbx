@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "assignment": "Owner requests find or make space, then continue existing graphics qualification",
+  "scope": "XBX inactive qualification backups only; no other-project cleanup or guard reduction",
+  "audit": {
+    "own_app_allocated_bytes": 4782596096,
+    "own_APK_MiB": 22.31,
+    "active_game_media_preserved": true,
+    "broad_personal_content_or_other_app_private_inventory": false,
+    "custodian_completed_returned": true
+  },
+  "remedy": {
+    "inactive_backup_groups": 7,
+    "regular_files_preserved": 285,
+    "logical_bytes_preserved": 828683799,
+    "full_private_tar_retained_on_current_local_workspace": true,
+    "independent_extracted_copy_verified_against_every_source_SHA256_and_size": true,
+    "source_hashes_rechecked_before_phone_copy_removal": true,
+    "phone_source_roots_removed_only_after_both_host_copies_complete": true,
+    "private_restore_manifest_with_original_paths_retained": true,
+    "ephemeral_socket_paths_recorded_not_permanent_state": 0,
+    "current_canonical_and_active_session_all_hashes_unchanged": true,
+    "media_signing_current_saves_and_sibling_data_preserved": true
+  },
+  "actual_capacity": {
+    "available_before_bytes": 3700842496,
+    "available_after_bytes": 4490121216,
+    "net_available_increase_bytes": 789278720,
+    "phase_growth_bound_bytes": 3221225472,
+    "unchanged_phone_reserve_bytes": 1073741824,
+    "existing4GiB_admission_threshold_met_at_return": true,
+    "not_a_permanent_capacity_grant": true
+  },
+  "host_storage": {
+    "original_local2GiB_writer_and_capacity_guard_used": true,
+    "unchanged12GiB_reserve": true,
+    "Btrfs_metadata_guard_passed_and_emergency_reserve_unused": true,
+    "host_writer_acquired_only_after_device_admission_for_productive_copy_and_released_before_phone_source_removal": true,
+    "storage_reserved_while_waiting_for_phone": false,
+    "retired_USB_or_cache_recreated": false
+  },
+  "return": {
+    "custodian_work_seconds": 169.46638098801486,
+    "custodian_completed_and_returned": true,
+    "own_native_processes_absent": true,
+    "physical_display_OFF_stock_return_verified": true,
+    "no_emulator_run_or_install_during_relocation": true
+  },
+  "continuation": "one existing-artifact presentation-correction comparison submitted after verified return; capacity checked again before installation; no new acceptance inferred",
+  "protected_host_identities_unchanged": 21,
+  "paused_source_paths_preserved": 16,
+  "private_archives_or_logs_published": false
+}
