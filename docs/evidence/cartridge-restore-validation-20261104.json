@@ -154,7 +154,7 @@
       "initial_packaging_audit_omitted_expected_manifest_notice": "corrected by independent read-only audit; APK not rebuilt",
       "packaged_license_notice_source": "THIRD_PARTY.md at20ebf58",
       "whole_core_or_firmware_rebuild": false,
-      "Android_executed": false,
+      "Android_executed": true,
       "speedup_or_game_cause_claimed": false
     }
   },
@@ -168,7 +168,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "The previous unacquired cost request was cancelled normally after source proved its unchanged core could not label Android workers (runs0/returned). A separately built one-object native correction and audited APK are ready. The next finite check must preserve the old binding and complete rejected checkpoint, choose the normal explicit current-saves restart for a verified runtime-binding refusal, and review actual world before collecting cost; no RAM retag, private firmware or media acquisition.",
+  "next": "One short same-built-APK/core follow-up is queued after the actual verified return. It requires exact checkpoint26/current generation and runtime identity, forbids cold fallback or intro replay, and reviews the restored world before bounded native-worker cost collection. Preserve both rejected groups; verify fresh-process/clean return and newest checkpoint. No new build, media copy or closed campaign.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,
@@ -221,5 +221,33 @@
     "candidate_namespace_retained": true,
     "OS_native_absence_physical_OFF_verified": true,
     "forced_task_app_retirement_recorded": false
+  },
+  "corrected_native_device_observation": {
+    "APK_sha256": "5a88bbfec4f1bbd6e11b6a706cb420a9bed5668033883c6cd8a8186ba4922ee3",
+    "core_sha256": "6ec2ac7c4fc60de09d46b445a41349ddf40a13ad1d47b9aaceea2b995408ebe2",
+    "old_current_checkpoint_and_storage_generation": 24,
+    "old_exact_runtime_game_profile_media_partition_state_ABI_verified": true,
+    "actual_public_binding_incompatible_contract_and_owned_choice": true,
+    "explicit_worker_current_saves_restart_no_RAM_retag": true,
+    "actual_visible_navigation": "main menu, B out of unconfirmed name screen, Continue, Default, AutoSave, normal Y Skip Scene and A tutorial dismissal",
+    "actual_clean_Oakvale_world_with_health_minimap_HUD_reviewed": true,
+    "captures_reviewed": 19,
+    "ordinary_autosave_cold_load_not_native_checkpoint_restore": true,
+    "native_worker_sample_executed": false,
+    "reason": "Review window ended before cost command; late host command has no reply/sample and was not processed. No performance result inferred.",
+    "new_checkpoint_generation": 26,
+    "new_checkpoint_full_disk_EEPROM_digests_and_stable_pointer_verified": true,
+    "only_native_runtime_binding_changed": true,
+    "rejected_generations21_and24_full_record_disk_EEPROM_hashes_unchanged": true,
+    "native_status": 0,
+    "QMP_quit_acknowledged_machine_join_and_storage_sync": true,
+    "OS_native_absence_verified": true,
+    "original_APK_canonical_data_namespace_restored": true,
+    "candidate_namespace_retained": true,
+    "physical_OFF_verified": true,
+    "completed_returned": true,
+    "work_seconds": 602.0970969080008,
+    "forced_retirement": false,
+    "new_core_checkpoint_restore_or_named_cost_qualified": false
   }
 }
