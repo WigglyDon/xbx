@@ -112,6 +112,13 @@ changes. [RETENTION.md](RETENTION.md) records the owner-directed October 24 pass
 
 ## Device operation
 
+For each fresh lab request, read the installed named-unit preferences and let
+the custodian snapshot the current qualified connection unless the task actually
+requires a particular transport. Do not carry a historical recipe's USB pin into
+new work by default. An admitted request keeps its selected route; an unavailable
+unacquired request may be cancelled by its owner before preparing a fresh request
+for the qualified route. Preserve recovery gates and other owners' work.
+
 The owner's personal Fold is available only in a fresh authorized operating
 window under the existing stock-device procedure. Verify exact identity, one
 custodian and current grant; never guess serials or assume an unlocked device is
