@@ -45,6 +45,9 @@ mod host_accel;
 mod host_clock;
 #[cfg(not(target_os = "android"))]
 mod host_input;
+#[cfg(any(target_os = "android", test))]
+#[cfg_attr(not(target_os = "android"), allow(dead_code))]
+pub(crate) mod jit_stats;
 pub mod library;
 #[cfg(not(target_os = "android"))]
 mod lifetime;

@@ -87,14 +87,14 @@
       "util/qemu-thread-posix.c qemu_thread_start"
     ],
     "scope": "Native pthread role labels only; no guest or app process name supplied. Pinned-version diagnostic labels are not a stable product API.",
-    "device_role_attribution_qualified": false,
+    "device_role_attribution_qualified": true,
     "long_role_label_limit": {
       "public_reference": "https://android.googlesource.com/platform/bionic/+/140e4d35c/libc/bionic/pthread_setname_np.cpp",
       "retained_QEMU_ignores_setname_return": true,
       "Android_Bionic_rejects_labels_at_least16bytes": true,
       "four_public_overlong_labels_rejected_by_host_libc_fixture": true,
       "15byte_variants_accepted_by_host_fixture": true,
-      "actual_Android_role_sample_collected": false,
+      "actual_Android_role_sample_collected": true,
       "limits": "The existing option cannot guarantee all renderer/PFIFO role labels. Attribute only actual recognized roles; no cause or hardware-cap conclusion."
     },
     "bounded_label_source_correction": {
@@ -168,7 +168,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "One short same-built-APK/core follow-up is queued after the actual verified return. It requires exact checkpoint26/current generation and runtime identity, forbids cold fallback or intro replay, and reviews the restored world before bounded native-worker cost collection. Preserve both rejected groups; verify fresh-process/clean return and newest checkpoint. No new build, media copy or closed campaign.",
+  "next": "Continue the one already-prepared same-core checkpoint28 public aggregate-counter observation under normal custody. Use actual world review and counter deltas to choose an independently supported correction; otherwise identify the missing fact. Preserve graphics/newer-save protections and rejected history. Smooth play/audio/extended play and default promotion remain unqualified.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,
@@ -249,5 +249,130 @@
     "work_seconds": 602.0970969080008,
     "forced_retirement": false,
     "new_core_checkpoint_restore_or_named_cost_qualified": false
+  },
+  "same_core_followup_without_measurement": {
+    "completed_returned": true,
+    "work_seconds": 350.0301874029992,
+    "exact_checkpoint26_current_storage_runtime_verified": true,
+    "native_clean_new_checkpoint_generation": 27,
+    "only_initial_black_app_captures_reviewed": true,
+    "late_model_command_after_return_not_executed": true,
+    "gameplay_or_performance_claim": false,
+    "rejected21_and24_unchanged_original_APK_data_process_absence_OFF_verified": true
+  },
+  "named_worker_gameplay_cost": {
+    "APK_sha256": "5a88bbfec4f1bbd6e11b6a706cb420a9bed5668033883c6cd8a8186ba4922ee3",
+    "core_sha256": "6ec2ac7c4fc60de09d46b445a41349ddf40a13ad1d47b9aaceea2b995408ebe2",
+    "exact_checkpoint27_same_runtime_fresh_process_return": true,
+    "cold_fallback_or_intro_replay": false,
+    "native_progress_gate_only_authorized_collection": true,
+    "actual_before_after_images_opened_after_return": true,
+    "clean_Oakvale_HUD_world_animation": true,
+    "sample_seconds": 30.370189,
+    "PGRAPH_flips_per_second": 5.075939248601119,
+    "complete_five_second_buckets": [
+      {
+        "flips": 26,
+        "interval_ms": 5004
+      },
+      {
+        "flips": 26,
+        "interval_ms": 5004
+      },
+      {
+        "flips": 25,
+        "interval_ms": 5004
+      },
+      {
+        "flips": 25,
+        "interval_ms": 5004
+      },
+      {
+        "flips": 25,
+        "interval_ms": 5004
+      }
+    ],
+    "busy_CPU_equivalents": 1.9487396141327933,
+    "role_busy_CPU_equivalents": {
+      "other": 0.1337506206826701,
+      "unnamed_native": 0.029202669170086498,
+      "vcpu": 0.9484349628512355,
+      "voice": 0.22021284062473237,
+      "audio": 0.0028729942049422214,
+      "apu": 0.14732230648943279,
+      "pfifo": 0.4281490772085745,
+      "pgraph_render": 0.03879414290111925,
+      "pgraph_compile": 0.0
+    },
+    "vCPU_runqueue_seconds": 0.02358125,
+    "skipped_racing_thread_records": 0,
+    "same_owned_process_identity_verified": true,
+    "guest_code_memory_shader_bytes_collected": false,
+    "new_checkpoint_generation": 28,
+    "full_disk_EEPROM_hashes_and_stable_pointer_verified": true,
+    "both_rejected_groups_record_disk_EEPROM_unchanged": true,
+    "native_status": 0,
+    "quit_ack_join_sync_and_independent_OS_absence": true,
+    "exact_original_APK_canonical_data_namespace_restored": true,
+    "candidate_namespace_retained": true,
+    "physical_OFF_verified": true,
+    "forced_retirement": false,
+    "completed_returned": true,
+    "work_seconds": 255.642644218,
+    "limits": [
+      "Not controlled A/B speedup, emulation speed, per-frame latency or hardware ceiling",
+      "Sampled wait names do not prove idle; zero compile-worker CPU applies only to this interval",
+      "vCPU busy time can include emulated waits; does not identify a specific instruction or public platform defect"
+    ]
+  },
+  "public_native_counter_followup": {
+    "decision": "Measured vCPU/PFIFO cost warrants checking retained public aggregate translation/cache/flush counters before choosing a specific performance correction. No guest code or instruction trace, speculative tuning matrix, hardware ceiling or speedup claim.",
+    "interface": "x-query-jit through existing Rust Native monitor owner",
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "source_contract": [
+      "qapi/machine.json x-query-jit",
+      "accel/tcg/tcg-stats.c dump_accel_info/dump_exec_info/tcg_dump_flush_info"
+    ],
+    "implementation": "crates/host/src/cartridge/jit_stats.rs and opt-in Android owner polling",
+    "default_off": true,
+    "maximum_attempts": 3,
+    "minimum_seconds_between_attempts": 15,
+    "retained_fields": [
+      "one-instruction-per-block flag",
+      "generated byte size/capacity",
+      "block count",
+      "block flush/invalidation count",
+      "full/partial/elided TLB flush counts",
+      "query elapsed microseconds"
+    ],
+    "free_form_response_or_errors_retained": false,
+    "optional_reporting_errors_do_not_fail_gameplay": true,
+    "original_parser_and_finite_schedule_tests": 3,
+    "host_all_target_Clippy_warnings_denied": true,
+    "Android_Rust_build_passed": true,
+    "ordinary_Btrfs1GiB_build_guard_initially_refused": true,
+    "guard_thresholds_changed": false,
+    "compile_package_outputs_in_private_tmpfs": true,
+    "RAM_available_before_over10GiB": true,
+    "tmpfs_available_before_over4GiB": true,
+    "temporary_build_tree_under1GiB_after": true,
+    "exact_final_copy_bytes": 23419759,
+    "copy_peak_admitted_with4MiB_metadata_allowance_and12GiB_data_floor": true,
+    "Btrfs_usable_metadata_over1GiB_emergency_reserve_unused": true,
+    "all_prior_disk_targets_source_builds_and_signing_preserved": true,
+    "retained_intermediates_are_temporary_not_reboot_durable": true,
+    "new_APK_sha256": "58c8a6d626b9663555f967b4e3536c73e31d60e8dcc0fe342a175654c2d33766",
+    "Rust_library_sha256": "adba36d82afc9ae9666fdcc85aa33f938c7741adc2b1ea243291e7766e78b604",
+    "all_runtime_manifest_payloads_identical": true,
+    "changed_payloads": [
+      "lib/arm64-v8a/libxbx.so",
+      "assets/THIRD_PARTY.md",
+      "normal signature metadata"
+    ],
+    "notice_is_current_maintained_source_earlier_APK_retained_older_notice": true,
+    "initial_audit_refused_expected_notice_change_read_only_audit_corrected_without_rebuild": true,
+    "existing_signer_v3_and16KiB_alignment_verified": true,
+    "no_native_or_open_system_rebuild": true,
+    "device_execution": "one prepared same-core checkpoint28 fresh-process request pending normal verified return; no cold fallback or intro replay; actual before/after image review required"
   }
 }

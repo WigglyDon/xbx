@@ -193,6 +193,7 @@ fn available(app: &Path) -> io::Result<()> {
 }
 struct Native {
     monitor: c::monitor::Monitor,
+    jit_observation: Option<c::jit_stats::Observation>,
     dispatch_probe: Option<c::dispatch_probe::Probe>,
     serial: UnixStream,
     boot_failure: crate::startup::GuestBootFailureDetector,
@@ -349,6 +350,8 @@ impl Engine for Native {
         starting.0 = false;
         Ok(Self {
             monitor,
+            jit_observation: (option_env!("XBX_ANDROID_JIT_COUNTERS") == Some("1"))
+                .then(c::jit_stats::Observation::new),
             dispatch_probe,
             serial,
             boot_failure: Default::default(),
@@ -765,6 +768,40 @@ fn owner(base: PathBuf) -> Result<i32, Box<dyn std::error::Error>> {
             return Err("native machine ended before normal departure; data retained".into());
         }
         if let Some(l) = player.live.as_mut() {
+            if running
+                && let Some(attempt) = l
+                    .native
+                    .jit_observation
+                    .as_mut()
+                    .and_then(|o| o.due(Instant::now()))
+            {
+                let started = Instant::now();
+                let result = l
+                    .native
+                    .monitor
+                    .call("x-query-jit", serde_json::json!({}))
+                    .and_then(|v| {
+                        c::jit_stats::parse(
+                            v.get("human-readable-text")
+                                .and_then(serde_json::Value::as_str)
+                                .ok_or_else(|| io::Error::other("missing aggregate text"))?,
+                        )
+                    });
+                let value = match result {
+                    Ok(counters) => {
+                        serde_json::json!({"counters":counters,"query_microseconds":started.elapsed().as_micros()})
+                    }
+                    Err(_) => serde_json::json!({"unavailable":true}),
+                };
+                // Diagnostic failure must not alter play/continuity or record
+                // free-form native errors. No new monitor or machine owner.
+                if let Ok(bytes) = c::json(&value) {
+                    let _ = c::write_new(
+                        &l.native.run.join(format!("jit-counters-{attempt}.json")),
+                        &bytes,
+                    );
+                }
+            }
             if let Some(probe) = l.native.dispatch_probe.as_mut() {
                 probe.poll()?;
             }

@@ -231,6 +231,14 @@ pub(super) fn build_thread_names(repo: &Path, root: &Path) -> Result<(), Error> 
         "android-thread-names-package-v1",
     )
 }
+pub(super) fn build_jit_counters(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-thread-names-v1",
+        "android-jit-counters-package-v1",
+    )
+}
 pub(super) fn build_frame_vertex(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -306,6 +314,7 @@ fn build_selected(
         "android-present-surface-package-v1"
             | "android-restore-recheck-package-v1"
             | "android-thread-names-package-v1"
+            | "android-jit-counters-package-v1"
     );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
@@ -586,6 +595,7 @@ fn build_selected(
         .env("CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER",ndk.join("toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"))
         .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash).env("XBX_ANDROID_OPEN_SHA256",open_hash)
         .env("XBX_ANDROID_DISPATCH_PROBE",if dispatch { "1" } else { "0" })
+        .env("XBX_ANDROID_JIT_COUNTERS",if package_stage == "android-jit-counters-package-v1" { "1" } else { "0" })
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
         root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
     };
