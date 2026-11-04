@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "assignment": "Owner continuation after joining existing Pixel4 cleanup",
+  "scope": "Retrieve already-retained public frame counts from the two previously qualified corrected-graphics processes; no new gameplay trial",
+  "candidate": {
+    "apk_sha256": "f60dd367d5fb4f7f2f5e0d64e55584e90b1fc910d10662f364816e05db9254fb",
+    "native_core_sha256": "410e1493c2dc027a883e53ea6f88ed7cc3741f955b7647cdd8ee8ddf908c30f0",
+    "prior_visible_receipt": "docs/evidence/cartridge-Fable-presentation-return-20261104.json"
+  },
+  "method": {
+    "existing_Rust_periodic_report": "PGRAPH flip deltas and elapsed milliseconds every approximately five seconds while input enabled",
+    "counter_not_display_refresh_or_guest_emulation_speed": true,
+    "movies_excluded": true,
+    "exact_final_process_log_uniquely_matched_against_retained_prelaunch_names": true,
+    "each_private_source_log_read_bound_bytes": 4194304,
+    "both_read_caps_reached": false,
+    "only_selected_public_counts_retained_no_raw_logs": true,
+    "game_memory_or_code_read": false
+  },
+  "first_process": {
+    "bounded_interval_samples": 178,
+    "observed_flips": 23361,
+    "observed_interval_ms": 890748,
+    "bucket_fps_min": 0.0,
+    "bucket_fps_median": 27.677857713828935,
+    "bucket_fps_max": 57.96522086747951,
+    "positive_bucket_fps_median": 27.77777777777778,
+    "zero_buckets": 1,
+    "reader_cap_reached": false,
+    "native_reported_fatal": false,
+    "raw_persisted": false
+  },
+  "fresh_restored_process": {
+    "bounded_interval_samples": 19,
+    "observed_flips": 476,
+    "observed_interval_ms": 95075,
+    "bucket_fps_min": 0.7993605115907274,
+    "bucket_fps_median": 4.996003197442047,
+    "bucket_fps_max": 5.996402158704777,
+    "positive_bucket_fps_median": 4.996003197442047,
+    "zero_buckets": 0,
+    "reader_cap_reached": false,
+    "native_reported_fatal": false,
+    "raw_persisted": false
+  },
+  "fresh_restored_after_first_bucket": {
+    "five_second_buckets": 18,
+    "flips": 472,
+    "elapsed_ms": 90071,
+    "average_flips_per_second": 5.240310421778375
+  },
+  "interpretation": "Retained fresh-restored gameplay counters corroborate severe low throughput. They do not identify CPU saturation, kernel/renderer waits, thermal state, per-frame hitch distribution or a performance correction. First-process menu/startup and world phases must not be pooled as a gameplay benchmark.",
+  "current_read_only_return": {
+    "finite_work_seconds": 6.113932880980428,
+    "custodian_completed_returned": true,
+    "own_native_absent": true,
+    "physical_OFF_stock_return_verified": true,
+    "no_install_launch_app_data_write": true,
+    "measured_available_phone_bytes": 3615494144,
+    "dated_reading_not_capacity_grant": true
+  },
+  "cleanup_coordination": {
+    "existing_group_joined": true,
+    "prior_753MiB_net_recovery_not_counted_twice": true,
+    "no_new_deletion_or_peer_operations": true
+  },
+  "continuation": "One prepared same-candidate saved-village native-thread execution/runqueue/wait observation through normal custody with unchanged phase storage guard; no intro replay or unchanged rebuild.",
+  "qualified_mobile_performance": false,
+  "audible_audio_qualified": false
+}
