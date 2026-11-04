@@ -47,8 +47,14 @@
     "physical_display_OFF_stock_return_verified": true,
     "no_emulator_run_or_install_during_relocation": true
   },
-  "continuation": "one existing-artifact presentation-correction comparison submitted after verified return; capacity checked again before installation; no new acceptance inferred",
+  "continuation": "same-artifact presentation correction comparison completed/returned after actual fresh admission; opening graphics, Home recovery and unsaved fresh-process restore passed",
   "protected_host_identities_unchanged": 21,
   "paused_source_paths_preserved": 16,
-  "private_archives_or_logs_published": false
+  "private_archives_or_logs_published": false,
+  "post_graphics_test": {
+    "actual_read_only_capacity_bytes": 3843964928,
+    "latest_checkpoint_full_digests_and_stable_record_verified": true,
+    "custodian_completed_and_returned": true,
+    "earlier4_18GiB_measurement_was_before_new_checkpoint_writes": true
+  }
 }

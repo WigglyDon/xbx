@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "parent": "docs/evidence/cartridge-present-surface-20261104.json",
+  "same_signed_APK_sha256": "f60dd367d5fb4f7f2f5e0d64e55584e90b1fc910d10662f364816e05db9254fb",
+  "same_core_sha256": "410e1493c2dc027a883e53ea6f88ed7cc3741f955b7647cdd8ee8ddf908c30f0",
+  "same_serial_off_open_image": "672e27b10bfc44bf770876c76b1a79b142fb739d17d08becc452375035e590f3",
+  "retained_reference": "X1 BOX/xemu4967efd3 with accepted repairs, generated storage and packaged open environment; unchanged media",
+  "setup": {
+    "full4GiB_capacity_guard_passed_before_install": true,
+    "explicit_changed_runtime_Restart_current_ordinary_saves": true,
+    "old_incompatible_checkpoint_preserved": true,
+    "RAM_retag_or_silent_cold_fallback": false,
+    "same_entry_and_profile_continued_under_real_leases": true
+  },
+  "visible_review": {
+    "actually_opened_captures": 19,
+    "normal_Start_Continue_Default_AutoSave_UI_responses": true,
+    "cold_Oakvale_HUD_and_world_clean": true,
+    "forward_input_moves_character_and_camera_clean": true,
+    "Home_return_picture_present_without_explicit_Resume": true,
+    "after_Home_right_stick_camera_turn_clean": true,
+    "first_normal_Leave_OS_process_absence_verified": true,
+    "genuinely_new_PID_and_start_identity": true,
+    "fresh_process_restores_same_unsaved_side_camera_view": true,
+    "new_forward_input_after_fresh_restore_changes_world_position_clean": true,
+    "former_stretched_geometry_or_white_black_planes_observed": false,
+    "screen_content_or_raw_logs_published": false
+  },
+  "actual_GPU_recovery": {
+    "public_live_owned_PID_marker": {
+      "acquire surface lost; recreating": 1
+    },
+    "minimized_and_restored_window_events": {
+      "window minimized": 1,
+      "window restored": 1
+    },
+    "generic_presentation_errors_at_observation": {},
+    "scope": "actual Home transition loses presentation surface; retained new recovery path invoked; picture and new input remain functional",
+    "old_exact_failure_log_available": false,
+    "all_prior_black_screen_causes_claimed": false
+  },
+  "complete_session": {
+    "ordinary_save_cold_world_observed": true,
+    "noninitial_world_unsaved_camera_restore_in_fresh_process": true,
+    "new_input_after_restore": true,
+    "post_check_current_disk_EEPROM_full_digests_match": true,
+    "post_check_pointer_and_record_stable": true,
+    "accepted_generation": 19,
+    "paused": false,
+    "original_prior_record_still_retained": true
+  },
+  "actual_return": {
+    "native_clean_departures": 2,
+    "native_statuses": [
+      0,
+      0
+    ],
+    "QMP_quit_acknowledged": true,
+    "native_machine_threads_joined": true,
+    "storage_synced": true,
+    "OS_processes_absent_independently_verified": true,
+    "original_APK_restored": true,
+    "canonical_original_all_file_hashes_restored": true,
+    "fresh_namespace_retained": true,
+    "prior_incompatible_checkpoint_record_unchanged": true,
+    "physical_display_OFF_verified": true,
+    "custodian_completed_and_returned": true,
+    "custodian_work_seconds": 1353.7980806520209
+  },
+  "post_test_read_only_verification": {
+    "custodian_completed_and_returned": true,
+    "work_seconds": 6.926365654042456,
+    "phone_available_bytes": 3843964928,
+    "unchanged_phone_reserve_bytes": 1073741824,
+    "no_emulator_or_installer_run": true,
+    "note": "The completed game test writes a new accepted checkpoint. The earlier4.18GiB measurement preceded that test; final available space is recorded here, not inferred unchanged."
+  },
+  "remaining_limits": {
+    "installed_default_promoted": false,
+    "smooth_mobile_performance_qualified": false,
+    "audible_audio_qualified": false,
+    "whole_game_or_extended_gameplay_qualified": false,
+    "Fold_or_other_device_qualified_by_this_result": false,
+    "public_binary_release": false
+  },
+  "preservation": {
+    "inactive_backups_and_restore_mapping_preserved_on_host": true,
+    "source_signing_media_current_saves_builds_and_evidence_preserved": true,
+    "protected_host_identities_unchanged": 21,
+    "paused_source_paths_unchanged": 16,
+    "other_projects_modified": false,
+    "closed_campaign_restarted": false,
+    "private_game_code_memory_or_shader_inspection": false
+  }
+}

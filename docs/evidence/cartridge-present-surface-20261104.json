@@ -230,7 +230,7 @@
   "isolated_host_and_Android_builds_pass": true,
   "isolated_Clippy_all_targets_warnings_denied": true,
   "existing_swapchain_retirement_and_queue_wait_reused": true,
-  "actual_GPU_surface_recovery_qualified": false,
+  "actual_GPU_surface_recovery_qualified": true,
   "Fable_Home_cause_established": false,
   "device_stage": "admitted once; FAILED/returned=true after storage guard refused before namespace adoption, game start or graphics observation; no compatibility failure inferred",
   "observation": "actual cold current ordinary save under changed runtime then focused graphics/Home-return; only live own PID public renderer/window error counters; no private game context",
@@ -289,8 +289,10 @@
     "custodian_returned": true,
     "retry_queued": false
   },
-  "remaining_blocker": "original-contract-qualified presentation candidate actual Fable/Home GPU qualification pending; prior capacity shortfall remedied by verified inactive-backup relocation; ordinary device admission rechecks full bounds",
+  "remaining_blocker": "mobile pacing, audible audio, extended gameplay and promotion into installed/default collection remain unqualified; no remaining observed opening-geometry/Home/fresh-process graphics blocker",
   "retained_worktree_display_matches_proven_pinned_preimage": true,
   "capacity_remedy_receipt": "docs/evidence/cartridge-phone-space-20261104.json",
-  "continuation_stage": "one prepared same-artifact continuation submitted after actual source/data/device return; no rebuild or new firmware/media"
+  "continuation_stage": "completed and returned; actual cold world, input, Home surface-loss recovery, normal Leave, genuinely fresh-process world restoration and new input observed clean",
+  "actual_Fable_Home_lost_surface_observed_and_recovered": true,
+  "actual_device_result_receipt": "docs/evidence/cartridge-Fable-presentation-return-20261104.json"
 }
