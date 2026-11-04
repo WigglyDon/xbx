@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "assignment": "XBX-CARTRIDGE-1 owner continuation after actual existing cleanup return",
+  "decision": "Reuse a same-attempt logical-save validation only after hashing all current disk/EEPROM bytes and matching expected saves, path and runtime/reader identities; enforce generation before and after. No persistent cache or checkpoint format change.",
+  "observed_gameplay": {
+    "candidate_APK": "f60dd367d5fb4f7f2f5e0d64e55584e90b1fc910d10662f364816e05db9254fb",
+    "same_native_core": "410e1493c2dc027a883e53ea6f88ed7cc3741f955b7647cdd8ee8ddf908c30f0",
+    "actual_saved_Oakvale_world_reviewed_before_and_after": true,
+    "prior_geometry_corruption_absent": true,
+    "sample_seconds": 52.489225,
+    "PGRAPH_flips_per_second": 5.415559241422034,
+    "aggregate_native_CPU_seconds": 104.834637014,
+    "equivalent_busy_CPUs": 1.997260142705479,
+    "aggregate_runqueue_seconds": 5.763924168,
+    "per_worker_attribution_qualified": false,
+    "reason": "Retained QEMU native thread naming defaults off; inherited SDLThread names cannot establish display, vCPU, APU or renderer role.",
+    "limits": [
+      "OS sampling itself has cost; no controlled timing or thermal campaign",
+      "Five-second PGRAPH counters exclude movie overlays and are not per-frame latency or emulation speed",
+      "No game memory/code or raw native addresses collected",
+      "No CPU hardware ceiling or software speedup established"
+    ]
+  },
+  "finite_client_reconciliation": {
+    "first_attempt_sample_preceded_visible_world_and_is_not_gameplay": true,
+    "first_attempt_old_healthy_checkpoint_retention_assertion_was_inapplicable": true,
+    "first_attempt_native_clean_original_APK_and_data_stock_return_verified": true,
+    "corrected_client_requires_actual_model_reviewed_world_before_sampling": true,
+    "corrected_client_verifies_new_current_checkpoint_instead_of_requiring_superseded_healthy_one": true
+  },
+  "actual_corrected_baseline_return": {
+    "completed_returned": true,
+    "work_seconds": 560.8819186629844,
+    "native_status": 0,
+    "quit_acknowledged": true,
+    "machine_thread_joined_and_storage_synced": true,
+    "OS_native_absence_verified": true,
+    "current_checkpoint_full_disk_EEPROM_hashes_match": true,
+    "current_pointer_stable": true,
+    "accepted_generation": 21,
+    "exact_original_installed_APK_and_canonical_data_restored": true,
+    "physical_display_OFF_stock_return_verified": true
+  },
+  "restore_correction": {
+    "source": "crates/host/src/cartridge/checkpoint.rs",
+    "first_verification_always_reads_logical_saves": true,
+    "same_attempt_repeated_verification_still_hashes_all_current_bytes": true,
+    "changed_expected_save_hash_and_changed_disk_EEPROM_bytes_require_logical_reader_again": true,
+    "changed_epoch_refuses_before_storage_mutation": true,
+    "metadata_only_rewrite_can_pass_only_after_logical_reader_verification": true,
+    "no_newer_ordinary_save_rollback": true,
+    "no_durable_validation_cache": true,
+    "no_removal_of_failed_or_incompatible_history": true,
+    "recovery_history_count_and_byte_budget_remains_unqualified": true
+  },
+  "source_tests": {
+    "new_unchanged_bytes_reader_regression_failed_before": 1,
+    "original_storage_suite_passed_after": 15,
+    "additional_real_qcow2_metadata_and_guest_write_case_passed": 1,
+    "strict_all_target_host_Clippy_warnings_denied": true,
+    "owned_files_format_and_diff_checks": true,
+    "offline_single_compiler_incremental_disabled": true,
+    "isolated_committed_source_plus_only_owned_changes": true
+  },
+  "new_frontend_candidate": {
+    "new_APK_sha256": "f8cdeaac6af8cc49bd32b8fffe6d7171c4d6f0dfc466e07bfe864e80265989d3",
+    "Rust_library_sha256": "bd6bd0fcbcf5a92c48807f74b783930d4fbfc46971d7bc34e802f214c1b1102c",
+    "changed_payloads": [
+      "lib/arm64-v8a/libxbx.so"
+    ],
+    "signature_metadata_changed_as_expected": true,
+    "all_other_uncompressed_APK_payloads_identical": true,
+    "unchanged_core_open_helper_seed": true,
+    "existing_signer_v3_verified": true,
+    "16KiB_alignment_verified": true,
+    "native_or_firmware_rebuild": false,
+    "Android_execution_qualified": false,
+    "state_layout_or_manifest_format_changed": false,
+    "initial_overstrict_payload_audit_included_JAR_signature_metadata": true
+  },
+  "worker_names": {
+    "existing_option": "-name debug-threads=on",
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "public_source": [
+      "system/vl.c parse_name",
+      "util/qemu-thread-posix.c qemu_thread_start"
+    ],
+    "scope": "Native pthread role labels only; no guest or app process name supplied. Pinned-version diagnostic labels are not a stable product API.",
+    "device_role_attribution_qualified": false
+  },
+  "preservation": {
+    "sixteen_paused_paths_and_all21_protected_identities_unchanged": true,
+    "prior_source_builds_profiles_checkpoints_and_signing_preserved": true,
+    "same_release_core_open_helper_seed_and_other_APK_payloads": true,
+    "prior_builder_retained_before_compiling_frontend_builder": true,
+    "existing_local1GiB_growth_guard12GiB_floor_Btrfs_metadata_and_emergency_checks": true,
+    "no_retired_storage_or_media_recreated": true,
+    "no_sibling_or_Fold_operations": true,
+    "no_public_binary_release": true
+  },
+  "next": "Fresh normal device admission of new frontend candidate; actual saved-world restoration, worker-name verification and focused native-role cost observation; normal departure/current storage proof before return. No intro replay or unchanged controls."
+}

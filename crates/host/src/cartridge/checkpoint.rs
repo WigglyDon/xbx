@@ -3,7 +3,7 @@
 //! A restore mutates only a private attempt until native completion and a second
 //! current-save check. Failed teardown can never flush into authoritative saves.
 use super::*;
-use std::path::PathBuf;
+use std::{cell::RefCell, path::PathBuf};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Record {
@@ -25,15 +25,51 @@ pub struct Validated {
     pub id: String,
     pub directory: PathBuf,
     pub record: Record,
+    checked_storage: RefCell<Option<CheckedStorage>>,
+}
+#[derive(PartialEq, Eq)]
+struct CheckedStorage {
+    directory: PathBuf,
+    bytes: store::SaveSignature,
+    expected_saves: store::SaveSignature,
+    runtime: String,
+    reader: PathBuf,
+}
+fn storage_bytes(directory: &std::path::Path) -> io::Result<store::SaveSignature> {
+    Ok(store::SaveSignature {
+        disk: file_digest(&directory.join("hdd.qcow2"))?,
+        eeprom: file_digest(&directory.join("eeprom.bin"))?,
+    })
 }
 impl Validated {
     pub fn recheck(&self, p: &store::Profile, r: &resources::Resources) -> io::Result<()> {
         p.lease.require_generation(self.record.generation)?;
-        if store::signature(&p.current()?, r)? != self.record.saves {
-            return Err(io::Error::other(
-                "newer ordinary save bytes; checkpoint retained; restart explicitly with current saves",
-            ));
+        let directory = p.current()?;
+        let checked = CheckedStorage {
+            bytes: storage_bytes(&directory)?,
+            directory,
+            expected_saves: self.record.saves.clone(),
+            runtime: r.identity.clone(),
+            reader: r.image_tool(),
+        };
+        // This cache lives only for this validated restore/publication attempt.
+        // The first check always verifies logical saves. Repeated checks under
+        // the held writer lease still hash every current disk/EEPROM byte and
+        // check the epoch; identical bytes cannot change their logical digest.
+        if self.checked_storage.borrow().as_ref() != Some(&checked) {
+            if store::signature(&checked.directory, r)? != checked.expected_saves {
+                return Err(io::Error::other(
+                    "newer ordinary save bytes; checkpoint retained; restart explicitly with current saves",
+                ));
+            }
+            if storage_bytes(&checked.directory)? != checked.bytes {
+                return Err(io::Error::other(
+                    "storage changed during save verification; all data retained",
+                ));
+            }
+            *self.checked_storage.borrow_mut() = Some(checked);
         }
+        p.lease.require_generation(self.record.generation)?;
         Ok(())
     }
 }
@@ -68,6 +104,7 @@ pub fn load(
         id: session.checkpoint,
         directory,
         record,
+        checked_storage: RefCell::new(None),
     };
     v.recheck(p, r)?;
     Ok(Some(v))
@@ -111,6 +148,7 @@ pub fn publish(
         id: id.clone(),
         directory: dir,
         record,
+        checked_storage: RefCell::new(None),
     };
     v.recheck(p, r)?;
     let old = read_json::<Session>(&p.root.join("session.json"));

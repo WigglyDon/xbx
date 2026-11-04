@@ -347,6 +347,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-present-surface-package" => {
             super::android_package::build_present_surface(repo, root)?
         }
+        "cartridge-restore-recheck-package" => {
+            super::android_package::build_restore_recheck(repo, root)?
+        }
         "cartridge-frame-vertex-contract" => super::frame_vertex::contract(repo, root)?,
         "cartridge-frame-vertex-native" => super::frame_vertex::build(repo, root)?,
         "cartridge-frame-vertex-package" => super::android_package::build_frame_vertex(repo, root)?,

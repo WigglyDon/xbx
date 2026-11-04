@@ -194,6 +194,77 @@ fn newer_write_epoch_refuses_stale_resume_before_any_disk_mutation() {
     assert_eq!(file_digest(&current.join("hdd.qcow2")).unwrap(), disk);
 }
 #[test]
+fn unchanged_bytes_reuse_only_this_attempts_verified_logical_identity() {
+    let f = Fixture::new();
+    f.publish();
+    let v = checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap();
+    // An unchanged second check must not need another whole logical-disk scan.
+    // Retire only this fixture's symlink, never the actual system disk tool.
+    fs::remove_file(f.r.image_tool()).unwrap();
+    v.recheck(&f.p, &f.r).unwrap();
+    // A new launch has no inherited verification and must still need the reader.
+    assert!(checkpoint::load(&f.p, &f.r, &f.b).is_err());
+}
+
+#[test]
+fn changed_bytes_and_changed_expected_saves_invalidate_attempt_verification() {
+    let f = Fixture::new();
+    f.publish();
+    let mut v = checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap();
+    let current = f.p.current().unwrap();
+    let before = fs::read(current.join("eeprom.bin")).unwrap();
+    fs::write(current.join("eeprom.bin"), [0x48; 256]).unwrap();
+    assert!(v.recheck(&f.p, &f.r).is_err());
+    fs::write(current.join("eeprom.bin"), before).unwrap();
+    v.recheck(&f.p, &f.r).unwrap();
+    v.record.saves.disk = "0".repeat(64);
+    assert!(v.recheck(&f.p, &f.r).is_err());
+}
+
+#[test]
+fn matching_checkpoint_bytes_never_skip_first_logical_identity_validation() {
+    let f = Fixture::new();
+    let id = f.publish();
+    let path = f.p.root.join("checkpoints").join(id).join("record.json");
+    let mut record: checkpoint::Record = read_json(&path).unwrap();
+    record.saves.disk = "0".repeat(64);
+    fs::write(path, json(&record).unwrap()).unwrap();
+    assert!(checkpoint::load(&f.p, &f.r, &f.b).is_err());
+}
+
+#[test]
+fn changed_disk_bytes_recheck_logical_saves_even_with_unchanged_epoch() {
+    let f = Fixture::new();
+    f.publish();
+    let v = checkpoint::load(&f.p, &f.r, &f.b).unwrap().unwrap();
+    let current = f.p.current().unwrap().join("hdd.qcow2");
+    let before = file_digest(&current).unwrap();
+    fs::remove_file(f.r.image_tool()).unwrap();
+    store::checked(
+        Command::new("/usr/bin/qemu-img")
+            .args(["snapshot", "-c", "original-metadata-only"])
+            .arg(&current),
+    )
+    .unwrap();
+    assert_ne!(file_digest(&current).unwrap(), before);
+    assert!(v.recheck(&f.p, &f.r).is_err());
+    std::os::unix::fs::symlink("/usr/bin/qemu-img", f.r.image_tool()).unwrap();
+    v.recheck(&f.p, &f.r).unwrap();
+    // A real new ordinary-save write is not a metadata-only change. Even if
+    // a faulty writer omitted the epoch advance, the full-byte check catches it.
+    store::checked(
+        Command::new("/usr/bin/qemu-io")
+            .args(["-f", "qcow2", "-c", "write -P 0x59 8192 512"])
+            .arg(&current),
+    )
+    .unwrap();
+    let changed = file_digest(&current).unwrap();
+    assert_eq!(f.p.lease.generation().unwrap(), v.record.generation);
+    assert!(v.recheck(&f.p, &f.r).is_err());
+    assert_eq!(file_digest(&current).unwrap(), changed);
+}
+
+#[test]
 fn snapshot_metadata_alone_does_not_manufacture_newer_game_progress() {
     let f = Fixture::new();
     f.publish();

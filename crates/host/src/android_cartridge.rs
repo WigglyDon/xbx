@@ -862,6 +862,10 @@ pub(super) fn run() -> Result<i32, Box<dyn std::error::Error>> {
                             "-S".into(),
                             "-accel".into(),
                             "tcg".into(),
+                            // Name native worker roles for ordinary OS profiling.
+                            // Supply neither a guest nor an app process name.
+                            "-name".into(),
+                            "debug-threads=on".into(),
                             "-nic".into(),
                             "none".into(),
                             "-add-fd".into(),

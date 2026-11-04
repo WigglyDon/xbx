@@ -204,6 +204,25 @@ pub(super) fn build_present_surface(repo: &Path, root: &Path) -> Result<(), Erro
         "android-present-surface-package-v1",
     )
 }
+pub(super) fn build_restore_recheck(repo: &Path, root: &Path) -> Result<(), Error> {
+    let parent = root.join("android-present-surface-package-v1");
+    let identity: serde_json::Value = c::read_json(&parent.join("build.identity.json"))?;
+    if identity["apk_sha256"] != "f60dd367d5fb4f7f2f5e0d64e55584e90b1fc910d10662f364816e05db9254fb"
+        || identity["apk_sha256"]
+            != c::file_digest(&parent.join("xbx-cartridge-qualification.apk"))?
+        || identity["core_sha256"]
+            != c::file_digest(&root.join("android-present-surface-v1/libxemu.so"))?
+    {
+        return Err("qualified presentation parent differs; preserve all candidates".into());
+    }
+    // Frontend policy only; retain the exact core/open system and all old stages.
+    build_candidate(
+        repo,
+        root,
+        "android-present-surface-v1",
+        "android-restore-recheck-package-v1",
+    )
+}
 pub(super) fn build_frame_vertex(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -273,7 +292,10 @@ fn build_selected(
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let present_surface = package_stage == "android-present-surface-package-v1";
+    let present_surface = matches!(
+        package_stage,
+        "android-present-surface-package-v1" | "android-restore-recheck-package-v1"
+    );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
     let serial_off = package_stage == "android-fastmem-release-package-v1" || vertex_values;
