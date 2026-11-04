@@ -17,7 +17,9 @@ typedef struct {
 } QemuThreadArgs;
 static bool name_threads;
 static unsigned exits;
-#define CONFIG_PTHREAD_SETNAME_NP_W_TID 1
+#ifdef HOST_CONFIG
+#include HOST_CONFIG
+#endif
 #define QEMU_TSAN_ANNOTATE_THREAD_NAME(n) ((void)(n))
 #define g_free free
 static inline size_t g_strlcpy(char *to, const char *from, size_t capacity)

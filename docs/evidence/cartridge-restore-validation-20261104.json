@@ -115,6 +115,47 @@
       "core_or_APK_rebuilt": false,
       "queued_candidate_unchanged": true,
       "Android_qualification_and_performance_cause": false
+    },
+    "complete_Android_boundary": {
+      "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+      "patch_sha256": "eaa2de4d254e05c79fe11aa589f74a0438ef4b5d9bb05e9a23e5ccf14929133c",
+      "fixture_sha256": "cee2e22648283dd1df196846dc6c4674a499efd17b9b50b47bf8d4bd2b663229",
+      "Android_config_before": "9b4cf968103f7438fa4f7fbb015ad3de49c835abbe557e551924d456153784c5",
+      "Android_config_after": "3de112cfaf42d69a55cae372fba5a27d8266b4122c3c3d0cbaa7a3891e6e624f",
+      "retained_Android_config_omitted_pthread_naming_macro": true,
+      "CMake_detected_pthread_API": true,
+      "exact_function_and_actual_before_after_Android_config": true,
+      "host_cases": 32,
+      "POSIX_overlong_failures_before": 4,
+      "Android_enabled_role_failures_before": 6,
+      "all16_after_cases_passed": true,
+      "disabled_and_null_names_preserved": true,
+      "host_build_all_target_Clippy_and_owned_format_pass": true,
+      "new_native_core_sha256": "6ec2ac7c4fc60de09d46b445a41349ddf40a13ad1d47b9aaceea2b995408ebe2",
+      "only_recompiled_unit": [
+        "util/qemu-thread-posix.c"
+      ],
+      "other_archive_objects_verified_unchanged": 1225,
+      "actual_Android_object_references_pthread_name_API": true,
+      "new_APK_sha256": "5a88bbfec4f1bbd6e11b6a706cb420a9bed5668033883c6cd8a8186ba4922ee3",
+      "new_Rust_library_sha256": "bbfd3118b1e5682132db72cf2e2e8f501f284359a832270f939050ad743a033c",
+      "payload_changes": [
+        "assets/THIRD_PARTY.md",
+        "assets/runtime.json",
+        "lib/arm64-v8a/libxemu.so",
+        "lib/arm64-v8a/libxbx.so",
+        "META-INF/XBX-QUAL.SF",
+        "META-INF/XBX-QUAL.RSA",
+        "META-INF/MANIFEST.MF"
+      ],
+      "manifest_changes_only_core_digest": true,
+      "same_open_helper_seed_state_ABI_and_signer": true,
+      "signer_v3_and_16KiB_alignment_verified": true,
+      "initial_packaging_audit_omitted_expected_manifest_notice": "corrected by independent read-only audit; APK not rebuilt",
+      "packaged_license_notice_source": "THIRD_PARTY.md at20ebf58",
+      "whole_core_or_firmware_rebuild": false,
+      "Android_executed": false,
+      "speedup_or_game_cause_claimed": false
     }
   },
   "preservation": {
@@ -127,7 +168,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "Fresh bounded continuation on the same built candidate is queued normally on explicit owner-authorized USB after verified cleanup-only recovery. Resume the retained state, independently verify the unique rejected checkpoint bytes, and review actual game progression before native-worker sampling. No new build/import/core/firmware/media or closed campaign.",
+  "next": "The previous unacquired cost request was cancelled normally after source proved its unchanged core could not label Android workers (runs0/returned). A separately built one-object native correction and audited APK are ready. The next finite check must preserve the old binding and complete rejected checkpoint, choose the normal explicit current-saves restart for a verified runtime-binding refusal, and review actual world before collecting cost; no RAM retag, private firmware or media acquisition.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,

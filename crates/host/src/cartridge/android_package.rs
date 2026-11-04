@@ -223,6 +223,14 @@ pub(super) fn build_restore_recheck(repo: &Path, root: &Path) -> Result<(), Erro
         "android-restore-recheck-package-v1",
     )
 }
+pub(super) fn build_thread_names(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-thread-names-v1",
+        "android-thread-names-package-v1",
+    )
+}
 pub(super) fn build_frame_vertex(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -288,13 +296,16 @@ fn build_selected(
             | "android-vertex-cache-values-v1"
             | "android-frame-vertex-v1"
             | "android-present-surface-v1"
+            | "android-thread-names-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
     let present_surface = matches!(
         package_stage,
-        "android-present-surface-package-v1" | "android-restore-recheck-package-v1"
+        "android-present-surface-package-v1"
+            | "android-restore-recheck-package-v1"
+            | "android-thread-names-package-v1"
     );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
@@ -366,6 +377,21 @@ fn build_selected(
     };
     let launch = package_stage == "android-launch-package-v2" || fault || baseline;
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
+    let presentation_identity = if native_stage == "android-thread-names-v1" {
+        if native_identity["original_contract"]["passed"] != true
+            || native_identity["original_contract"]["patch"]
+                != c::file_digest(&repo.join("patches/xemu-native-thread-names.patch"))?
+            || native_identity["all_other_archive_objects_unchanged"] != true
+            || native_identity["state_layout_changed"] != false
+            || native_identity["prior_library_sha256"]
+                != native_identity["inherited_repairs"]["library_sha256"]
+        {
+            return Err("qualified native-name parent bindings differ".into());
+        }
+        &native_identity["inherited_repairs"]
+    } else {
+        &native_identity
+    };
     let launch_identity: serde_json::Value = if launch {
         c::read_json(&root.join("android-launch-v2/identity.json"))?
     } else {
@@ -393,17 +419,17 @@ fn build_selected(
     };
     let open_hash = if serial_off {
         let frame_identity = if present_surface {
-            if native_identity["original_contract"]["passed"] != true
-                || native_identity["all_other_archive_objects_unchanged"] != true
-                || native_identity["state_layout_changed"] != false
-                || native_identity["original_contract"]["patch"]
+            if presentation_identity["original_contract"]["passed"] != true
+                || presentation_identity["all_other_archive_objects_unchanged"] != true
+                || presentation_identity["state_layout_changed"] != false
+                || presentation_identity["original_contract"]["patch"]
                     != c::file_digest(&repo.join("patches/xemu-android-present-surface.patch"))?
-                || native_identity["prior_library_sha256"]
-                    != native_identity["inherited_repairs"]["library_sha256"]
+                || presentation_identity["prior_library_sha256"]
+                    != presentation_identity["inherited_repairs"]["library_sha256"]
             {
                 return Err("original-qualified presentation parent bindings differ".into());
             }
-            &native_identity["inherited_repairs"]
+            &presentation_identity["inherited_repairs"]
         } else {
             &native_identity
         };

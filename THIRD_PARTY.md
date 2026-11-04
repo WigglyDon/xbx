@@ -542,3 +542,9 @@ thread-entry function extracted by the original MIT Rust owner
 checks disabled/null naming as well as the overlong public role names. These
 source controls do not qualify Android execution, game performance or a new
 native candidate.
+
+The same native-name patch also enables the detected Bionic pthread-name API
+in the retained Android `config-host.h`. This mechanical configuration and the
+thread wrapper keep their upstream terms. The expanded original control uses
+the exact before/after Android header as well as the POSIX API branch; it does
+not change radio/debugging settings, emulated state or permanent identities.

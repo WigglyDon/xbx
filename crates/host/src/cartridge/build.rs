@@ -344,6 +344,8 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-vertex-values-contract" => super::vertex_cache::contract(repo, root)?,
         "cartridge-present-surface-contract" => super::present_surface::contract(repo, root)?,
         "cartridge-thread-names-contract" => super::thread_names::contract(repo, root)?,
+        "cartridge-thread-names-native" => super::thread_names::build(repo, root)?,
+        "cartridge-thread-names-package" => super::android_package::build_thread_names(repo, root)?,
         "cartridge-present-surface-native" => super::present_surface::build(repo, root)?,
         "cartridge-present-surface-package" => {
             super::android_package::build_present_surface(repo, root)?
