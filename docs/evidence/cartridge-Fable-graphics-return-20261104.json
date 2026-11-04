@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "parent": "docs/evidence/cartridge-frame-vertex-coherence-20261103.json",
+  "source_repairs": [
+    "edb3cd4",
+    "baf3b63"
+  ],
+  "unchanged_candidate_APK": "f06d5829abd59de58a4fcfaa9cd1552db6b16a1e61b3a2f6191b06deaeb3b1df",
+  "unchanged_core": "773cff5d5a8e1530c7adceb269a88807b596499be8ccf81794e491dc1ed1a1f7",
+  "actual_process_before_launch_absent": true,
+  "continued_namespace_inode_and_every_file_hash_preserved_before_launch": true,
+  "native_process_identity_recorded_privately": true,
+  "runtime_incompatibility_bypassed_or_RAM_retagged": false,
+  "cold_restart_or_intro_replay": false,
+  "actual_visible_restored_world": "same Oakvale side-view camera, boy, HUD and scenery as prior accepted checkpoint; clean geometry",
+  "actual_new_input": "forward stick2500ms visibly moves boy and camera toward building; clean scene",
+  "Home_result": "saving status followed by black game surface; touch controls and native Game menu remain responsive in same process; ordinary Resume does not restore picture",
+  "Home_graphics_pass": false,
+  "whole_game_or_smooth_play_or_audio_claimed": false,
+  "normal_Leave": {
+    "clean": true,
+    "native_status": 0,
+    "QMP_acknowledged": true,
+    "machine_thread_joined": true,
+    "storage_synced": true,
+    "OS_process_absent_verified": true
+  },
+  "work_step_result": "FAILED: obsolete prior accepted checkpoint record no longer at original path after successful-checkpoint replacement; not a guest failure or failed return",
+  "checkpoint_retirement_policy": "new record readback, logical-save/generation checks and pointer durability precede retirement of an intact same-binding prior successful generation; rejected/damaged/interrupted candidates retained",
+  "current_checkpoint_independent_readback": "prepared once, pending normal custodian recovery; no acceptance inferred",
+  "cleanup": {
+    "original_APK_restored": true,
+    "original_canonical_all_file_hashes_restored": true,
+    "fresh_namespace_retained": true,
+    "OS_processes_absent": true,
+    "physical_display_OFF_verified": true,
+    "custodian_returned": true,
+    "custodian_work_success": false
+  },
+  "preservation": {
+    "protected_host_file_identities_unchanged": 21,
+    "paused_status_paths_unchanged": 16,
+    "media_or_firmware_acquisition": false,
+    "other_projects_modified": false,
+    "private_game_code_memory_or_shader_inspection": false,
+    "public_binary_release": false
+  },
+  "next_supported_boundary": "read current own checkpoint integrity and exact prior-runtime public renderer event counters under normal custody; do not infer lost-surface cause from matching symptom alone",
+  "primary_references": [
+    {
+      "url": "https://github.khronos.org/Vulkan-Site/spec/latest/chapters/VK_KHR_surface/wsi.html",
+      "use": "surface/swapchain lifetime and Android native-window contracts; no external game evidence"
+    },
+    {
+      "url": "https://discourse.libsdl.org/t/sdl-gpu-vulkan-handle-vk-error-surface-lost-khr-in-acquire-path-3939f/67126",
+      "use": "independent SDL surface-loss repair; analogous mechanism, not attribution of XBX Home result"
+    }
+  ]
+}

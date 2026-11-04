@@ -142,7 +142,7 @@
     "former_stretched_geometry_white_black_planes_observed": false,
     "scope": "reported opening-scene corruption absent in reviewed cinematic, HUD, movement and camera frames; not whole-game acceptance",
     "which_individual_repair_caused_Fable_improvement": "not isolated; combined candidate only",
-    "fresh_process_graphics_return": "prepared follow-up pending; same just-written checkpoint and binaries, no cold restart or rebuild",
+    "fresh_process_graphics_return": "observed: no XBX process before launch; exact continued namespace and unchanged checkpoint; new native process restores same Oakvale camera; new forward input visibly moves to building with clean geometry",
     "pacing": "visibly slow; not qualified",
     "audio_qualified": false,
     "smooth_playable_qualified": false,
@@ -170,5 +170,36 @@
     "fresh_namespace_retained": true,
     "physical_display_OFF_verified": true,
     "custodian_completed_and_returned": true
+  },
+  "fresh_process_followup": {
+    "same_APK_core_and_open_image": true,
+    "namespace_inode_every_file_hash_preserved_before_launch": true,
+    "OS_processes_absent_before_launch": true,
+    "new_native_process_observed": true,
+    "old_camera_view_restored_clean": true,
+    "new_forward_input_changes_position_clean": true,
+    "Home_return_graphics_qualified": false,
+    "Home_result": "saving status followed by black game surface with touch controls and responsive same-process menu; ordinary Resume does not recover picture",
+    "native_guest_fatal_reported": false,
+    "bounded_log_limit": "only existing public marker summaries, not exhaustive runtime attribution",
+    "ordinary_Leave_native_clean_status0_quit_join_sync": true,
+    "original_APK_all_canonical_hashes_restored": true,
+    "OS_processes_absent_physical_OFF_return_verified": true,
+    "custodian_returned": true,
+    "work_step": "failed: harness tried to hash a prior accepted record already superseded by normal successful-checkpoint publication",
+    "checkpoint_retirement_source": "cartridge/checkpoint.rs retires an earlier same-binding intact accepted generation only after new pointer/readback/generation validation",
+    "latest_checkpoint_integrity": "one prepared read-only retrieval pending behind existing shared-device cleanup recovery; it owns no phone or storage; no game replay",
+    "paused_or_failed_checkpoint_retired": false,
+    "broader_Home_or_smooth_play_acceptance": false,
+    "game_fault_inferred_from_work_failure": false,
+    "protected_original_canonical_data_unchanged": true
+  },
+  "next_boundary": {
+    "reported_geometry_corruption": "resolved in reviewed opening/Oakvale movement, camera and fresh-process-restored world frames; combined candidate",
+    "Home_black_surface": "observed, unqualified and unattributed; no speculative correction applied",
+    "public_source_review": "acquire/present surface-lost result has no surface recreation; plausible candidate only until actual event evidence",
+    "required_external_action": "existing shared-device cleanup owner must complete verified normal cleanup/recovery; no XBX bypass or peer scheduling",
+    "prepared_followup": "finite read-only current-checkpoint full disk/EEPROM digest checks and bounded exact retired-runtime public presentation/window counters; no install, launch or media read",
+    "no_additional_game_or_native_build_started": true
   }
 }
