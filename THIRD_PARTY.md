@@ -518,3 +518,16 @@ function and frame-copy block under their LGPL terms; the Rust owner
 `cartridge/frame_vertex.rs` is MIT. These host controls submit no GPU work and
 contain no game data. Native integration retains both this and the earlier
 attribute-value repair; existing checkpoints are retained without retagging.
+
+`patches/xemu-android-present-surface.patch` modifies that pinned lineage's
+LGPL-2.0-or-later Vulkan `display.c`. A lost Android presentation surface is
+retired after its swapchain, then recreated through the existing SDL surface
+factory when the native window is available. The existing queue retirement and
+all prior vertex repairs remain. The independent SDL repair
+[`c98b36ff`](https://github.com/libsdl-org/SDL/commit/c98b36ff03023affddd12c9c8951d370f7ccb742)
+by Sascha Reuter documents the same surface/swapchain distinction; its GPU
+implementation is not copied. Vulkan lifetime rules remain authoritative.
+The original mock-handle fixture `native/fixtures/present-surface.c` and Rust
+build/audit owner `cartridge/present_surface.rs` are MIT. Extracted retained
+creation/error branches keep their LGPL terms. These controls do not submit GPU
+work or establish the cause of a game's Home-return result.

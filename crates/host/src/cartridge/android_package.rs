@@ -196,6 +196,14 @@ pub(super) fn build_vertex_values(repo: &Path, root: &Path) -> Result<(), Error>
         "android-vertex-cache-values-package-v1",
     )
 }
+pub(super) fn build_present_surface(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-present-surface-v1",
+        "android-present-surface-package-v1",
+    )
+}
 pub(super) fn build_frame_vertex(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -260,11 +268,13 @@ fn build_selected(
             | "android-fastmem-alias-v1"
             | "android-vertex-cache-values-v1"
             | "android-frame-vertex-v1"
+            | "android-present-surface-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
     let frame_word = package_stage == "android-frame-word-package-v1";
-    let frame_vertex = package_stage == "android-frame-vertex-package-v1";
+    let present_surface = package_stage == "android-present-surface-package-v1";
+    let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
     let serial_off = package_stage == "android-fastmem-release-package-v1" || vertex_values;
     let dispatch = package_stage == "android-dispatch-package-v5";
@@ -360,21 +370,36 @@ fn build_selected(
         json!(null)
     };
     let open_hash = if serial_off {
+        let frame_identity = if present_surface {
+            if native_identity["original_contract"]["passed"] != true
+                || native_identity["all_other_archive_objects_unchanged"] != true
+                || native_identity["state_layout_changed"] != false
+                || native_identity["original_contract"]["patch"]
+                    != c::file_digest(&repo.join("patches/xemu-android-present-surface.patch"))?
+                || native_identity["prior_library_sha256"]
+                    != native_identity["inherited_repairs"]["library_sha256"]
+            {
+                return Err("original-qualified presentation parent bindings differ".into());
+            }
+            &native_identity["inherited_repairs"]
+        } else {
+            &native_identity
+        };
         let core_bound = if vertex_values {
             let vertex_identity = if frame_vertex {
-                if native_identity["original_contract"]["passed"] != true
-                    || native_identity["all_other_archive_objects_unchanged"] != true
-                    || native_identity["state_layout_changed"] != false
-                    || native_identity["original_contract"]["patch"]
+                if frame_identity["original_contract"]["passed"] != true
+                    || frame_identity["all_other_archive_objects_unchanged"] != true
+                    || frame_identity["state_layout_changed"] != false
+                    || frame_identity["original_contract"]["patch"]
                         != c::file_digest(
                             &repo.join("patches/xemu-vk-frame-vertex-coherence.patch"),
                         )?
-                    || native_identity["prior_library_sha256"]
-                        != native_identity["inherited_repairs"]["library_sha256"]
+                    || frame_identity["prior_library_sha256"]
+                        != frame_identity["inherited_repairs"]["library_sha256"]
                 {
                     return Err("original-qualified frame parent bindings differ".into());
                 }
-                &native_identity["inherited_repairs"]
+                &frame_identity["inherited_repairs"]
             } else {
                 &native_identity
             };

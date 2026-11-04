@@ -28,7 +28,7 @@
   },
   "work_step_result": "FAILED: obsolete prior accepted checkpoint record no longer at original path after successful-checkpoint replacement; not a guest failure or failed return",
   "checkpoint_retirement_policy": "new record readback, logical-save/generation checks and pointer durability precede retirement of an intact same-binding prior successful generation; rejected/damaged/interrupted candidates retained",
-  "current_checkpoint_independent_readback": "prepared once, pending normal custodian recovery; no acceptance inferred",
+  "current_checkpoint_independent_readback": "verified full disk/EEPROM digests, stable pointer/record, new accepted generation15; consumed same-binding record superseded by ordinary publication",
   "cleanup": {
     "original_APK_restored": true,
     "original_canonical_all_file_hashes_restored": true,
@@ -56,5 +56,6 @@
       "url": "https://discourse.libsdl.org/t/sdl-gpu-vulkan-handle-vk-error-surface-lost-khr-in-acquire-path-3939f/67126",
       "use": "independent SDL surface-loss repair; analogous mechanism, not attribution of XBX Home result"
     }
-  ]
+  ],
+  "checkpoint_readback_custodian_completed_and_returned": true
 }

@@ -342,6 +342,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-android-copy-protection" => super::npx_port::copy_protection(repo, root)?,
         "cartridge-fastmem-alias-contract" => super::fastmem_alias::contract(repo, root)?,
         "cartridge-vertex-values-contract" => super::vertex_cache::contract(repo, root)?,
+        "cartridge-present-surface-contract" => super::present_surface::contract(repo, root)?,
+        "cartridge-present-surface-native" => super::present_surface::build(repo, root)?,
+        "cartridge-present-surface-package" => {
+            super::android_package::build_present_surface(repo, root)?
+        }
         "cartridge-frame-vertex-contract" => super::frame_vertex::contract(repo, root)?,
         "cartridge-frame-vertex-native" => super::frame_vertex::build(repo, root)?,
         "cartridge-frame-vertex-package" => super::android_package::build_frame_vertex(repo, root)?,

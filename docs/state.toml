@@ -272,3 +272,8 @@ cartridge_android_frame_vertex_coherence_Fable_opening_scope = "six_reviewed_cin
 cartridge_android_frame_vertex_coherence_Fable_fresh_process_graphics_qualified = true
 cartridge_android_frame_vertex_coherence_Fable_Home_graphics_qualified = false
 cartridge_android_frame_vertex_coherence_Fable_return_receipt = "docs/evidence/cartridge-Fable-graphics-return-20261104.json"
+
+cartridge_android_present_surface_original_red_green_passed = true
+cartridge_android_present_surface_candidate_built = true
+cartridge_android_present_surface_Home_qualified = false
+cartridge_android_present_surface_receipt = "docs/evidence/cartridge-present-surface-20261104.json"

@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "scoped_Master_decision": "Correct the independently reproduced public Android Vulkan surface/swapchain lifetime gap, retain proven vertex fixes; recheck observed Home black surface without attributing cause from symptom alone",
+  "parent": "docs/evidence/cartridge-Fable-graphics-return-20261104.json",
+  "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+  "original_contract": {
+    "Fable_Home_cause_established": false,
+    "actual_GPU_submission": false,
+    "after": "3bc2f4f7453b5eaa2703c75f5536b2fa885b1543e7fcc218cd7216f2798d10f8",
+    "before": "4a05b280c8cfcb84641772fb75ec3576566861fb7695d394a61144feba2a75ff",
+    "exact_public_creation_prefix_and_error_branches": true,
+    "fixture": "153e0cb5e31148fe2c3bc0e649d19b7e1a76a20af55df5774a8c008d2e2fa1d0",
+    "game_bytes_used": false,
+    "mocked_handles_and_existing_swapchain_retirement": true,
+    "passed": true,
+    "patch": "dcbd1137f950323a45d7a406de8c23ab7cc423fffd111f0cec1db93b46761621",
+    "results": [
+      {
+        "case": "acquire-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "acquire-suboptimal",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "acquire-outdated",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "acquire-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "acquire-lost",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "present-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "present-outdated",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "present-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "present-lost",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "caps-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "caps-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "caps-lost",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "retry",
+        "exit": 1,
+        "expected": 1,
+        "passed": true,
+        "version": "before"
+      },
+      {
+        "case": "acquire-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "acquire-suboptimal",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "acquire-outdated",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "acquire-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "acquire-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "present-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "present-outdated",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "present-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "present-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "caps-success",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "caps-device-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "caps-lost",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      },
+      {
+        "case": "retry",
+        "exit": 0,
+        "expected": 0,
+        "passed": true,
+        "version": "after"
+      }
+    ],
+    "source_pin": "4967efd3ee594cc236869a45ee4cb396e25af1ac",
+    "surface_released_only_after_swapchain": true,
+    "unavailable_window_retried_without_duplicate_release": true
+  },
+  "native": {
+    "library_sha256": "410e1493c2dc027a883e53ea6f88ed7cc3741f955b7647cdd8ee8ddf908c30f0",
+    "prior_library_sha256": "773cff5d5a8e1530c7adceb269a88807b596499be8ccf81794e491dc1ed1a1f7",
+    "recompiled_units": [
+      "hw/xbox/nv2a/pgraph/vk/display.c"
+    ],
+    "all_other_archive_objects_unchanged": true,
+    "unchanged_core_object_count": 1225,
+    "whole_core_rebuild": false,
+    "state_layout_changed": false,
+    "old_checkpoints_retagged": false
+  },
+  "package": {
+    "apk_sha256": "f60dd367d5fb4f7f2f5e0d64e55584e90b1fc910d10662f364816e05db9254fb",
+    "core_sha256": "410e1493c2dc027a883e53ea6f88ed7cc3741f955b7647cdd8ee8ddf908c30f0",
+    "open_system_sha256": "672e27b10bfc44bf770876c76b1a79b142fb739d17d08becc452375035e590f3",
+    "rust_library_sha256": "d3d0f854384b40ef2c96e35ec18f8fc5a6cfac64402160a4fcdd04689ebdaaa5",
+    "helper_sha256": "4d37fdb794df318a13a2dd7a7ebd97896d02a217475aaf91c237ef8bfe175113",
+    "generated_seed_sha256": "c7c19007b7ea68015655b2a7f364ec8324dcf730d241407b30e36c9dd4894059"
+  },
+  "prior_vertex_and_frame_coherence_repairs_retained": true,
+  "same_serial_off_open_environment_helper_and_seed": true,
+  "package_parent_bindings_validate_all_three_original_repairs": true,
+  "signature_v3_alignment_and_five_components_verified": true,
+  "isolated_host_and_Android_builds_pass": true,
+  "isolated_Clippy_all_targets_warnings_denied": true,
+  "existing_swapchain_retirement_and_queue_wait_reused": true,
+  "actual_GPU_surface_recovery_qualified": false,
+  "Fable_Home_cause_established": false,
+  "device_stage": "one prepared finite normal-custody comparison pending behind existing predecessor cleanup recovery; no phone or host-storage ownership while waiting",
+  "observation": "actual cold current ordinary save under changed runtime then focused graphics/Home-return; only live own PID public renderer/window error counters; no private game context",
+  "unchanged_CPU_controls_repeated": false,
+  "prior_read_only_followup": {
+    "completed_and_returned": true,
+    "work_seconds": 7.581548566988204,
+    "latest_checkpoint_full_disk_EEPROM_digests_match": true,
+    "session_pointer_record_stable_across_read": true,
+    "accepted_generation": 15,
+    "prior_accepted_same_binding_record_superseded": true,
+    "native_processes_absent": true,
+    "physical_OFF_return_verified": true,
+    "bounded_prior_renderer_events_usable": false,
+    "missing_logs_not_an_exclusion_of_surface_fault": true
+  },
+  "ordinary_invocation_corrections": [
+    "first package invocation supplied workspace parent instead of Android output root; refused before creating package; corrected argument only",
+    "post-package Clippy attempted while package still held writer lock; refused without running; final check passed after writer returned"
+  ],
+  "preservation": {
+    "protected_host_identities_unchanged": 21,
+    "paused_paths_preserved": 16,
+    "old_default_candidate_and_canonical_data_preserved": true,
+    "no_whole_core_rebuild_or_retired_storage_recreation": true,
+    "public_binary_release": false,
+    "private_game_code_memory_or_shader_inspection": false
+  },
+  "primary_references": [
+    "https://github.khronos.org/Vulkan-Site/spec/latest/chapters/VK_KHR_surface/wsi.html",
+    "https://wiki.libsdl.org/SDL3/SDL_Vulkan_CreateSurface",
+    "https://github.com/libsdl-org/SDL/commit/c98b36ff03023affddd12c9c8951d370f7ccb742"
+  ],
+  "commands": [
+    "xbx-cartridge-build REPO WORKSPACE cartridge-present-surface-contract",
+    "XBX_NDK=retained_NDK xbx-cartridge-build REPO WORKSPACE cartridge-present-surface-native",
+    "CARGO_HOME=retained_offline_cache XBX_NDK=retained_NDK xbx-cartridge-build REPO WORKSPACE/android-demo-v1 cartridge-present-surface-package",
+    "cargo clippy --offline --locked -j1 -p xbx-host --all-targets -- -D warnings (isolated committed source plus owned changes)"
+  ]
+}
