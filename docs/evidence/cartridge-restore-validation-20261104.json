@@ -168,7 +168,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "Continue CPU placement and bounded native-symbol cost attribution from exact same-core checkpoint29, without rebuilding the unchanged candidate or replaying intros. Native aggregate cache exhaustion/full flush is unsupported in this interval; no speculative tuning or paused campaign. Preserve all unique history and ordinary saves.",
+  "next": "Build a developer-only aggregate per-phase native CPU timing boundary under the existing Rust build/session owner. Original synthetic boundary/attempt tests first. No guest code/PC/trace, global security changes, affinity/tuning matrix or restart of paused campaigns. Changed core gets a separately identified current-saves cold load, never an old RAM retag.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,
@@ -456,5 +456,43 @@
     "stock_sleep_sent_once_read_only_return_checks": 1,
     "no_forced_app_retirement": true,
     "no_settings_security_peer_mutation": true
+  },
+  "CPU_placement_observation": {
+    "same_APK_core_runtime": true,
+    "same_checkpoint29_fresh_process_world_actually_reviewed_before_after": true,
+    "sample_seconds": 30.382892,
+    "PGRAPH_flips_per_second": 5.075939248601119,
+    "role_busy_CPU_equivalents": {
+      "other": 0.1315623254692147,
+      "unnamed_native": 0.029256842172891245,
+      "vcpu": 0.9485597677798414,
+      "voice": 0.2152188997676719,
+      "audio": 0.002873605481663826,
+      "apu": 0.14959859973171744,
+      "pfifo": 0.431354892779792,
+      "pgraph_render": 0.039863940371443245,
+      "pgraph_compile": 0.0
+    },
+    "allowed_CPUs": "0-7",
+    "Android_group": "top-app",
+    "placement_samples": 12,
+    "all_samples_fastest_core": true,
+    "all_samples_current_frequency_kHz": 2841600,
+    "reported_max_frequency_kHz": 2841600,
+    "nice": -4,
+    "policy": 0,
+    "affinity_priority_governor_or_security_changed": false,
+    "stock_native_profiler_supported": false,
+    "stock_profiler_attempt_refused_its_global_security_property_prerequisite": true,
+    "no_native_sampling_data_created": true,
+    "no_manual_security_change_or_refusal_bypass": true,
+    "missing_fact": "vCPU native execution/translation/helper cost; busy fastest-core scheduling does not identify a software defect or prove an immutable hardware ceiling",
+    "new_checkpoint30_full_digests_stable_pointer_same_binding": true,
+    "both_rejected_groups_unchanged": true,
+    "normal_native_status0_ack_join_sync_OS_absence_verified": true,
+    "all_profiler_owned_phone_temporary_paths_removed": true,
+    "original_APK_data_namespace_OFF_return_verified": true,
+    "completed_returned": true,
+    "work_seconds": 270.94322070199996
   }
 }
