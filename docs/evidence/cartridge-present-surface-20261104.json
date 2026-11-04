@@ -232,7 +232,7 @@
   "existing_swapchain_retirement_and_queue_wait_reused": true,
   "actual_GPU_surface_recovery_qualified": false,
   "Fable_Home_cause_established": false,
-  "device_stage": "one prepared finite normal-custody comparison pending behind existing predecessor cleanup recovery; no phone or host-storage ownership while waiting",
+  "device_stage": "admitted once; FAILED/returned=true after storage guard refused before namespace adoption, game start or graphics observation; no compatibility failure inferred",
   "observation": "actual cold current ordinary save under changed runtime then focused graphics/Home-return; only live own PID public renderer/window error counters; no private game context",
   "unchanged_CPU_controls_repeated": false,
   "prior_read_only_followup": {
@@ -269,5 +269,26 @@
     "XBX_NDK=retained_NDK xbx-cartridge-build REPO WORKSPACE cartridge-present-surface-native",
     "CARGO_HOME=retained_offline_cache XBX_NDK=retained_NDK xbx-cartridge-build REPO WORKSPACE/android-demo-v1 cartridge-present-surface-package",
     "cargo clippy --offline --locked -j1 -p xbx-host --all-targets -- -D warnings (isolated committed source plus owned changes)"
-  ]
+  ],
+  "device_attempt": {
+    "work_seconds": 30.464374553994276,
+    "same_signer_candidate_install_verified": true,
+    "namespace_adopted": false,
+    "game_started": false,
+    "new_GPU_or_Fable_result": false,
+    "free_bytes_at_admission": 3592658944,
+    "required_phase_growth_bytes": 3221225472,
+    "unchanged_phone_reserve_bytes": 1073741824,
+    "required_total_free_bytes": 4294967296,
+    "additional_free_bytes_required": 702308352,
+    "guard_preserved": true,
+    "original_APK_restored": true,
+    "all_canonical_file_hashes_restored": true,
+    "own_native_processes_absent": true,
+    "physical_display_OFF_return_verified": true,
+    "custodian_returned": true,
+    "retry_queued": false
+  },
+  "remaining_blocker": "device custodian must qualify at least4GiB actual free space, retaining project data/saves and existing1GiB reserve; about670MiB additional at last admission. No authorized XBX cleanup selected.",
+  "retained_worktree_display_matches_proven_pinned_preimage": true
 }
