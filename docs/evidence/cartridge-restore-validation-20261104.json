@@ -168,7 +168,7 @@
     "no_sibling_or_Fold_operations": true,
     "no_public_binary_release": true
   },
-  "next": "Continue the one already-prepared same-core checkpoint28 public aggregate-counter observation under normal custody. Use actual world review and counter deltas to choose an independently supported correction; otherwise identify the missing fact. Preserve graphics/newer-save protections and rejected history. Smooth play/audio/extended play and default promotion remain unqualified.",
+  "next": "Continue CPU placement and bounded native-symbol cost attribution from exact same-core checkpoint29, without rebuilding the unchanged candidate or replaying intros. Native aggregate cache exhaustion/full flush is unsupported in this interval; no speculative tuning or paused campaign. Preserve all unique history and ordinary saves.",
   "new_frontend_device_observation": {
     "same_saved_Oakvale_world_actually_reviewed": true,
     "clean_geometry_observed": true,
@@ -373,6 +373,88 @@
     "initial_audit_refused_expected_notice_change_read_only_audit_corrected_without_rebuild": true,
     "existing_signer_v3_and16KiB_alignment_verified": true,
     "no_native_or_open_system_rebuild": true,
-    "device_execution": "one prepared same-core checkpoint28 fresh-process request pending normal verified return; no cold fallback or intro replay; actual before/after image review required"
+    "device_execution": "actual clean Oakvale fresh-process checkpoint28 return and all three aggregate reports observed; no cold fallback or intro; both captures opened"
+  },
+  "public_native_counter_observation": {
+    "APK_sha256": "58c8a6d626b9663555f967b4e3536c73e31d60e8dcc0fe342a175654c2d33766",
+    "same_core_runtime_fresh_checkpoint28_return": true,
+    "actual_clean_Oakvale_HUD_before_after_images_opened": true,
+    "sample_seconds": 30.447287,
+    "PGRAPH_flips_per_second": 5.1958433253397285,
+    "role_busy_CPU_equivalents": {
+      "other": 0.13118007551871536,
+      "unnamed_native": 0.02906020214543253,
+      "vcpu": 0.9478537182311186,
+      "voice": 0.2262086377351125,
+      "audio": 0.002820557838207391,
+      "apu": 0.15053179017230664,
+      "pfifo": 0.44059059840044207,
+      "pgraph_render": 0.03874470172005801,
+      "pgraph_compile": 0.0
+    },
+    "reports": [
+      {
+        "attempt": 1,
+        "counters": {
+          "block_flushes": 0,
+          "block_invalidations": 0,
+          "blocks": 0,
+          "capacity_bytes": 716356608,
+          "generated_bytes": 224,
+          "one_instruction_per_block": false,
+          "tlb_elided_flushes": 4368,
+          "tlb_full_flushes": 0,
+          "tlb_partial_flushes": 0
+        },
+        "query_microseconds": 1843
+      },
+      {
+        "attempt": 2,
+        "counters": {
+          "block_flushes": 0,
+          "block_invalidations": 5846,
+          "blocks": 52558,
+          "capacity_bytes": 716356608,
+          "generated_bytes": 38166672,
+          "one_instruction_per_block": false,
+          "tlb_elided_flushes": 13556,
+          "tlb_full_flushes": 0,
+          "tlb_partial_flushes": 620
+        },
+        "query_microseconds": 25694
+      },
+      {
+        "attempt": 3,
+        "counters": {
+          "block_flushes": 0,
+          "block_invalidations": 11743,
+          "blocks": 62607,
+          "capacity_bytes": 716356608,
+          "generated_bytes": 45030032,
+          "one_instruction_per_block": false,
+          "tlb_elided_flushes": 27596,
+          "tlb_full_flushes": 0,
+          "tlb_partial_flushes": 1556
+        },
+        "query_microseconds": 8355
+      }
+    ],
+    "raw_native_response_or_guest_code_retained": false,
+    "full_translation_cache_flushes_observed": 0,
+    "cache_exhaustion_explains_interval": false,
+    "limits": "No controlled speedup or hardware ceiling; first JIT report precedes executed translated blocks; later cumulative reports are minimum15s apart, not exact synchronized sample rates",
+    "new_checkpoint29_full_hashes_stable_pointer_same_runtime": true,
+    "rejected21_and24_unchanged": true,
+    "native_status0_quit_ack_join_sync_independent_OS_absence": true,
+    "original_APK_data_namespace_restored": true,
+    "original_work_seconds": 258.3062601220008,
+    "original_attempt_returned_field": false,
+    "original_attempt_failed_only_physical_OFF_verification": true,
+    "separate_cleanup_only_successor_completed_returned": true,
+    "recovery_work_seconds": 0.6369752909995441,
+    "recovery_independently_verified_APK_data_process_absence_physical_OFF": true,
+    "stock_sleep_sent_once_read_only_return_checks": 1,
+    "no_forced_app_retirement": true,
+    "no_settings_security_peer_mutation": true
   }
 }
