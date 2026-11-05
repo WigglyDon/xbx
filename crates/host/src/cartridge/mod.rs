@@ -68,6 +68,16 @@ mod present_surface;
 #[cfg(not(target_os = "android"))]
 mod present_tag;
 #[cfg(not(target_os = "android"))]
+mod pvideo_buffers;
+
+// Cosmetic developer output is owned by Rust; the exact native machine stays
+// identical between tagged and ordinary APKs. This does not select emulation.
+#[cfg(target_os = "android")]
+#[unsafe(no_mangle)]
+pub extern "C" fn xbx_engine_present_tag_enabled() -> bool {
+    option_env!("XBX_ANDROID_PRESENT_TAG") == Some("1")
+}
+#[cfg(not(target_os = "android"))]
 mod rebuild;
 pub mod resources;
 #[cfg(not(target_os = "android"))]

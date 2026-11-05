@@ -103,14 +103,23 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    build_candidate(repo, root, false)
+    build_candidate(repo, root, DisplayBuild::Semaphore)
 }
 pub(super) fn build_tag(repo: &Path, root: &Path) -> Result<(), Error> {
-    build_candidate(repo, root, true)
+    build_candidate(repo, root, DisplayBuild::Tag)
 }
-fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
-    let (contract, patch, parent, parent_hash, stage, member, name) = if tag {
-        (
+pub(super) fn build_pvideo(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, DisplayBuild::Pvideo)
+}
+#[derive(Clone, Copy)]
+enum DisplayBuild {
+    Semaphore,
+    Tag,
+    Pvideo,
+}
+fn build_candidate(repo: &Path, root: &Path, kind: DisplayBuild) -> Result<(), Error> {
+    let (contract, patch, parent, parent_hash, stage, member, name) = match kind {
+        DisplayBuild::Tag => (
             "native-present-tag-contract-v1",
             "patches/xemu-present-tag.patch",
             "android-present-semaphore-v1",
@@ -118,9 +127,8 @@ fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
             "android-present-tag-v1",
             "xbx-present-semaphore.c.o",
             "xbx-present-tag",
-        )
-    } else {
-        (
+        ),
+        DisplayBuild::Semaphore => (
             "native-present-semaphore-contract-v1",
             PATCH,
             "android-thread-names-v1",
@@ -128,11 +136,26 @@ fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
             "android-present-semaphore-v1",
             "xbx-present-surface.c.o",
             "xbx-present-semaphore",
-        )
+        ),
+        DisplayBuild::Pvideo => (
+            "native-pvideo-banks-contract-v1",
+            "patches/xemu-pvideo-buffers.patch",
+            "android-present-semaphore-v1",
+            "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652",
+            "android-pvideo-banks-v1",
+            "xbx-present-semaphore.c.o",
+            "xbx-pvideo-banks",
+        ),
     };
     let proof: Value = c::read_json(&root.join(contract).join("result.json"))?;
     if proof["passed"] != true || proof["patch"] != c::file_digest(&repo.join(patch))? {
         return Err("original presentation boundary proof required".into());
+    }
+    if matches!(kind, DisplayBuild::Pvideo)
+        && proof["marker_patch"]
+            != c::file_digest(&repo.join("patches/xemu-present-tag-optional.patch"))?
+    {
+        return Err("optional marker patch differs from qualified source".into());
     }
     let android = root.join("android-demo-v1");
     let prior = android.join(parent).canonicalize()?;
@@ -151,6 +174,9 @@ fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
     )?;
     // Only the proven display unit is replaced in this separate source overlay.
     let proven = root.join(contract).join("source");
+    if c::file_digest(&proven.join(UNIT))? != proof["after_source"] {
+        return Err("qualified display source changed".into());
+    }
     fs::copy(proven.join(UNIT), source.join(UNIT))?;
     let archive = new.join("libxemu_core.a");
     c::store::checked(
@@ -212,7 +238,7 @@ fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(
-            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":parent_hash,"original_contract":proof,"inherited_repairs":previous,"diagnostic_present_marker":tag,"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-1,"recompiled_units":[UNIT],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
+            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":parent_hash,"original_contract":proof,"inherited_repairs":previous,"diagnostic_present_marker":matches!(kind,DisplayBuild::Tag),"optional_cosmetic_marker":matches!(kind,DisplayBuild::Pvideo),"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-1,"recompiled_units":[UNIT],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
         )?,
     )?;
     Ok(())

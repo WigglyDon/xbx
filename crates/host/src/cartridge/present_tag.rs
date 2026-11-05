@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 //! Bounded producer marker after an actual captured old/new picture recurrence.
 use super::{self as c, present_semaphore};
-use serde_json::json;
+use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 type Error = Box<dyn std::error::Error>;
 const UNIT: &str = "hw/xbox/nv2a/pgraph/vk/display.c";
 const PATCH: &str = "patches/xemu-present-tag.patch";
 const PARENT: &str = "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652";
 
-fn declaration<'a>(text: &'a str, start: &str, end: &str) -> Result<&'a str, Error> {
+pub(super) fn declaration<'a>(text: &'a str, start: &str, end: &str) -> Result<&'a str, Error> {
     let a = text
         .find(start)
         .ok_or("retained shader declaration missing")?;
@@ -82,8 +82,19 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
     if present_semaphore::subject(&before)? != present_semaphore::subject(&after)? {
         return Err("marker changes the retained submission/presentation block".into());
     }
+    let qualified = compile_shader(repo, &out, &after)?;
+    c::write_new(
+        &out.join("result.json"),
+        &c::json(
+            &json!({"passed":true,"parent_core":PARENT,"patch":c::file_digest(&repo.join(PATCH))?,"fixture":c::file_digest(&repo.join("native/fixtures/present-tag-shader.c"))?,"before_source":c::digest(before.as_bytes()),"after_source":c::digest(after.as_bytes()),"submission_presentation_block_bytes_unchanged":true,"shader_SPIRV":qualified["shader_SPIRV"],"shader_marker_offset":qualified["shader_marker_offset"],"shader_marker_end":qualified["shader_marker_end"],"portable_push_constant_limit":128,"compiler_header":qualified["compiler_header"],"retained_host_compiler_libraries":qualified["retained_host_compiler_libraries"],"marker":"28 binary cells:16 sequence,3 acquired-slot,overlay enabled/use0/use1,3 ephemeral binding-token,3 fixed sync bits; black/white border","guest_address_code_stack_or_raw_native_handle_collected":false,"actual_Vulkan_GPU_execution":false,"cause_or_performance_fix_qualified":false}),
+        )?,
+    )?;
+    Ok(())
+}
+
+pub(super) fn compile_shader(repo: &Path, out: &Path, after: &str) -> Result<Value, Error> {
     let shader = declaration(
-        &after,
+        after,
         "static const char *display_frag_glsl =",
         "\nstatic void create_descriptor_pool",
     )?;
@@ -133,11 +144,7 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
     let spv = out.join("display.spv");
     c::store::checked(Command::new(&binary).arg(&spv))?;
     let offset = tag_offset(&fs::read(&spv)?)?;
-    c::write_new(
-        &out.join("result.json"),
-        &c::json(
-            &json!({"passed":true,"parent_core":PARENT,"patch":c::file_digest(&repo.join(PATCH))?,"fixture":c::file_digest(&repo.join("native/fixtures/present-tag-shader.c"))?,"before_source":c::digest(before.as_bytes()),"after_source":c::digest(after.as_bytes()),"submission_presentation_block_bytes_unchanged":true,"shader_SPIRV":c::file_digest(&spv)?,"shader_marker_offset":offset,"shader_marker_end":offset+4,"portable_push_constant_limit":128,"compiler_header":c::file_digest(&headers.join("glslang/Include/glslang_c_interface.h"))?,"retained_host_compiler_libraries":library_hashes,"marker":"28 binary cells:16 sequence,3 acquired-slot,overlay enabled/use0/use1,3 ephemeral binding-token,3 fixed sync bits; black/white border","guest_address_code_stack_or_raw_native_handle_collected":false,"actual_Vulkan_GPU_execution":false,"cause_or_performance_fix_qualified":false}),
-        )?,
-    )?;
-    Ok(())
+    Ok(
+        json!({"shader_SPIRV":c::file_digest(&spv)?,"shader_source":c::digest(shader.as_bytes()),"shader_marker_offset":offset,"shader_marker_end":offset+4,"compiler_header":c::file_digest(&headers.join("glslang/Include/glslang_c_interface.h"))?,"retained_host_compiler_libraries":library_hashes}),
+    )
 }

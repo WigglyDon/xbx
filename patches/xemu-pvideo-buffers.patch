@@ -1,0 +1,85 @@
+--- a/hw/xbox/nv2a/pgraph/vk/display.c
++++ b/hw/xbox/nv2a/pgraph/vk/display.c
+@@ -1928,20 +1928,22 @@
+     // Since the value seems to be set to 0xFFFFFFFF only in cases where the
+     // content is not valid, it is probably good enough to treat it as an
+     // implicit stop.
+-    state.enabled = (d->pvideo.regs[NV_PVIDEO_BUFFER] & NV_PVIDEO_BUFFER_0_USE)
+-        && d->pvideo.regs[NV_PVIDEO_SIZE_IN] != 0xFFFFFFFF;
++    uint32_t use = qatomic_read(&d->pvideo.regs[NV_PVIDEO_BUFFER]);
++    unsigned bank = (use & NV_PVIDEO_BUFFER_0_USE) ? 0 : 4;
++    state.enabled = (use & (NV_PVIDEO_BUFFER_0_USE | NV_PVIDEO_BUFFER_1_USE))
++        && d->pvideo.regs[NV_PVIDEO_SIZE_IN + bank] != 0xFFFFFFFF;
+     if (!state.enabled) {
+         return state;
+     }
+ 
+-    state.base = d->pvideo.regs[NV_PVIDEO_BASE];
+-    state.limit = d->pvideo.regs[NV_PVIDEO_LIMIT];
+-    state.offset = d->pvideo.regs[NV_PVIDEO_OFFSET];
++    state.base = d->pvideo.regs[NV_PVIDEO_BASE + bank];
++    state.limit = d->pvideo.regs[NV_PVIDEO_LIMIT + bank];
++    state.offset = d->pvideo.regs[NV_PVIDEO_OFFSET + bank];
+ 
+     state.pitch =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT], NV_PVIDEO_FORMAT_PITCH);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT + bank], NV_PVIDEO_FORMAT_PITCH);
+     state.format =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT], NV_PVIDEO_FORMAT_COLOR);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT + bank], NV_PVIDEO_FORMAT_COLOR);
+ 
+     /* TODO: support other color formats */
+     if (state.format != NV_PVIDEO_FORMAT_COLOR_LE_CR8YB8CB8YA8) {
+@@ -1952,14 +1954,14 @@
+     }
+ 
+     state.in_width =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_IN], NV_PVIDEO_SIZE_IN_WIDTH);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_IN + bank], NV_PVIDEO_SIZE_IN_WIDTH);
+     state.in_height =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_IN], NV_PVIDEO_SIZE_IN_HEIGHT);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_IN + bank], NV_PVIDEO_SIZE_IN_HEIGHT);
+ 
+     state.out_width =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_OUT], NV_PVIDEO_SIZE_OUT_WIDTH);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_OUT + bank], NV_PVIDEO_SIZE_OUT_WIDTH);
+     state.out_height =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_OUT], NV_PVIDEO_SIZE_OUT_HEIGHT);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_SIZE_OUT + bank], NV_PVIDEO_SIZE_OUT_HEIGHT);
+ 
+     if (state.in_width <= 0 || state.in_height <= 0 || state.out_width <= 0 ||
+         state.out_height <= 0 || state.pitch <= 0) {
+@@ -1972,12 +1974,12 @@
+     }
+ 
+     state.in_s =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_IN], NV_PVIDEO_POINT_IN_S);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_IN + bank], NV_PVIDEO_POINT_IN_S);
+     state.in_t =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_IN], NV_PVIDEO_POINT_IN_T);
+-
+-    uint32_t ds_dx = d->pvideo.regs[NV_PVIDEO_DS_DX];
+-    uint32_t dt_dy = d->pvideo.regs[NV_PVIDEO_DT_DY];
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_IN + bank], NV_PVIDEO_POINT_IN_T);
++
++    uint32_t ds_dx = d->pvideo.regs[NV_PVIDEO_DS_DX + bank];
++    uint32_t dt_dy = d->pvideo.regs[NV_PVIDEO_DT_DY + bank];
+     state.scale_x = ds_dx == NV_PVIDEO_DIN_DOUT_UNITY ?
+                         1.0f :
+                         pvideo_calculate_scale(ds_dx, state.out_width);
+@@ -2046,12 +2048,12 @@
+     }
+ 
+     state.out_x =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_OUT], NV_PVIDEO_POINT_OUT_X);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_OUT + bank], NV_PVIDEO_POINT_OUT_X);
+     state.out_y =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_OUT], NV_PVIDEO_POINT_OUT_Y);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_POINT_OUT + bank], NV_PVIDEO_POINT_OUT_Y);
+ 
+     state.color_key_enabled =
+-        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT], NV_PVIDEO_FORMAT_DISPLAY);
++        GET_MASK(d->pvideo.regs[NV_PVIDEO_FORMAT + bank], NV_PVIDEO_FORMAT_DISPLAY);
+ 
+     // Note: PVIDEO color keying ignores alpha.
+     state.color_key = d->pvideo.regs[NV_PVIDEO_COLOR_KEY] & 0xFFFFFF;

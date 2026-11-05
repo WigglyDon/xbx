@@ -359,6 +359,14 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-present-tag-contract" => super::present_tag::contract(repo, root)?,
         "cartridge-present-tag-native" => super::present_semaphore::build_tag(repo, root)?,
         "cartridge-present-tag-package" => super::android_package::build_present_tag(repo, root)?,
+        "cartridge-pvideo-banks-contract" => super::pvideo_buffers::contract(repo, root)?,
+        "cartridge-pvideo-banks-native" => super::present_semaphore::build_pvideo(repo, root)?,
+        "cartridge-pvideo-banks-package" => {
+            super::android_package::build_pvideo(repo, root, false)?
+        }
+        "cartridge-pvideo-banks-tag-package" => {
+            super::android_package::build_pvideo(repo, root, true)?
+        }
         "cartridge-cpu-phase-package" => super::android_package::build_cpu_phase(repo, root)?,
         "cartridge-present-surface-native" => super::present_surface::build(repo, root)?,
         "cartridge-present-surface-package" => {

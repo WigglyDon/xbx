@@ -579,3 +579,18 @@ qualification owner `cartridge/present_tag.rs` and the host shader fixture
 limits retain the pinned `display.c`/`glsl.c` LGPL terms. The fixture uses retained
 glslang under its existing terms; it is a shader compilation/layout check, not a
 GPU or gameplay result. This marker is not included in the ordinary candidate.
+
+`patches/xemu-pvideo-buffers.patch` corrects paired PVIDEO register selection in
+that same pinned LGPL-2.0-or-later display unit. The public hardware contract was
+cross-checked against the Linux Nouveau overlay driver
+(`drivers/gpu/drm/nouveau/dispnv04/overlay.c`); no Linux implementation was copied.
+The original MIT fixture `native/fixtures/pvideo-buffers.c` executes the exact
+retained state decoder under its LGPL terms, with original two-bank input data.
+Its Rust owner `cartridge/pvideo_buffers.rs` is MIT. These controls establish a
+decoder defect, not its effect on a particular game or GPU.
+
+`patches/xemu-present-tag-optional.patch` carries the same bounded marker as an
+optional cosmetic shader path within this corrected native core. An original
+Rust C-ABI query enables it only in the diagnostic APK; ordinary packaging turns
+it off without changing the core or checkpoint binding. It preserves the display
+unit's LGPL terms and the marker fixture's attribution above.

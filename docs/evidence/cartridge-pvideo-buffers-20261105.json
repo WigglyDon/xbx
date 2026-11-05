@@ -1,0 +1,76 @@
+{
+  "stage": "Original decoder regression and one-object Android native build passed; game qualification pending",
+  "authority": "Owner rendering/performance task and delegated XBX-local Master",
+  "finding": "Retained Vulkan get_pvideo_state enables only BUFFER_0_USE and reads only register bank0, even though the retained NV2A register header defines buffer1 and the primary Nouveau implementation alternates complete banks with0x1/0x10.",
+  "primary_reference": "https://github.com/torvalds/linux/blob/master/drivers/gpu/drm/nouveau/dispnv04/overlay.c",
+  "scope": "Recognize either USE bit, select paired register bank+4 for buffer1, retain existing buffer0 priority when both set and all format/dimension/DMA/VRAM bounds. No timing, interrupts, firmware or game changes.",
+  "validation_plan": "Execute exact retained state-decoding function with original two-bank inputs; verify buffer0, buffer1, both, stop and selected-bank invalid-range behavior; then one-object native build and actual Fable output review.",
+  "game_cause_not_yet_attributed": true,
+  "marker_policy": "A weak C-ABI query owned in Rust enables only the cosmetic producer marker in the diagnostic APK. The ordinary APK disables it while sharing the exact corrected native core and runtime binding; no RAM retagging or additional native rebuild for serial-off release comparison.",
+  "phone_state": "One immutable-only maintenance request remains pending with bound USB absent/current custody occupied. No emulator or coalescing has run from it.",
+  "original_control": {
+    "failed_before": 2,
+    "passed_after": 9,
+    "fixture": "7a6f48d7d9de23ffe2502f6283f83a21c92eab4a36f65ef63ecac12621cc25bd",
+    "before_source": "7a0bb245634c828b37ac9ff4f13cd49afb5ae9bac3ac042226355db379f429d1",
+    "after_source": "6628006591d54fe7560eb02ff1656fe2a66a85aa31856867c6b01328f7411d3e",
+    "patch": "506261736b926aad11d38ef19b899447ed02d0bbdc854814e119eb8dcf35b0e8",
+    "marker_patch": "af757e08c2112ed2095043f2b95164f3a0fdfc279ee7290be5fb69b377665fcf",
+    "actual_GPU_execution": false
+  },
+  "native_build": {
+    "core": "83b0e04e2e79137115a1443aa15ee7e0c5c9e791e4e798e2b1cc4300a3f7296a",
+    "unchanged_archive_objects": 1225,
+    "whole_core_rebuild": false,
+    "state_layout_changed": false,
+    "old_checkpoints_retagged": false
+  },
+  "shader": {
+    "compiled_and_linked_to_SPIRV": true,
+    "marker_offset": 112,
+    "marker_end": 116,
+    "portable_limit": 128,
+    "SPIRV": "c8c7725b7d48882b2b72a6792a439a2ecc08a218f07e568d367de2b04bc4b65d"
+  },
+  "host_checks": "Strict all-target Clippy and build passed on isolated source overlay; paused root entrypoints excluded",
+  "audio": "Owner corrected earlier description: audio was never perfect. Silent captures cannot establish audio quality or rule out shared timing problems.",
+  "packaging": {
+    "both_modes_built_and_durably_retained": true,
+    "same_native_core_and_runtime_manifest": true,
+    "only_Rust_library_and_signatures_differ_between_modes": true,
+    "same_signer_and_16KiB_alignment_verified": true,
+    "actual_exported_callback_return_checked": true,
+    "modes": {
+      "android-pvideo-banks-tag-package-v1": {
+        "APK": "80dfb6ba19e85a22daa4195e248b90083ef7715cc8e31013cd57ae48390f29f4",
+        "Rust_library": "53b583fefd11f2075575294b6ad60a9b351d695e76eecd087e1fea12b33dab48",
+        "marker_callback_returns": 1,
+        "core": "83b0e04e2e79137115a1443aa15ee7e0c5c9e791e4e798e2b1cc4300a3f7296a"
+      },
+      "android-pvideo-banks-package-v1": {
+        "APK": "9c7745cdbcc5144f6e7d5c7c388913ae60a67e73439436b9f532d95c276e8f2e",
+        "Rust_library": "6a358304c2c1aecd44370f09279b1533c86da5c0e2706a902b9a06828a84fb07",
+        "marker_callback_returns": 0,
+        "core": "83b0e04e2e79137115a1443aa15ee7e0c5c9e791e4e798e2b1cc4300a3f7296a"
+      }
+    },
+    "device_execution": false
+  },
+  "retention": {
+    "native_bytes": 65861672,
+    "full_contract_bytes": 44537992,
+    "both_APK_payload_bytes": 46847686,
+    "all_copy_digests_match": true,
+    "source_archive_and_intermediates_retained_separately_in_tmpfs": true,
+    "all_prior_builds_preserved": true
+  },
+  "capacity_after_copy": {
+    "host_available_bytes": 13472456704,
+    "usable_Btrfs_metadata_bytes": 1485651968,
+    "unallocated_bytes": 1048576,
+    "global_emergency_reserve_used": 0,
+    "data_floor_bytes": 12884901888,
+    "metadata_floor_bytes": 1073741824
+  },
+  "preparation_failure": "Initial package attempt placed builder outside its required bin/source layout; refused before Cargo build. Empty failed stage retained; corrected layout succeeded without another native build."
+}

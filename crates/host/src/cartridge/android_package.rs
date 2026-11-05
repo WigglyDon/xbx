@@ -255,6 +255,18 @@ pub(super) fn build_present_tag(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-present-tag-package-v1",
     )
 }
+pub(super) fn build_pvideo(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-pvideo-banks-v1",
+        if tag {
+            "android-pvideo-banks-tag-package-v1"
+        } else {
+            "android-pvideo-banks-package-v1"
+        },
+    )
+}
 pub(super) fn build_cpu_phase(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -341,6 +353,7 @@ fn build_selected(
             | "android-cpu-present-cost-v1"
             | "android-present-semaphore-v1"
             | "android-present-tag-v1"
+            | "android-pvideo-banks-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
@@ -355,6 +368,8 @@ fn build_selected(
             | "android-cpu-present-cost-package-v1"
             | "android-present-semaphore-package-v1"
             | "android-present-tag-package-v1"
+            | "android-pvideo-banks-package-v1"
+            | "android-pvideo-banks-tag-package-v1"
     );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
@@ -432,6 +447,7 @@ fn build_selected(
             | "android-present-semaphore-v1"
             | "android-cpu-present-cost-v1"
             | "android-present-tag-v1"
+            | "android-pvideo-banks-v1"
     ) {
         if native_identity["original_contract"]["passed"] != true
             || native_identity["original_contract"]["patch"]
@@ -440,6 +456,8 @@ fn build_selected(
                         "patches/xemu-present-semaphore.patch"
                     } else if native_stage == "android-present-tag-v1" {
                         "patches/xemu-present-tag.patch"
+                    } else if native_stage == "android-pvideo-banks-v1" {
+                        "patches/xemu-pvideo-buffers.patch"
                     } else {
                         "patches/xemu-cpu-phase-cost.patch"
                     }),
@@ -451,6 +469,9 @@ fn build_selected(
                 != c::file_digest(&repo.join("native/xbx_cpu_cost.h"))?)
             || native_identity["all_other_archive_objects_unchanged"] != true
             || native_identity["state_layout_changed"] != false
+            || (native_stage == "android-pvideo-banks-v1"
+                && native_identity["original_contract"]["marker_patch"]
+                    != c::file_digest(&repo.join("patches/xemu-present-tag-optional.patch"))?)
         {
             return Err("original aggregate timing boundary differs".into());
         }
@@ -460,7 +481,7 @@ fn build_selected(
     };
     let named_identity = if matches!(
         native_stage,
-        "android-cpu-present-cost-v1" | "android-present-tag-v1"
+        "android-cpu-present-cost-v1" | "android-present-tag-v1" | "android-pvideo-banks-v1"
     ) {
         if named_identity["original_contract"]["passed"] != true
             || named_identity["original_contract"]["patch"]
@@ -482,6 +503,7 @@ fn build_selected(
             | "android-present-semaphore-v1"
             | "android-cpu-present-cost-v1"
             | "android-present-tag-v1"
+            | "android-pvideo-banks-v1"
     ) {
         if named_identity["original_contract"]["passed"] != true
             || named_identity["original_contract"]["patch"]
@@ -693,6 +715,7 @@ fn build_selected(
         .env("XBX_ANDROID_DISPATCH_PROBE",if dispatch { "1" } else { "0" })
         .env("XBX_ANDROID_JIT_COUNTERS",if package_stage == "android-jit-counters-package-v1" { "1" } else { "0" })
         .env("XBX_ANDROID_CPU_PHASE_COST",if matches!(package_stage, "android-cpu-phase-cost-package-v1" | "android-cpu-present-cost-package-v1") { "1" } else { "0" })
+        .env("XBX_ANDROID_PRESENT_TAG",if matches!(package_stage, "android-present-tag-package-v1" | "android-pvideo-banks-tag-package-v1") { "1" } else { "0" })
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
         root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
     };
