@@ -97,6 +97,12 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
     Ok(())
 }
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, false)
+}
+pub(super) fn build_present(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, true)
+}
+fn build_candidate(repo: &Path, root: &Path, present: bool) -> Result<(), Error> {
     let proof: Value = c::read_json(&root.join("native-cpu-phase-contract-v1/result.json"))?;
     if proof["passed"] != true
         || proof["patch"] != c::file_digest(&repo.join(PATCH))?
@@ -105,12 +111,43 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
         return Err("original timing boundary proof required".into());
     }
     let android = root.join("android-demo-v1");
-    let prior = android.join("android-thread-names-v1");
-    if c::file_digest(&prior.join("libxemu.so"))? != PARENT {
+    let (parent_stage, new_stage, parent_digest) = if present {
+        (
+            "android-present-semaphore-v1",
+            "android-cpu-present-cost-v1",
+            "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652",
+        )
+    } else {
+        (
+            "android-thread-names-v1",
+            "android-cpu-phase-cost-v1",
+            PARENT,
+        )
+    };
+    let prior = android.join(parent_stage).canonicalize()?;
+    if c::file_digest(&prior.join("libxemu.so"))? != parent_digest {
         return Err("timing parent changed".into());
     }
     let previous: Value = c::read_json(&prior.join("build.identity.json"))?;
-    let new = android.join("android-cpu-phase-cost-v1");
+    // Reuse the accepted phase controls only when both original source units
+    // match their proven pre-hook bytes. The presentation repair changes
+    // neither execution unit; it remains included in the new parent archive.
+    for unit in [CPU, STATS] {
+        let path = prior.join("source").join(unit);
+        let text = if path.exists() {
+            fs::read_to_string(path)?
+        } else {
+            pinned(repo, unit)?
+        };
+        let control = proof["units"]
+            .as_array()
+            .and_then(|units| units.iter().find(|entry| entry["unit"] == unit))
+            .ok_or("timing source control missing")?;
+        if control["before"] != c::digest(text.as_bytes()) {
+            return Err("timing parent execution source differs from accepted controls".into());
+        }
+    }
+    let new = android.join(new_stage);
     c::mkdir(&new)?;
     let source = new.join("source");
     c::store::checked(
@@ -186,7 +223,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(
-            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":PARENT,"original_contract":proof,"inherited_repairs":previous,"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-2,"recompiled_units":[CPU,STATS],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
+            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":parent_digest,"original_contract":proof,"inherited_repairs":previous,"presentation_semaphore_repair_retained":present,"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-2,"recompiled_units":[CPU,STATS],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
         )?,
     )?;
     Ok(())

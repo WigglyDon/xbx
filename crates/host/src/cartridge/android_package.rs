@@ -255,6 +255,14 @@ pub(super) fn build_cpu_phase(repo: &Path, root: &Path) -> Result<(), Error> {
         "android-cpu-phase-cost-package-v1",
     )
 }
+pub(super) fn build_cpu_present(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-cpu-present-cost-v1",
+        "android-cpu-present-cost-package-v1",
+    )
+}
 pub(super) fn build_frame_vertex(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -322,6 +330,7 @@ fn build_selected(
             | "android-present-surface-v1"
             | "android-thread-names-v1"
             | "android-cpu-phase-cost-v1"
+            | "android-cpu-present-cost-v1"
             | "android-present-semaphore-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
@@ -334,6 +343,7 @@ fn build_selected(
             | "android-thread-names-package-v1"
             | "android-jit-counters-package-v1"
             | "android-cpu-phase-cost-package-v1"
+            | "android-cpu-present-cost-package-v1"
             | "android-present-semaphore-package-v1"
     );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
@@ -408,7 +418,9 @@ fn build_selected(
     let native_identity: serde_json::Value = c::read_json(&native.join("build.identity.json"))?;
     let named_identity = if matches!(
         native_stage,
-        "android-cpu-phase-cost-v1" | "android-present-semaphore-v1"
+        "android-cpu-phase-cost-v1"
+            | "android-present-semaphore-v1"
+            | "android-cpu-present-cost-v1"
     ) {
         if native_identity["original_contract"]["passed"] != true
             || native_identity["original_contract"]["patch"]
@@ -419,9 +431,11 @@ fn build_selected(
                         "patches/xemu-cpu-phase-cost.patch"
                     }),
                 )?
-            || (native_stage == "android-cpu-phase-cost-v1"
-                && native_identity["original_contract"]["header"]
-                    != c::file_digest(&repo.join("native/xbx_cpu_cost.h"))?)
+            || (matches!(
+                native_stage,
+                "android-cpu-phase-cost-v1" | "android-cpu-present-cost-v1"
+            ) && native_identity["original_contract"]["header"]
+                != c::file_digest(&repo.join("native/xbx_cpu_cost.h"))?)
             || native_identity["all_other_archive_objects_unchanged"] != true
             || native_identity["state_layout_changed"] != false
         {
@@ -431,9 +445,26 @@ fn build_selected(
     } else {
         &native_identity
     };
+    let named_identity = if native_stage == "android-cpu-present-cost-v1" {
+        if named_identity["original_contract"]["passed"] != true
+            || named_identity["original_contract"]["patch"]
+                != c::file_digest(&repo.join("patches/xemu-present-semaphore.patch"))?
+            || named_identity["library_sha256"] != native_identity["prior_library_sha256"]
+            || named_identity["all_other_archive_objects_unchanged"] != true
+            || named_identity["state_layout_changed"] != false
+        {
+            return Err("qualified presentation semaphore parent differs".into());
+        }
+        &named_identity["inherited_repairs"]
+    } else {
+        named_identity
+    };
     let presentation_identity = if matches!(
         native_stage,
-        "android-thread-names-v1" | "android-cpu-phase-cost-v1" | "android-present-semaphore-v1"
+        "android-thread-names-v1"
+            | "android-cpu-phase-cost-v1"
+            | "android-present-semaphore-v1"
+            | "android-cpu-present-cost-v1"
     ) {
         if named_identity["original_contract"]["passed"] != true
             || named_identity["original_contract"]["patch"]
@@ -644,7 +675,7 @@ fn build_selected(
         .env("XBX_ANDROID_CORE_SHA256",&core_hash).env("XBX_ANDROID_DISK_SHA256",&helper_hash).env("XBX_ANDROID_SEED_SHA256",&seed_hash).env("XBX_ANDROID_OPEN_SHA256",open_hash)
         .env("XBX_ANDROID_DISPATCH_PROBE",if dispatch { "1" } else { "0" })
         .env("XBX_ANDROID_JIT_COUNTERS",if package_stage == "android-jit-counters-package-v1" { "1" } else { "0" })
-        .env("XBX_ANDROID_CPU_PHASE_COST",if package_stage == "android-cpu-phase-cost-package-v1" { "1" } else { "0" })
+        .env("XBX_ANDROID_CPU_PHASE_COST",if matches!(package_stage, "android-cpu-phase-cost-package-v1" | "android-cpu-present-cost-package-v1") { "1" } else { "0" })
         .env("RUSTFLAGS",format!("-L native={} -L native={} -C link-arg=-Wl,-rpath,$ORIGIN -C link-arg=-Wl,-rpath-link,{}",literal(&native)?,literal(&old.join("_deps/sdl3-build"))?,literal(&old.join("_deps/sdl3-build"))?)))?;
         root.join("android-app-target/aarch64-linux-android/release/libxbx.so")
     };

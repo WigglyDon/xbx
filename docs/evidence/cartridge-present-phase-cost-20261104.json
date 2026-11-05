@@ -1,0 +1,46 @@
+{
+  "stage": "source, strict host Clippy, native and signed Android package built; device measurement pending",
+  "authority": "Owner current rendering/performance task and delegated XBX-local Master responsibility",
+  "reason": "Three short private clips show intro progression; original semaphore lifetime defect repaired independently but reported double taps and performance remain unattributed. Avoid another full intro campaign.",
+  "decision": "Reuse accepted1-in256 aggregate CPU-phase instrumentation on the exact corrected-presentation parent; reuse exact original controls only after pre-hook execution-source hashes match. Measure completed selected lookup/translation/preparation/execution/tail thread CPU intervals without guest values, instructions, addresses, stack reads, tracing or security changes.",
+  "parent_core": "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652",
+  "reused_fixture": "native/fixtures/cpu-cost.c",
+  "reused_patch": "patches/xemu-cpu-phase-cost.patch",
+  "native_units_to_rebuild": [
+    "accel/tcg/cpu-exec.c",
+    "accel/tcg/tcg-stats.c"
+  ],
+  "guards": "Existing build lock, tmpfs/RAM admission and exact durable-copy data/metadata/emergency admission; original disk targets preserved.",
+  "defaults_saves_signing_media_and_paused_work_preserved": true,
+  "Android_execution": false,
+  "performance_cause_established": false,
+  "paused_low_level_campaigns_reopened": false,
+  "strict_host_all_target_Clippy_and_owned_formatting_passed": true,
+  "qualified_parent_execution_source_hashes_match_reused_control_pre_hook_bytes": true,
+  "reused_original_controls_replayed": false,
+  "native_core": "f253397e4cebea45294aee2e70a35f58ad9a4cfc130c07337673853c86e9beaf",
+  "unchanged_native_archive_objects": 1224,
+  "all_other_archive_objects_verified_unchanged": true,
+  "APK": "10b915625049b67175b556306473f5f17e977897684621c23e300a14e0931143",
+  "Rust_library": "f815d431fd2d3f090d0c7b6062433566a67d1f82455c1f92903a6e0eeae53a9d",
+  "same_open_helper_seed_ABI_signer_and16KiB_alignment_verified": true,
+  "changed_payloads": [
+    "assets/runtime.json",
+    "lib/arm64-v8a/libxemu.so",
+    "lib/arm64-v8a/libxbx.so",
+    "META-INF/XBX-QUAL.SF",
+    "META-INF/XBX-QUAL.RSA",
+    "META-INF/MANIFEST.MF"
+  ],
+  "durable_native_artifact_bytes": 65801375,
+  "durable_APK_provenance_bytes": 23427951,
+  "copy_guard_after": {
+    "available": 13385158656,
+    "usable_metadata": 1493778432,
+    "unallocated": 1048576,
+    "emergency_reserve_used": 0
+  },
+  "default_or_rollback_APK_promoted": false,
+  "new_native_fixture_header_patch_or_execution_algorithm": false,
+  "next": "One finite movie observation of aggregate phase costs with explicit actual-admission launch gate, current ordinary-save restart for changed core, private silent clip, normal Leave/full-checkpoint and canonical APK/data/process/OFF return."
+}

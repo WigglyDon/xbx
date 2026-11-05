@@ -78,5 +78,38 @@
   "protected_artifacts_rechecked": 21,
   "all_protected_hashes_match": true,
   "no_controller_launch_two_expired_admissions_verified": true,
-  "preparation_failure_before_request": "Private output directory missing on one earlier attempt; returned before app effects. Later preparation corrected existing private output tree and permissions."
+  "preparation_failure_before_request": "Private output directory missing on one earlier attempt; returned before app effects. Later preparation corrected existing private output tree and permissions.",
+  "owner_audio_amendment": "Owner retracts perfect/hitchless audio description; relative video repetition observation remains. Silent clips cannot qualify audio; shared timing/performance cause not excluded.",
+  "same_core_continuation": {
+    "fresh_restored_checkpoint_generation": 35,
+    "cold_restart": false,
+    "actual_work_seconds": 284.179372614999,
+    "job_result": "FAILED; return verified",
+    "new_checkpoint_generation": 36,
+    "current_checkpoint_full_disk_EEPROM_hashes_and_stable_pointer_verified": true,
+    "native_clean_return_OS_absence": true,
+    "canonical_APK_data_namespace_and_physical_OFF_return_verified": true,
+    "private_silent_clip_seconds": 9.976956,
+    "model_review": "20 chronology images opened: storybook village/camera progression;558 captured frames; no nonadjacent-return candidates under the stated conservative or more sensitive low-resolution thresholds. Does not establish absence of the wider reported symptom or guest frame rate.",
+    "failure": "Private client incorrectly required retention of superseded accepted same-binding checkpoint35. Existing checkpoint.rs retires that successful prior generation only after durable verified replacement. Attempt to rehash35 found it absent; no product failure inferred. Raw failed receipt and source retention contract preserved. Post-return rehash of rejected groups not reached in this attempt.",
+    "corrected_client": "Only incompatible earlier checkpoints require retention. Same-runtime accepted generation retirement checked separately after new full hashes/pointer proof. An intervening client namespace-assignment error returned before namespace/game/recording effects; exact constants now AST-validated. One bounded continuation of36 is admitted."
+  },
+  "second_same_core_continuation": {
+    "job_result": "COMPLETED; returned true",
+    "work_seconds": 294.65348649399675,
+    "fresh_restored_checkpoint_generation": 36,
+    "normal_leave_checkpoint_generation": 37,
+    "new_checkpoint_full_hashes_pointer_and_binding_verified": true,
+    "successful_same_binding_prior_generation_retired_only_after_verified_replacement": true,
+    "rejected_generations_full_hashes_unchanged": [
+      21,
+      24,
+      30
+    ],
+    "native_clean_return_canonical_APK_data_namespace_and_OFF_return_verified": true,
+    "clip_seconds": 9.992611,
+    "captured_frames": 525,
+    "opened_visual_chronology": "Armoured figure/body moving toward ground shot; bounded low-resolution recurrence candidates absent; specific stabbing/fire repetition still not attributed.",
+    "no_Fable_visual_or_performance_acceptance": true
+  }
 }
