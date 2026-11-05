@@ -62,6 +62,8 @@ mod npx_followup;
 mod npx_port;
 pub mod player;
 #[cfg(not(target_os = "android"))]
+mod present_semaphore;
+#[cfg(not(target_os = "android"))]
 mod present_surface;
 #[cfg(not(target_os = "android"))]
 mod rebuild;

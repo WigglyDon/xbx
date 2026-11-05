@@ -559,3 +559,12 @@ guest PCs, instruction bytes, stacks or register contents. The selected complete
 iterations are a sample, not unbiased whole-worker profiling; abandoned samples
 and invalid clocks remain visible. This optional developer candidate does not
 change the default core or relax Android profiling/security settings.
+
+`patches/xemu-present-semaphore.patch` changes two semaphore selections in the
+same pin's LGPL-2.0-or-later Vulkan `display.c`. Presentation waits use a semaphore
+per acquired swapchain image, independently of the rotating rendering-fence slot,
+following the [Khronos lifetime guidance](https://docs.vulkan.org/guide/latest/swapchain_semaphore_reuse.html).
+The original MIT delayed-presentation fixture `native/fixtures/present-semaphore.c`
+executes the exact retained submit/present block under its LGPL terms. Its Rust
+owner `cartridge/present_semaphore.rs` is MIT. The model checks semaphore lifetime
+with slow numbered-picture updates; it is not actual GPU or game qualification.

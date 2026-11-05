@@ -349,6 +349,11 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         "cartridge-jit-counters-package" => super::android_package::build_jit_counters(repo, root)?,
         "cartridge-cpu-phase-contract" => super::cpu_cost::contract(repo, root)?,
         "cartridge-cpu-phase-native" => super::cpu_cost::build(repo, root)?,
+        "cartridge-present-semaphore-package" => {
+            super::android_package::build_present_semaphore(repo, root)?
+        }
+        "cartridge-present-semaphore-native" => super::present_semaphore::build(repo, root)?,
+        "cartridge-present-semaphore-contract" => super::present_semaphore::contract(repo, root)?,
         "cartridge-cpu-phase-package" => super::android_package::build_cpu_phase(repo, root)?,
         "cartridge-present-surface-native" => super::present_surface::build(repo, root)?,
         "cartridge-present-surface-package" => {

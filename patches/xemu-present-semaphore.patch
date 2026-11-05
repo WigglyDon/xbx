@@ -1,0 +1,20 @@
+--- a/hw/xbox/nv2a/pgraph/vk/display.c
++++ b/hw/xbox/nv2a/pgraph/vk/display.c
+@@ -2453,7 +2453,7 @@
+         submit_info.pWaitDstStageMask = &present_wait_stage;
+         submit_info.signalSemaphoreCount = 1;
+         submit_info.pSignalSemaphores =
+-            &disp->render_finished[present_sync_index];
++            &disp->render_finished[disp->render_idx];
+         VK_CHECK(vkResetFences(
+             r->device, 1, &disp->present_fences[present_sync_index]));
+         VK_CHECK(vkQueueSubmit(
+@@ -2466,7 +2466,7 @@
+         VkPresentInfoKHR present_info = {
+             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+             .waitSemaphoreCount = 1,
+-            .pWaitSemaphores = &disp->render_finished[present_sync_index],
++            .pWaitSemaphores = &disp->render_finished[disp->render_idx],
+             .swapchainCount = 1,
+             .pSwapchains = &disp->swapchain,
+             .pImageIndices = &present_image_index,
