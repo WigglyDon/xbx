@@ -1,5 +1,5 @@
 {
-  "stage": "source, strict host Clippy, native and signed Android package built; device measurement pending",
+  "stage": "finite actual Android phase observation and private clip completed; clean return verified",
   "authority": "Owner current rendering/performance task and delegated XBX-local Master responsibility",
   "reason": "Three short private clips show intro progression; original semaphore lifetime defect repaired independently but reported double taps and performance remain unattributed. Avoid another full intro campaign.",
   "decision": "Reuse accepted1-in256 aggregate CPU-phase instrumentation on the exact corrected-presentation parent; reuse exact original controls only after pre-hook execution-source hashes match. Measure completed selected lookup/translation/preparation/execution/tail thread CPU intervals without guest values, instructions, addresses, stack reads, tracing or security changes.",
@@ -12,7 +12,7 @@
   ],
   "guards": "Existing build lock, tmpfs/RAM admission and exact durable-copy data/metadata/emergency admission; original disk targets preserved.",
   "defaults_saves_signing_media_and_paused_work_preserved": true,
-  "Android_execution": false,
+  "Android_execution": true,
   "performance_cause_established": false,
   "paused_low_level_campaigns_reopened": false,
   "strict_host_all_target_Clippy_and_owned_formatting_passed": true,
@@ -42,5 +42,45 @@
   },
   "default_or_rollback_APK_promoted": false,
   "new_native_fixture_header_patch_or_execution_algorithm": false,
-  "next": "One finite movie observation of aggregate phase costs with explicit actual-admission launch gate, current ordinary-save restart for changed core, private silent clip, normal Leave/full-checkpoint and canonical APK/data/process/OFF return."
+  "next": "Keep this result and timing limits. Isolate whether alternating content originates before or after native presentation using one bounded original renderer marker carrying only present sequence/image slot/public overlay-use flags, then make a correction only after attribution. No private game-code tracing or paused low-level campaign.",
+  "actual_work_seconds": 369.77872407900577,
+  "reports": [
+    3,
+    4
+  ],
+  "actual_report_interval_seconds": 30,
+  "selected_completed_phase_delta": {
+    "attempts": 802524,
+    "completed": 801994,
+    "execute_ns": 227802134,
+    "invalid_clock": 0,
+    "lookup_ns": 151866633,
+    "prepare_ns": 135916945,
+    "tail_ns": 138761062,
+    "translation_ns": 137122939
+  },
+  "aggregate_JIT_delta": {
+    "block_flushes": 0,
+    "block_invalidations": 0,
+    "blocks": 317,
+    "capacity_bytes": 0,
+    "generated_bytes": 261872,
+    "tlb_elided_flushes": 0,
+    "tlb_full_flushes": 0,
+    "tlb_partial_flushes": 0
+  },
+  "query_microseconds": [
+    20973,
+    29814
+  ],
+  "timing_limit": "Five phase means are submicrosecond and include CLOCK_THREAD_CPUTIME_ID reads; clock overhead is not calibrated. Do not extrapolate these totals into unbiased whole-worker shares or claim a CPU/device ceiling.317 new blocks and no invalidation/full flush in this interval do not support cache exhaustion or mass recompilation here.",
+  "native_checkpoint_generation": 39,
+  "current_full_disk_EEPROM_hashes_pointer_and_binding_verified": true,
+  "changed_core_explicit_current_saves_restart_old37_full_record_disk_EEPROM_unchanged": true,
+  "rejected_generations_21_24_30_full_hashes_unchanged": true,
+  "native_clean_return_canonical_APK_data_namespace_OS_absence_physical_OFF_verified": true,
+  "earlier_admission_failure": "Before app effects: prepared3GiB growth+1GiB reserve unavailable. Returned; separate read-only capacity inspection subsequently completed/returned with4392935424 bytes free and no deletion. Actual observation re-admitted under unchanged guard.",
+  "clip_seconds": 9.988256,
+  "captured_video_frames": 582,
+  "clip_result": "Actual last-second alternation independently viewed in12 consecutive captured source frames: earlier white/corner picture repeatedly returns between later logo pictures. Quantified strong recurrence candidates retained privately; no game/clip bytes published."
 }

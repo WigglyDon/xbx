@@ -1,0 +1,33 @@
+{
+  "authority": "Owner current visible rendering/performance task; delegated XBX-local Master",
+  "status": "Captured output recurrence demonstrated; producer/presenter cause not attributed",
+  "core": "f253397e4cebea45294aee2e70a35f58ad9a4cfc130c07337673853c86e9beaf",
+  "APK": "10b915625049b67175b556306473f5f17e977897684621c23e300a14e0931143",
+  "capture": "Owner-authorized private silent10s XBX recording; no audio/camera/public upload; native return verified before model review",
+  "actual_clip_seconds": 9.988256,
+  "captured_frames": 582,
+  "actual_visual_review": "20 half-second chronology samples plus12 consecutive original decoded frames546..557 opened. White/corner picture and subsequent logo picture alternate in an A,B,B,A,A,B,B,A pattern. This is stronger than a low-FPS count or simple frame holding.",
+  "bounded_measurement": {
+    "crop": [
+      220,
+      80,
+      520,
+      388
+    ],
+    "grayscale_downsample": [
+      96,
+      72
+    ],
+    "comparison_window_frames": 180,
+    "strong_return_condition": "adjacent mean absolute8-bit luma difference>=10; nonadjacent return difference<0.5 and<20% of adjacent difference",
+    "strong_candidates": 27,
+    "first_seconds": 9.037444,
+    "last_seconds": 9.971656,
+    "limitation": "Lossy screen recording and heuristic image matching, not direct guest/GPU timestamps or a published proprietary scene. Visual sequence independently opened; flags/counters not yet correlated."
+  },
+  "scoped_next_decision": "A separate original marker in the corrected non-CPU-instrumented display variant will encode only monotonic native present sequence, acquired swapchain slot, sampled public PVIDEO buffer-use bits and enabled state. One changed display object; compile/source scope proof, finite actual product observation, private clip, complete save/storage/APK/process/OFF return. No guest addresses/code/stack or broad tracing.",
+  "parent_for_next": "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652",
+  "paused_low_level_work_reopened": false,
+  "fix_or_playable_performance_qualified": false,
+  "owner_audio_amendment": "Audio was not perfect; silent clip does not qualify it."
+}
