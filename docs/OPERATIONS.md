@@ -112,6 +112,17 @@ changes. [RETENTION.md](RETENTION.md) records the owner-directed October 24 pass
 
 ## Device operation
 
+An interactive test that needs model decisions must not launch the emulator
+merely because a queued resource becomes available. Prepare off-device, then
+require a fresh explicit controller command after actual admission and before
+launch. Without that command, return within a short bounded admission phase.
+Do not leave a live game waiting for an inactive model review loop. Fully
+prepared autonomous finite observations may still execute and return locally;
+describe that capability explicitly when handing back a queued request. A
+running supervisor is not evidence that the implementation agent is active.
+Use isolated Python execution (`python3 -I`) for private test helpers to avoid
+local evidence filenames shadowing standard-library modules.
+
 For each fresh lab request, read the installed named-unit preferences and let
 the custodian snapshot the current qualified connection unless the task actually
 requires a particular transport. Do not carry a historical recipe's USB pin into
