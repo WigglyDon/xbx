@@ -356,6 +356,9 @@ pub fn command(repo: &Path, root: &Path, action: &str) -> Result<(), Error> {
         }
         "cartridge-present-semaphore-native" => super::present_semaphore::build(repo, root)?,
         "cartridge-present-semaphore-contract" => super::present_semaphore::contract(repo, root)?,
+        "cartridge-present-tag-contract" => super::present_tag::contract(repo, root)?,
+        "cartridge-present-tag-native" => super::present_semaphore::build_tag(repo, root)?,
+        "cartridge-present-tag-package" => super::android_package::build_present_tag(repo, root)?,
         "cartridge-cpu-phase-package" => super::android_package::build_cpu_phase(repo, root)?,
         "cartridge-present-surface-native" => super::present_surface::build(repo, root)?,
         "cartridge-present-surface-package" => {

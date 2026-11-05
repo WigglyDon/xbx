@@ -568,3 +568,14 @@ The original MIT delayed-presentation fixture `native/fixtures/present-semaphore
 executes the exact retained submit/present block under its LGPL terms. Its Rust
 owner `cartridge/present_semaphore.rs` is MIT. The model checks semaphore lifetime
 with slow numbered-picture updates; it is not actual GPU or game qualification.
+
+`patches/xemu-present-tag.patch` adds a diagnostic-only marker to that retained
+LGPL-2.0-or-later display unit after an actual repeated-picture observation. It
+keeps submission/presentation choices intact and encodes only sequence, acquired
+slot, public overlay-use bits and an ephemeral source-binding token. No game
+instructions, addresses, stack or raw native handles are recorded. Original Rust
+qualification owner `cartridge/present_tag.rs` and the host shader fixture
+`native/fixtures/present-tag-shader.c` are MIT. Extracted display GLSL and resource
+limits retain the pinned `display.c`/`glsl.c` LGPL terms. The fixture uses retained
+glslang under its existing terms; it is a shader compilation/layout check, not a
+GPU or gameplay result. This marker is not included in the ordinary candidate.

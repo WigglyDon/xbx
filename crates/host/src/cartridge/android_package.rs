@@ -247,6 +247,14 @@ pub(super) fn build_present_semaphore(repo: &Path, root: &Path) -> Result<(), Er
         "android-present-semaphore-package-v1",
     )
 }
+pub(super) fn build_present_tag(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(
+        repo,
+        root,
+        "android-present-tag-v1",
+        "android-present-tag-package-v1",
+    )
+}
 pub(super) fn build_cpu_phase(repo: &Path, root: &Path) -> Result<(), Error> {
     build_candidate(
         repo,
@@ -332,6 +340,7 @@ fn build_selected(
             | "android-cpu-phase-cost-v1"
             | "android-cpu-present-cost-v1"
             | "android-present-semaphore-v1"
+            | "android-present-tag-v1"
     );
     // A separately bound developer candidate reuses the accepted bounded I/O
     // reporter. There is no runtime firmware selector or checkpoint retagging.
@@ -345,6 +354,7 @@ fn build_selected(
             | "android-cpu-phase-cost-package-v1"
             | "android-cpu-present-cost-package-v1"
             | "android-present-semaphore-package-v1"
+            | "android-present-tag-package-v1"
     );
     let frame_vertex = package_stage == "android-frame-vertex-package-v1" || present_surface;
     let vertex_values = package_stage == "android-vertex-cache-values-package-v1" || frame_vertex;
@@ -421,12 +431,15 @@ fn build_selected(
         "android-cpu-phase-cost-v1"
             | "android-present-semaphore-v1"
             | "android-cpu-present-cost-v1"
+            | "android-present-tag-v1"
     ) {
         if native_identity["original_contract"]["passed"] != true
             || native_identity["original_contract"]["patch"]
                 != c::file_digest(
                     &repo.join(if native_stage == "android-present-semaphore-v1" {
                         "patches/xemu-present-semaphore.patch"
+                    } else if native_stage == "android-present-tag-v1" {
+                        "patches/xemu-present-tag.patch"
                     } else {
                         "patches/xemu-cpu-phase-cost.patch"
                     }),
@@ -445,7 +458,10 @@ fn build_selected(
     } else {
         &native_identity
     };
-    let named_identity = if native_stage == "android-cpu-present-cost-v1" {
+    let named_identity = if matches!(
+        native_stage,
+        "android-cpu-present-cost-v1" | "android-present-tag-v1"
+    ) {
         if named_identity["original_contract"]["passed"] != true
             || named_identity["original_contract"]["patch"]
                 != c::file_digest(&repo.join("patches/xemu-present-semaphore.patch"))?
@@ -465,6 +481,7 @@ fn build_selected(
             | "android-cpu-phase-cost-v1"
             | "android-present-semaphore-v1"
             | "android-cpu-present-cost-v1"
+            | "android-present-tag-v1"
     ) {
         if named_identity["original_contract"]["passed"] != true
             || named_identity["original_contract"]["patch"]

@@ -10,7 +10,7 @@ type Error = Box<dyn std::error::Error>;
 const UNIT: &str = "hw/xbox/nv2a/pgraph/vk/display.c";
 const PATCH: &str = "patches/xemu-present-semaphore.patch";
 const PARENT: &str = "6ec2ac7c4fc60de09d46b445a41349ddf40a13ad1d47b9aaceea2b995408ebe2";
-fn subject(text: &str) -> Result<String, Error> {
+pub(super) fn subject(text: &str) -> Result<String, Error> {
     let start = text
         .find("    VkSubmitInfo submit_info = {")
         .ok_or("submit block absent")?;
@@ -103,18 +103,44 @@ pub(super) fn contract(repo: &Path, root: &Path) -> Result<(), Error> {
 }
 
 pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
-    let proof: Value =
-        c::read_json(&root.join("native-present-semaphore-contract-v1/result.json"))?;
-    if proof["passed"] != true || proof["patch"] != c::file_digest(&repo.join(PATCH))? {
+    build_candidate(repo, root, false)
+}
+pub(super) fn build_tag(repo: &Path, root: &Path) -> Result<(), Error> {
+    build_candidate(repo, root, true)
+}
+fn build_candidate(repo: &Path, root: &Path, tag: bool) -> Result<(), Error> {
+    let (contract, patch, parent, parent_hash, stage, member, name) = if tag {
+        (
+            "native-present-tag-contract-v1",
+            "patches/xemu-present-tag.patch",
+            "android-present-semaphore-v1",
+            "c5dff2b5205a467fcc85f46e7f3458b748ecd89a403df5eea649ccc7080e4652",
+            "android-present-tag-v1",
+            "xbx-present-semaphore.c.o",
+            "xbx-present-tag",
+        )
+    } else {
+        (
+            "native-present-semaphore-contract-v1",
+            PATCH,
+            "android-thread-names-v1",
+            PARENT,
+            "android-present-semaphore-v1",
+            "xbx-present-surface.c.o",
+            "xbx-present-semaphore",
+        )
+    };
+    let proof: Value = c::read_json(&root.join(contract).join("result.json"))?;
+    if proof["passed"] != true || proof["patch"] != c::file_digest(&repo.join(patch))? {
         return Err("original presentation boundary proof required".into());
     }
     let android = root.join("android-demo-v1");
-    let prior = android.join("android-thread-names-v1").canonicalize()?;
-    if c::file_digest(&prior.join("libxemu.so"))? != PARENT {
+    let prior = android.join(parent).canonicalize()?;
+    if c::file_digest(&prior.join("libxemu.so"))? != parent_hash {
         return Err("presentation parent changed".into());
     }
     let previous: Value = c::read_json(&prior.join("build.identity.json"))?;
-    let new = android.join("android-present-semaphore-v1");
+    let new = android.join(stage);
     c::mkdir(&new)?;
     let source = new.join("source");
     c::store::checked(
@@ -123,8 +149,8 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
             .arg(prior.join("source"))
             .arg(&source),
     )?;
-    // Only the two proven units are replaced in this separate source overlay.
-    let proven = root.join("native-present-semaphore-contract-v1/source");
+    // Only the proven display unit is replaced in this separate source overlay.
+    let proven = root.join(contract).join("source");
     fs::copy(proven.join(UNIT), source.join(UNIT))?;
     let archive = new.join("libxemu_core.a");
     c::store::checked(
@@ -140,7 +166,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     let llvm = std::path::PathBuf::from(std::env::var("XBX_NDK")?)
         .join("toolchains/llvm/prebuilt/linux-x86_64/bin");
     {
-        let (unit, member, name) = (UNIT, "xbx-present-surface.c.o", "xbx-present-semaphore");
+        let unit = UNIT;
         if expected.iter().filter(|(n, _)| n == member).count() != 1 {
             return Err("ambiguous presentation object".into());
         }
@@ -186,7 +212,7 @@ pub(super) fn build(repo: &Path, root: &Path) -> Result<(), Error> {
     c::write_new(
         &new.join("build.identity.json"),
         &c::json(
-            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":PARENT,"original_contract":proof,"inherited_repairs":previous,"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-1,"recompiled_units":[UNIT],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
+            &json!({"source_pin":"4967efd3ee594cc236869a45ee4cb396e25af1ac","bridge_abi":4,"source_sha256":c::file_digest(&repo.join("native/xbx_xemu_bridge.c"))?,"library_sha256":c::file_digest(&lib)?,"prior_library_sha256":parent_hash,"original_contract":proof,"inherited_repairs":previous,"diagnostic_present_marker":tag,"all_other_archive_objects_unchanged":true,"unchanged_core_object_count":original_count-1,"recompiled_units":[UNIT],"whole_core_rebuild":false,"state_layout_changed":false,"old_checkpoints_retagged":false,"Android_execution":false,"performance_cause_established":false}),
         )?,
     )?;
     Ok(())

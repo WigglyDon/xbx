@@ -1,0 +1,107 @@
+--- a/hw/xbox/nv2a/pgraph/vk/display.c
++++ b/hw/xbox/nv2a/pgraph/vk/display.c
+@@ -474,6 +474,7 @@
+     "    bool pvideo_color_key_enable;\n"
+     "    vec3 pvideo_color_key;\n"
+     "    float blend_factor;\n"
++    "    int present_tag;\n"
+     "};\n"
+     "layout(location = 0) out vec4 out_Color;\n"
+     "void main()\n"
+@@ -503,6 +504,16 @@
+     "        vec4 prev = texture(prev_tex, prev_coord);\n"
+     "        out_Color.rgba = mix(out_Color.rgba, prev, blend_factor);\n"
+     "    }\n"
++    // Diagnostic-only variant: decodeable public producer metadata, no content.
++    "    float tag_size = max(1.0, floor(output_size.y / 96.0));\n"
++    "    ivec2 tag = ivec2(floor(vec2(gl_FragCoord.x - output_offset.x,\n"
++    "        output_offset.y + output_size.y - gl_FragCoord.y) / tag_size));\n"
++    "    if (tag.x >= 0 && tag.x < 9 && tag.y >= 0 && tag.y < 6) {\n"
++    "        bool edge = tag.x == 0 || tag.x == 8 || tag.y == 0 || tag.y == 5;\n"
++    "        bool white = edge ? (tag.y == 0 && (tag.x == 0 || tag.x == 8))\n"
++    "            : (present_tag & (1 << ((tag.y - 1) * 7 + tag.x - 1))) != 0;\n"
++    "        out_Color = vec4(vec3(white ? 1.0 : 0.0), 1.0);\n"
++    "    }\n"
+     "}\n";
+ 
+ static void create_descriptor_pool(PGRAPHState *pg)
+@@ -1914,7 +1925,7 @@
+                            descriptor_writes, 0, NULL);
+ }
+ 
+-static PvideoState get_pvideo_state(PGRAPHState *pg)
++static PvideoState get_pvideo_state(PGRAPHState *pg, uint32_t *sampled_use)
+ {
+     NV2AState *d = container_of(pg, NV2AState, pgraph);
+     PvideoState state = { 0 };
+@@ -1928,7 +1939,8 @@
+     // Since the value seems to be set to 0xFFFFFFFF only in cases where the
+     // content is not valid, it is probably good enough to treat it as an
+     // implicit stop.
+-    state.enabled = (d->pvideo.regs[NV_PVIDEO_BUFFER] & NV_PVIDEO_BUFFER_0_USE)
++    *sampled_use = qatomic_read(&d->pvideo.regs[NV_PVIDEO_BUFFER]);
++    state.enabled = (*sampled_use & NV_PVIDEO_BUFFER_0_USE)
+         && d->pvideo.regs[NV_PVIDEO_SIZE_IN] != 0xFFFFFFFF;
+     if (!state.enabled) {
+         return state;
+@@ -2059,7 +2071,26 @@
+     return state;
+ }
+ 
+-static void update_uniforms(PGRAPHState *pg, SurfaceBinding *surface)
++/* Tokens identify this run's first seven source bindings, never raw handles.
++ * The render thread alone owns this diagnostic-only table. */
++static unsigned present_tag_source(SurfaceBinding *surface)
++{
++    static SurfaceBinding *sources[7];
++    static unsigned used;
++    for (unsigned i = 0; i < used; i++) {
++        if (sources[i] == surface) {
++            return i;
++        }
++    }
++    if (used < ARRAY_SIZE(sources)) {
++        sources[used] = surface;
++        return used++;
++    }
++    return 7;
++}
++
++static void update_uniforms(PGRAPHState *pg, SurfaceBinding *surface,
++                            uint32_t sampled_use)
+ {
+     NV2AState *d = container_of(pg, NV2AState, pgraph);
+     PGRAPHVkState *r = pg->vk_renderer_state;
+@@ -2114,6 +2145,16 @@
+ 
+     uniform1f(l, uniform_index(l, "blend_factor"),
+               r->display.blend_active ? 0.5f : 0.0f);
++    /* 16 sequence bits, 3 acquired-slot bits, overlay-enabled/use0/use1,
++     * 3 ephemeral source-token bits, and fixed sync bits25/26=0,27=1. */
++    static unsigned sequence; /* Survives swapchain recreation in this process. */
++    unsigned tag = (++sequence & 0xffffu) |
++                   (((unsigned)r->display.render_idx & 7u) << 16) |
++                   ((unsigned)pvideo->enabled << 19) |
++                   ((unsigned)!!(sampled_use & NV_PVIDEO_BUFFER_0_USE) << 20) |
++                   ((unsigned)!!(sampled_use & NV_PVIDEO_BUFFER_1_USE) << 21) |
++                   (present_tag_source(surface) << 22) | (1u << 27);
++    uniform1i(l, uniform_index(l, "present_tag"), (int)tag);
+ }
+ 
+ static void render_display(PGRAPHState *pg, SurfaceBinding *surface)
+@@ -2214,12 +2255,13 @@
+ 
+     pgraph_vk_upload_surface_data(d, surface, !tcg_enabled());
+ 
+-    disp->pvideo.state = get_pvideo_state(pg);
++    uint32_t sampled_use;
++    disp->pvideo.state = get_pvideo_state(pg, &sampled_use);
+     if (disp->pvideo.state.enabled) {
+         upload_pvideo_image(pg, disp->pvideo.state);
+     }
+ 
+-    update_uniforms(pg, surface);
++    update_uniforms(pg, surface, sampled_use);
+     update_descriptor_set(pg, surface);
+ 
+     VK_CHECK(vkResetCommandBuffer(img->cmd_buffer, 0));
